@@ -169,9 +169,10 @@ exports.createOrder = async (req, res) => {
       const orderedQty = parseInt(item.orderedQty);
       const gstRate = parseFloat(product.gstRate || 18.0);
 
-      const lineSubtotal = manualUnitRate * orderedQty;
-      const lineGst = (lineSubtotal * gstRate) / 100;
-      const lineTotal = lineSubtotal + lineGst;
+      // Rule: Rate entered is INCLUSIVE of 18% GST (e.g. 980 * 10 = 9800)
+      const lineTotal = manualUnitRate * orderedQty;
+      const lineSubtotal = lineTotal / (1 + gstRate / 100);
+      const lineGst = lineTotal - lineSubtotal;
 
       subtotal += lineSubtotal;
       gstTotal += lineGst;

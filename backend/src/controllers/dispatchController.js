@@ -63,12 +63,12 @@ exports.processDispatch = async (req, res) => {
       const totalDispatchedSoFar = item.dispatchedQty + dispatchedQtyNow;
       const pendingQtyRemaining = Math.max(0, item.orderedQty - totalDispatchedSoFar);
 
-      // Calculations with GST
+      // Calculations with inclusive GST rate
       const lineRate = item.manualUnitRate;
       const gstRate = item.gstRate || 18.0;
 
-      const itemDispatchedValue = dispatchedQtyNow * lineRate * (1 + gstRate / 100);
-      const itemPendingValue = pendingQtyRemaining * lineRate * (1 + gstRate / 100);
+      const itemDispatchedValue = dispatchedQtyNow * lineRate;
+      const itemPendingValue = pendingQtyRemaining * lineRate;
 
       dispatchedBillAmount += itemDispatchedValue;
       pendingBillAmount += itemPendingValue;

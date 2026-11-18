@@ -52,23 +52,78 @@
   min-width: 44px;
 }
 
-/* Print styling for receipts */
+/* Print Isolation Container (hidden on screen) */
+#print-isolated-container {
+  display: none;
+}
+
+/* Single-Page Clean Print Styling */
 @media print {
-  body * {
+  @page {
+    size: A4 portrait;
+    margin: 6mm 8mm 6mm 8mm;
+  }
+
+  html, body {
+    margin: 0 !important;
+    padding: 0 !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    background: #ffffff !important;
+    color: #000000 !important;
+    overflow: visible !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* When isolated print is triggered via button, hide the entire React root tree to eliminate 7-8 extra pages */
+  body.print-active-isolated > :not(#print-isolated-container) {
+    display: none !important;
+  }
+
+  body.print-active-isolated #print-isolated-container {
+    display: block !important;
+    position: relative !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #ffffff !important;
+    page-break-inside: avoid !important;
+    page-break-after: avoid !important;
+    page-break-before: avoid !important;
+  }
+
+  #print-isolated-container > div {
+    max-width: 100% !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 2px !important;
+    margin: 0 !important;
+    page-break-inside: avoid !important;
+    page-break-after: avoid !important;
+    page-break-before: avoid !important;
+  }
+
+  /* Fallback if user presses Ctrl+P directly while modal is open */
+  body:not(.print-active-isolated) * {
     visibility: hidden;
   }
-  .print-container, .print-container * {
+  body:not(.print-active-isolated) .print-container,
+  body:not(.print-active-isolated) .print-container * {
     visibility: visible;
   }
-  .print-container {
+  body:not(.print-active-isolated) .print-container {
     position: absolute;
     left: 0;
     top: 0;
     width: 100%;
     margin: 0;
-    padding: 20px;
+    padding: 10px;
     background: white;
   }
+
   .no-print {
     display: none !important;
   }

@@ -190,21 +190,24 @@ export default function Orders({ openCreateModalProp, onCloseCreateModalProp }) 
     setOrderForm({ ...orderForm, items: updated });
   };
 
-  // Live Calculations for Create Modal
+  // Live Calculations for Create Modal - 18% GST Inclusive Rule (e.g. 980 * 10 = 9800)
   let liveSubtotal = 0;
   let liveGstTotal = 0;
+  let liveGrandTotal = 0;
   orderForm.items.forEach((item) => {
     const prd = products.find((p) => p.id === parseInt(item.productId));
     const rate = parseFloat(item.manualUnitRate) || 0;
     const qty = parseInt(item.orderedQty) || 0;
     const gstRate = prd?.gstRate || 18.0;
 
-    const lineSub = rate * qty;
-    const lineGst = (lineSub * gstRate) / 100;
+    const lineTotal = rate * qty; // Total inclusive of GST
+    const lineSub = lineTotal / (1 + gstRate / 100); // Taxable subtotal
+    const lineGst = lineTotal - lineSub; // GST component
+
+    liveGrandTotal += lineTotal;
     liveSubtotal += lineSub;
     liveGstTotal += lineGst;
   });
-  const liveGrandTotal = liveSubtotal + liveGstTotal;
 
   const handleCreateOrder = async (e) => {
     e.preventDefault();
@@ -850,7 +853,7 @@ export default function Orders({ openCreateModalProp, onCloseCreateModalProp }) 
                       <tr>
                         <th className="py-2.5 px-3">Product</th>
                         <th className="py-2.5 px-3 text-center">Catalogue Base (Ref)</th>
-                        <th className="py-2.5 px-3 text-center w-36">Manual Unit Rate (₹) *</th>
+                        <th className="py-2.5 px-3 text-center w-40">Rate (Inc. 18% GST ₹) *</th>
                         <th className="py-2.5 px-3 text-center w-28">Quantity *</th>
                         <th className="py-2.5 px-3 text-center">GST %</th>
                         <th className="py-2.5 px-3 text-right">Line Total (₹)</th>
@@ -863,9 +866,10 @@ export default function Orders({ openCreateModalProp, onCloseCreateModalProp }) 
                         const rate = parseFloat(item.manualUnitRate) || 0;
                         const qty = parseInt(item.orderedQty) || 0;
                         const gstRate = selectedPrd?.gstRate || 18.0;
-                        const lineSub = rate * qty;
-                        const lineGst = (lineSub * gstRate) / 100;
-                        const lineTotal = lineSub + lineGst;
+                        // Rate is INCLUSIVE of GST (e.g. 980 * 10 = 9800)
+                        const lineTotal = rate * qty;
+                        const lineSub = lineTotal / (1 + gstRate / 100);
+                        const lineGst = lineTotal - lineSub;
 
                         return (
                           <tr key={index} className="hover:bg-slate-50/50">
@@ -895,7 +899,7 @@ export default function Orders({ openCreateModalProp, onCloseCreateModalProp }) 
                                 step="0.01"
                                 min="1"
                                 required
-                                placeholder="Entered rate"
+                                placeholder="Inc. GST Rate"
                                 value={item.manualUnitRate}
                                 onChange={(e) => handleItemChange(index, 'manualUnitRate', e.target.value)}
                                 className="w-full px-2.5 py-1.5 text-xs font-bold text-slate-900 border border-slate-300 rounded-lg text-center focus:ring-2 focus:ring-birla-blue focus:outline-none"
@@ -945,11 +949,11 @@ export default function Orders({ openCreateModalProp, onCloseCreateModalProp }) 
               {/* Order Total Bar */}
               <div className="bg-slate-100 p-4 rounded-xl flex items-center justify-between">
                 <div className="text-xs text-slate-600">
-                  <span>Subtotal: <strong>{formatCurrency(liveSubtotal)}</strong></span> •{' '}
-                  <span>GST: <strong>{formatCurrency(liveGstTotal)}</strong></span>
+                  <span>Taxable Subtotal: <strong className="text-slate-900">{formatCurrency(liveSubtotal)}</strong></span> •{' '}
+                  <span>GST (18%): <strong className="text-slate-900">{formatCurrency(liveGstTotal)}</strong></span>
                 </div>
                 <div className="text-right">
-                  <span className="text-xs text-slate-500 font-semibold block">Grand Total (Incl. GST):</span>
+                  <span className="text-xs text-slate-500 font-semibold block">Total (Incl. 18% GST):</span>
                   <span className="text-xl font-extrabold text-birla-crimson">{formatCurrency(liveGrandTotal)}</span>
                 </div>
               </div>

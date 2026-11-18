@@ -340,12 +340,12 @@ const initialOrders = [
     createdMobile: '8219796922',
     createdEmail: 'suraj-v@adityabirla.com',
     createdCompany: 'UltraTech Cement Ltd. - Unit Birla White',
-    subtotal: 108350.0,
-    gstTotal: 19503.0,
-    grandTotal: 127853.0,
-    dispatchedAmount: 127853.0,
+    subtotal: 91822.04,
+    gstTotal: 16527.96,
+    grandTotal: 108350.0,
+    dispatchedAmount: 108350.0,
     pendingAmount: 0.0,
-    totalPaidAmount: 127853.0,
+    totalPaidAmount: 108350.0,
     balanceDueAmount: 0.0,
     remarks: 'Full dispatch completed for Sundernagar commercial project.',
     items: [
@@ -362,9 +362,9 @@ const initialOrders = [
         dispatchedQty: 100,
         pendingQty: 0,
         gstRate: 18.0,
-        lineSubtotal: 94000.0,
-        lineGst: 16920.0,
-        lineTotal: 110920.0
+        lineSubtotal: 79661.02,
+        lineGst: 14338.98,
+        lineTotal: 94000.0
       },
       {
         id: 2,
@@ -379,9 +379,9 @@ const initialOrders = [
         dispatchedQty: 7,
         pendingQty: 0,
         gstRate: 18.0,
-        lineSubtotal: 14350.0,
-        lineGst: 2583.0,
-        lineTotal: 16933.0
+        lineSubtotal: 12161.02,
+        lineGst: 2188.98,
+        lineTotal: 14350.0
       }
     ],
     dispatchRecords: [
@@ -390,11 +390,11 @@ const initialOrders = [
         dispatchNumber: 'BW-DSP-2026-001',
         dispatchType: 'Full',
         reason: null,
-        dispatchedBillAmount: 127853.0,
+        dispatchedBillAmount: 108350.0,
         pendingBillAmount: 0.0,
         dispatchedItemsJson: JSON.stringify([
-          { productName: 'Birla White WallCare Putty (40 Kg Bag)', ordered: 100, dispatched: 100, pending: 0, rate: 940, amount: 110920 },
-          { productName: 'Birla White Extocare Primer (20 Ltr Bucket)', ordered: 7, dispatched: 7, pending: 0, rate: 2050, amount: 16933 }
+          { productName: 'Birla White WallCare Putty (40 Kg Bag)', ordered: 100, dispatched: 100, pending: 0, rate: 940, amount: 94000 },
+          { productName: 'Birla White Extocare Primer (20 Ltr Bucket)', ordered: 7, dispatched: 7, pending: 0, rate: 2050, amount: 14350 }
         ]),
         pendingItemsJson: JSON.stringify([]),
         vehicleNo: 'HP-31-B-4412',
@@ -421,13 +421,13 @@ const initialOrders = [
     createdMobile: '8219796922',
     createdEmail: 'suraj-v@adityabirla.com',
     createdCompany: 'UltraTech Cement Ltd. - Unit Birla White',
-    subtotal: 174750.0,
-    gstTotal: 35055.0,
-    grandTotal: 209805.0,
-    dispatchedAmount: 132455.0,
-    pendingAmount: 77350.0,
+    subtotal: 145709.75,
+    gstTotal: 29040.25,
+    grandTotal: 174750.0,
+    dispatchedAmount: 119250.0,
+    pendingAmount: 55500.0,
     totalPaidAmount: 50000.0,
-    balanceDueAmount: 159805.0,
+    balanceDueAmount: 124750.0,
     remarks: 'Staggered delivery approved by Territory Officer.',
     items: [
       {
@@ -443,9 +443,9 @@ const initialOrders = [
         dispatchedQty: 90,
         pendingQty: 60,
         gstRate: 18.0,
-        lineSubtotal: 138750.0,
-        lineGst: 24975.0,
-        lineTotal: 163725.0
+        lineSubtotal: 117584.75,
+        lineGst: 21165.25,
+        lineTotal: 138750.0
       },
       {
         id: 4,
@@ -460,9 +460,9 @@ const initialOrders = [
         dispatchedQty: 30,
         pendingQty: 0,
         gstRate: 28.0,
-        lineSubtotal: 36000.0,
-        lineGst: 10080.0,
-        lineTotal: 46080.0
+        lineSubtotal: 28125.0,
+        lineGst: 7875.0,
+        lineTotal: 36000.0
       }
     ],
     dispatchRecords: [
@@ -471,14 +471,14 @@ const initialOrders = [
         dispatchNumber: 'BW-DSP-2026-002',
         dispatchType: 'Partial',
         reason: 'Transport vehicle load limit reached. Remaining 60 bags of Putty scheduled for next delivery.',
-        dispatchedBillAmount: 132455.0,
-        pendingBillAmount: 77350.0,
+        dispatchedBillAmount: 119250.0,
+        pendingBillAmount: 55500.0,
         dispatchedItemsJson: JSON.stringify([
-          { productName: 'Birla White WallCare Putty (40 Kg Bag)', ordered: 150, dispatched: 90, pending: 60, rate: 925, amount: 98235 },
-          { productName: 'Birla White White Portland Cement (50 Kg Bag)', ordered: 30, dispatched: 30, pending: 0, rate: 1200, amount: 46080 }
+          { productName: 'Birla White WallCare Putty (40 Kg Bag)', ordered: 150, dispatched: 90, pending: 60, rate: 925, amount: 83250 },
+          { productName: 'Birla White White Portland Cement (50 Kg Bag)', ordered: 30, dispatched: 30, pending: 0, rate: 1200, amount: 36000 }
         ]),
         pendingItemsJson: JSON.stringify([
-          { productName: 'Birla White WallCare Putty (40 Kg Bag)', ordered: 150, dispatched: 90, pending: 60, rate: 925, amount: 65490 }
+          { productName: 'Birla White WallCare Putty (40 Kg Bag)', ordered: 150, dispatched: 90, pending: 60, rate: 925, amount: 55500 }
         ]),
         vehicleNo: 'HP-33-C-9812',
         driverContact: '9816033441',
@@ -503,13 +503,13 @@ const initialOrders = [
     createdMobile: '8219796922',
     createdEmail: 'suraj-v@adityabirla.com',
     createdCompany: 'UltraTech Cement Ltd. - Unit Birla White',
-    subtotal: 92000.0,
-    gstTotal: 16560.0,
-    grandTotal: 108560.0,
-    dispatchedAmount: 108560.0,
+    subtotal: 77966.10,
+    gstTotal: 14033.90,
+    grandTotal: 92000.0,
+    dispatchedAmount: 92000.0,
     pendingAmount: 0.0,
     totalPaidAmount: 0.0,
-    balanceDueAmount: 108560.0,
+    balanceDueAmount: 92000.0,
     remarks: 'Payment delayed due to site contractor bill processing.',
     items: [
       {
@@ -525,9 +525,9 @@ const initialOrders = [
         dispatchedQty: 100,
         pendingQty: 0,
         gstRate: 18.0,
-        lineSubtotal: 92000.0,
-        lineGst: 16560.0,
-        lineTotal: 108560.0
+        lineSubtotal: 77966.10,
+        lineGst: 14033.90,
+        lineTotal: 92000.0
       }
     ]
   }
@@ -539,7 +539,7 @@ const initialPayments = [
     receiptNumber: 'BW-REC-2026-001',
     retailerId: 1,
     orderId: 1,
-    amountPaid: 127853.0,
+    amountPaid: 108350.0,
     balanceRemaining: 0.0,
     transactionDate: new Date(Date.now() - 86400000 * 8).toISOString(),
     paymentMode: 'UPI',
@@ -553,7 +553,7 @@ const initialPayments = [
     retailerId: 2,
     orderId: 2,
     amountPaid: 50000.0,
-    balanceRemaining: 159805.0,
+    balanceRemaining: 124750.0,
     transactionDate: new Date(Date.now() - 86400000 * 2).toISOString(),
     paymentMode: 'Cheque',
     chequeDate: new Date(Date.now() + 86400000 * 3).toISOString(),
@@ -574,8 +574,8 @@ const initialPjpVisits = [
     locality: 'Cinema Chowk',
     status: 'Completed',
     notes: 'Met Ramesh ji. Discussed WallCare Putty secondary sales & collected full UPI payment.',
-    orderBookedAmount: 127853.0,
-    paymentCollectedAmount: 127853.0
+    orderBookedAmount: 108350.0,
+    paymentCollectedAmount: 108350.0
   },
   {
     id: 2,
@@ -587,7 +587,7 @@ const initialPjpVisits = [
     locality: 'Ner Chowk Market',
     status: 'Completed',
     notes: 'Inspected stock level for Ner Chowk hospital project; took cheque for ₹50,000.',
-    orderBookedAmount: 209805.0,
+    orderBookedAmount: 174750.0,
     paymentCollectedAmount: 50000.0
   },
   {
@@ -929,18 +929,22 @@ export const api = {
     const orderNumber = `BW-ORD-2026-00${dbOrders.length + 1}`;
     let subtotal = 0;
     let gstTotal = 0;
+    let grandTotal = 0;
 
     const items = data.items.map((item, idx) => {
       const prd = dbProducts.find((p) => p.id === parseInt(item.productId));
       const rate = parseFloat(item.manualUnitRate);
       const qty = parseInt(item.orderedQty);
       const gstRate = prd?.gstRate || 18.0;
-      const lineSub = rate * qty;
-      const lineGst = (lineSub * gstRate) / 100;
-      const lineTotal = lineSub + lineGst;
+
+      // Rule: Rate is INCLUSIVE of 18% GST (e.g. 980 * 10 = 9800)
+      const lineTotal = rate * qty;
+      const lineSub = lineTotal / (1 + gstRate / 100);
+      const lineGst = lineTotal - lineSub;
 
       subtotal += lineSub;
       gstTotal += lineGst;
+      grandTotal += lineTotal;
 
       return {
         id: Date.now() + idx,
@@ -960,8 +964,6 @@ export const api = {
         lineTotal
       };
     });
-
-    const grandTotal = subtotal + gstTotal;
 
     const newOrder = {
       id: Date.now(),
@@ -1053,10 +1055,8 @@ export const api = {
 
       const totalDispatched = item.dispatchedQty + dispatchNow;
       const pendingQty = Math.max(0, item.orderedQty - totalDispatched);
-      const rateWithGst = item.manualUnitRate * (1 + (item.gstRate || 18) / 100);
-
-      const dVal = dispatchNow * rateWithGst;
-      const pVal = pendingQty * rateWithGst;
+      const dVal = dispatchNow * item.manualUnitRate;
+      const pVal = pendingQty * item.manualUnitRate;
       dispatchedBillAmt += dVal;
       pendingBillAmt += pVal;
 

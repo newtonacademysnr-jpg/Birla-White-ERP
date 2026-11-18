@@ -418,12 +418,12 @@ async function main() {
       createdMobile: '8219796922',
       createdEmail: 'suraj-v@adityabirla.com',
       createdCompany: 'UltraTech Cement Ltd. - Unit Birla White',
-      subtotal: 108500.0,
-      gstTotal: 19530.0,
-      grandTotal: 128030.0,
-      dispatchedAmount: 128030.0,
+      subtotal: 91822.04,
+      gstTotal: 16527.96,
+      grandTotal: 108350.0,
+      dispatchedAmount: 108350.0,
       pendingAmount: 0.0,
-      totalPaidAmount: 128030.0,
+      totalPaidAmount: 108350.0,
       balanceDueAmount: 0.0,
       remarks: 'Full dispatch completed for Sundernagar commercial project.',
       items: {
@@ -435,14 +435,14 @@ async function main() {
             unitWeight: products[0].unitWeight,
             weightUnit: products[0].weightUnit,
             catalogueReferencePrice: 980.0,
-            manualUnitRate: 940.0, // Manual rate entered!
+            manualUnitRate: 940.0, // Manual rate entered (Inc. GST)!
             orderedQty: 100,
             dispatchedQty: 100,
             pendingQty: 0,
             gstRate: 18.0,
-            lineSubtotal: 94000.0,
-            lineGst: 16920.0,
-            lineTotal: 110920.0
+            lineSubtotal: 79661.02,
+            lineGst: 14338.98,
+            lineTotal: 94000.0
           },
           {
             productId: products[7].id,
@@ -451,14 +451,14 @@ async function main() {
             unitWeight: products[7].unitWeight,
             weightUnit: products[7].weightUnit,
             catalogueReferencePrice: 2150.0,
-            manualUnitRate: 2050.0, // Manual rate entered!
+            manualUnitRate: 2050.0, // Manual rate entered (Inc. GST)!
             orderedQty: 7,
             dispatchedQty: 7,
             pendingQty: 0,
             gstRate: 18.0,
-            lineSubtotal: 14350.0,
-            lineGst: 2583.0,
-            lineTotal: 16933.0
+            lineSubtotal: 12161.02,
+            lineGst: 2188.98,
+            lineTotal: 14350.0
           }
         ]
       }
@@ -472,11 +472,11 @@ async function main() {
       orderId: order1.id,
       dispatchType: 'Full',
       reason: null,
-      dispatchedBillAmount: 128030.0,
+      dispatchedBillAmount: 108350.0,
       pendingBillAmount: 0.0,
       dispatchedItemsJson: JSON.stringify([
-        { productName: products[0].name, ordered: 100, dispatched: 100, pending: 0, rate: 940, amount: 110920 },
-        { productName: products[7].name, ordered: 7, dispatched: 7, pending: 0, rate: 2050, amount: 16933 }
+        { productName: products[0].name, ordered: 100, dispatched: 100, pending: 0, rate: 940, amount: 94000 },
+        { productName: products[7].name, ordered: 7, dispatched: 7, pending: 0, rate: 2050, amount: 14350 }
       ]),
       pendingItemsJson: JSON.stringify([]),
       vehicleNo: 'HP-31-B-4412',
@@ -490,7 +490,7 @@ async function main() {
       receiptNumber: 'BW-REC-2026-001',
       retailerId: retailer1.id,
       orderId: order1.id,
-      amountPaid: 128030.0,
+      amountPaid: 108350.0,
       balanceRemaining: 0.0,
       transactionDate: new Date(),
       paymentMode: 'UPI',
@@ -522,13 +522,13 @@ async function main() {
       createdMobile: '8219796922',
       createdEmail: 'suraj-v@adityabirla.com',
       createdCompany: 'UltraTech Cement Ltd. - Unit Birla White',
-      subtotal: 182500.0,
-      gstTotal: 34500.0,
-      grandTotal: 217000.0,
-      dispatchedAmount: 132455.0,
-      pendingAmount: 84545.0,
+      subtotal: 145709.75,
+      gstTotal: 29040.25,
+      grandTotal: 174750.0,
+      dispatchedAmount: 119250.0,
+      pendingAmount: 55500.0,
       totalPaidAmount: 50000.0,
-      balanceDueAmount: 167000.0,
+      balanceDueAmount: 124750.0,
       remarks: 'Staggered delivery approved by Territory Officer.',
       items: {
         create: [
@@ -539,14 +539,14 @@ async function main() {
             unitWeight: products[0].unitWeight,
             weightUnit: products[0].weightUnit,
             catalogueReferencePrice: 980.0,
-            manualUnitRate: 925.0, // Manual rate entered!
+            manualUnitRate: 925.0, // Manual rate entered (Inc. GST)!
             orderedQty: 150,
             dispatchedQty: 90,
             pendingQty: 60,
             gstRate: 18.0,
-            lineSubtotal: 138750.0,
-            lineGst: 24975.0,
-            lineTotal: 163725.0
+            lineSubtotal: 117584.75,
+            lineGst: 21165.25,
+            lineTotal: 138750.0
           },
           {
             productId: products[3].id,
@@ -555,14 +555,14 @@ async function main() {
             unitWeight: products[3].unitWeight,
             weightUnit: products[3].weightUnit,
             catalogueReferencePrice: 1250.0,
-            manualUnitRate: 1200.0, // Manual rate entered!
+            manualUnitRate: 1200.0, // Manual rate entered (Inc. GST)!
             orderedQty: 30,
             dispatchedQty: 30,
             pendingQty: 0,
             gstRate: 28.0,
-            lineSubtotal: 36000.0,
-            lineGst: 10080.0,
-            lineTotal: 46080.0
+            lineSubtotal: 28125.0,
+            lineGst: 7875.0,
+            lineTotal: 36000.0
           }
         ]
       }
@@ -576,14 +576,14 @@ async function main() {
       orderId: order2.id,
       dispatchType: 'Partial',
       reason: 'Transport vehicle load limit reached. Remaining 60 bags of Putty scheduled for next delivery.',
-      dispatchedBillAmount: 132455.0,
-      pendingBillAmount: 84545.0,
+      dispatchedBillAmount: 119250.0,
+      pendingBillAmount: 55500.0,
       dispatchedItemsJson: JSON.stringify([
-        { productName: products[0].name, ordered: 150, dispatched: 90, pending: 60, rate: 925, amount: 98235 },
-        { productName: products[3].name, ordered: 30, dispatched: 30, pending: 0, rate: 1200, amount: 46080 }
+        { productName: products[0].name, ordered: 150, dispatched: 90, pending: 60, rate: 925, amount: 83250 },
+        { productName: products[3].name, ordered: 30, dispatched: 30, pending: 0, rate: 1200, amount: 36000 }
       ]),
       pendingItemsJson: JSON.stringify([
-        { productName: products[0].name, ordered: 150, dispatched: 90, pending: 60, rate: 925, amount: 65490 }
+        { productName: products[0].name, ordered: 150, dispatched: 90, pending: 60, rate: 925, amount: 55500 }
       ]),
       vehicleNo: 'HP-33-C-9812',
       driverContact: '9816033441'
@@ -597,7 +597,7 @@ async function main() {
       retailerId: retailer2.id,
       orderId: order2.id,
       amountPaid: 50000.0,
-      balanceRemaining: 167000.0,
+      balanceRemaining: 124750.0,
       transactionDate: new Date(),
       paymentMode: 'Cheque',
       chequeDate: new Date(Date.now() + 86400000 * 3),
@@ -628,13 +628,13 @@ async function main() {
       createdMobile: '8219796922',
       createdEmail: 'suraj-v@adityabirla.com',
       createdCompany: 'UltraTech Cement Ltd. - Unit Birla White',
-      subtotal: 92000.0,
-      gstTotal: 16560.0,
-      grandTotal: 108560.0,
-      dispatchedAmount: 108560.0,
+      subtotal: 77966.10,
+      gstTotal: 14033.90,
+      grandTotal: 92000.0,
+      dispatchedAmount: 92000.0,
       pendingAmount: 0.0,
       totalPaidAmount: 0.0,
-      balanceDueAmount: 108560.0,
+      balanceDueAmount: 92000.0,
       remarks: 'Payment delayed due to site contractor bill processing.',
       items: {
         create: [
@@ -650,9 +650,9 @@ async function main() {
             dispatchedQty: 100,
             pendingQty: 0,
             gstRate: 18.0,
-            lineSubtotal: 92000.0,
-            lineGst: 16560.0,
-            lineTotal: 108560.0
+            lineSubtotal: 77966.10,
+            lineGst: 14033.90,
+            lineTotal: 92000.0
           }
         ]
       }
@@ -676,8 +676,8 @@ async function main() {
       locality: 'Cinema Chowk',
       status: 'Completed',
       notes: 'Met Ramesh ji. Discussed WallCare Putty secondary sales & collected full UPI payment.',
-      orderBookedAmount: 128030.0,
-      paymentCollectedAmount: 128030.0,
+      orderBookedAmount: 108350.0,
+      paymentCollectedAmount: 108350.0,
       completedAt: today
     }
   });
@@ -692,7 +692,7 @@ async function main() {
       locality: 'Ner Chowk Market',
       status: 'Completed',
       notes: 'Inspected stock level for Ner Chowk hospital project; took cheque for ₹50,000.',
-      orderBookedAmount: 217000.0,
+      orderBookedAmount: 174750.0,
       paymentCollectedAmount: 50000.0,
       completedAt: today
     }
@@ -722,7 +722,7 @@ async function main() {
       tehsil: 'Mandi Sadar',
       locality: 'Pandoh Bazaar',
       status: 'Scheduled',
-      notes: 'Follow-up on overdue invoice BW-ORD-2026-003 balance ₹1,08,560.',
+      notes: 'Follow-up on overdue invoice BW-ORD-2026-003 balance ₹92,000.',
       orderBookedAmount: 0.0,
       paymentCollectedAmount: 0.0
     }
