@@ -12,34 +12,44 @@ export default {
         mono: ['"JetBrains Mono"', 'monospace']
       },
       colors: {
-        brand: {
-          blue: '#0076CE',
-          blueLight: '#E0F2FE',
-          blueHover: '#0062AD',
-          navy: '#0B192C',
-          gold: '#FFC107',
-          yellow: '#FFD700',
-          yellowLight: '#FFF9E6',
-          crimson: '#9E1B22',
-          slate: '#0F172A',
-          charcoal: '#0B0F17',
+        cream: {
+          50: '#FFFEFA',
+          100: '#FAF6E8',
+          200: '#F5ECCB',
+          300: '#EFE0AA',
+          400: '#E6CF7E',
+          500: '#D9B94C',
+          base: '#FAF6E8',
+          card: '#FFFDF7',
+          border: '#EEDFB8',
+          light: '#FFFDF9',
         },
-        birla: {
-          crimson: '#9E1B22',
-          darkRed: '#7A141A',
-          lightRed: '#FEE2E2',
-          blue: '#0076CE',
-          navy: '#0C4A6E',
-          sky: '#E0F2FE',
-          gold: '#FFB800',
-          orange: '#F97316'
+        birlaRed: {
+          50: '#FEF2F2',
+          100: '#FEE2E2',
+          200: '#FECACA',
+          300: '#FCA5A5',
+          400: '#F87171',
+          500: '#EF4444',
+          600: '#DC2626',
+          700: '#B91C1C',
+          800: '#9E1B22', // Official Aditya Birla Crimson Red
+          900: '#7F1318',
+          950: '#4C090D',
+        },
+        gold: {
+          300: '#FDE047',
+          400: '#FACC15',
+          500: '#EAB308',
+          600: '#CA8A04',
+          warm: '#FFC107'
         }
       },
       boxShadow: {
-        'card': '0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px 0 rgba(0, 0, 0, 0.03)',
-        'card-hover': '0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04)',
-        'glow-blue': '0 0 20px -3px rgba(0, 118, 206, 0.35)',
-        'glow-gold': '0 0 20px -3px rgba(255, 193, 7, 0.35)',
+        'card': '0 1px 3px 0 rgba(127, 19, 24, 0.04), 0 2px 6px -1px rgba(127, 19, 24, 0.03)',
+        'card-hover': '0 10px 25px -5px rgba(127, 19, 24, 0.08), 0 8px 10px -6px rgba(127, 19, 24, 0.04)',
+        'glow-red': '0 0 20px -3px rgba(158, 27, 34, 0.3)',
+        'glow-cream': '0 0 20px -3px rgba(250, 246, 232, 0.5)',
       }
     },
   },
