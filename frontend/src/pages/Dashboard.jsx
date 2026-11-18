@@ -34,6 +34,7 @@ import {
   ResponsiveContainer
 } from 'recharts';
 import { api } from '../api';
+import { exportOrdersToExcel } from '../utils/excelExporter';
 import DualReceiptModal from '../components/DualReceiptModal';
 import PaymentModal from '../components/PaymentModal';
 
@@ -252,12 +253,12 @@ export default function Dashboard({ onOpenNewOrder }) {
           </button>
 
           <button
-            onClick={handleExportCSV}
-            className="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white text-xs font-semibold rounded-xl transition-all border border-slate-700/60 flex items-center space-x-1.5"
-            title="Export Sales & Dispatches to CSV"
+            onClick={() => exportOrdersToExcel(filteredOrders)}
+            className="px-3 py-2 bg-emerald-700/80 hover:bg-emerald-700 text-white text-xs font-semibold rounded-xl transition-all border border-emerald-600/60 flex items-center space-x-1.5"
+            title="Export Sales Orders to styled Excel (.xlsx)"
           >
-            <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-400" />
-            <span>Export CSV</span>
+            <FileSpreadsheet className="w-3.5 h-3.5 text-white" />
+            <span>Export Excel (.xlsx)</span>
           </button>
 
           <button

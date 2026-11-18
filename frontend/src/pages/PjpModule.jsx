@@ -1,593 +1,1006 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   CalendarCheck2,
-  Plus,
-  Search,
-  CheckCircle2,
-  Clock,
-  MapPin,
   Calendar,
-  User,
-  FileText,
-  DollarSign,
+  Plus,
+  RefreshCw,
+  FileSpreadsheet,
+  Download,
+  Upload,
+  CheckCircle2,
   AlertCircle,
-  Trash2,
+  MapPin,
+  Clock,
   Edit2,
+  Trash2,
   X,
-  Store
+  ChevronLeft,
+  ChevronRight,
+  Sun,
+  Store,
+  Layers,
+  Save,
+  ShieldCheck
 } from 'lucide-react';
+import { exportPjpToExcel } from '../utils/excelExporter';
 import { api } from '../api';
-import ConfirmDeleteModal from '../components/ConfirmDeleteModal';
+
+const DB_KEY = 'PJP_SURAJ_DB_V1';
+const DEFAULT_NAME = 'SURAJ (PZ7550)';
+const DEFAULT_EMP_ID = 'PZ7550';
+const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+const MONTH_NAMES = [
+  'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December'
+];
 
 export default function PjpModule() {
-  const [visits, setVisits] = useState([]);
-  const [retailers, setRetailers] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [statusFilter, setStatusFilter] = useState('All');
-  const [tehsilFilter, setTehsilFilter] = useState('All');
-  const [dateFilter, setDateFilter] = useState('');
+  const currentDate = new Date();
+  const [selectedYear, setSelectedYear] = useState(currentDate.getFullYear());
+  const [selectedMonth, setSelectedMonth] = useState(currentDate.getMonth() + 1); // 1-12
 
-  // Modals
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingVisit, setEditingVisit] = useState(null);
-  const [deleteModal, setDeleteModal] = useState({ isOpen: false, visit: null });
-  const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState('');
+  // Officer Profile
+  const [profile, setProfile] = useState({ name: DEFAULT_NAME, employeeId: DEFAULT_EMP_ID });
 
-  // Form State
-  const [formData, setFormData] = useState({
-    retailerId: '',
-    salesOfficer: 'Suraj (PZ7550)',
-    visitDate: new Date().toISOString().split('T')[0],
-    district: 'Mandi',
-    tehsil: 'Sundernagar',
-    locality: '',
-    status: 'Scheduled', // 'Scheduled', 'Completed', 'Rescheduled', 'Order Booked', 'Payment Collected'
-    notes: '',
-    orderBookedAmount: '0',
-    paymentCollectedAmount: '0'
+  // PJP Database State
+  const [db, setDb] = useState({
+    profile: { name: DEFAULT_NAME, employeeId: DEFAULT_EMP_ID },
+    visits: {},
+    holidays: {},
+    counters: {}
   });
 
+  // Modals
+  const [fillModal, setFillModal] = useState({ isOpen: false, date: '', place: '', remarks: '' });
+  const [holidayModal, setHolidayModal] = useState({ isOpen: false, date: '', reason: '' });
+  const [bulkModal, setBulkModal] = useState({ isOpen: false, place: '', remarks: '', selectedDates: [] });
+  const [counterModal, setCounterModal] = useState({ isOpen: false, place: '', counter: 0 });
+
+  // Retailer Directory for quick place suggestions
+  const [retailers, setRetailers] = useState([]);
+  const [toastMessage, setToastMessage] = useState('');
+
+  // Load Database on Mount
   useEffect(() => {
-    loadVisits();
+    loadLocalDb();
     loadRetailers();
-  }, [statusFilter, tehsilFilter, dateFilter]);
+  }, []);
 
   const loadRetailers = async () => {
     try {
       const data = await api.getRetailers({ status: 'Active' });
-      setRetailers(data);
+      setRetailers(data || []);
     } catch (e) {
       console.error('Error loading retailers:', e);
     }
   };
 
-  const loadVisits = async () => {
+  const loadLocalDb = () => {
     try {
-      setLoading(true);
-      const params = {};
-      if (statusFilter !== 'All') params.status = statusFilter;
-      if (tehsilFilter !== 'All') params.tehsil = tehsilFilter;
-      if (dateFilter) params.date = dateFilter;
-
-      const data = await api.getPjpVisits(params);
-      setVisits(data);
-    } catch (e) {
-      console.error('Error loading PJP visits:', e);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleOpenAdd = () => {
-    setEditingVisit(null);
-    setError('');
-    const firstRet = retailers[0];
-    setFormData({
-      retailerId: firstRet?.id || '',
-      salesOfficer: 'Suraj (PZ7550)',
-      visitDate: new Date().toISOString().split('T')[0],
-      district: firstRet?.district || 'Mandi',
-      tehsil: firstRet?.tehsil || 'Sundernagar',
-      locality: firstRet?.locality || '',
-      status: 'Scheduled',
-      notes: '',
-      orderBookedAmount: '0',
-      paymentCollectedAmount: '0'
-    });
-    setIsModalOpen(true);
-  };
-
-  const handleOpenEdit = (v) => {
-    setEditingVisit(v);
-    setError('');
-    setFormData({
-      retailerId: v.retailerId,
-      salesOfficer: v.salesOfficer || 'Suraj (PZ7550)',
-      visitDate: new Date(v.visitDate).toISOString().split('T')[0],
-      district: v.district,
-      tehsil: v.tehsil,
-      locality: v.locality,
-      status: v.status,
-      notes: v.notes || '',
-      orderBookedAmount: String(v.orderBookedAmount || 0),
-      paymentCollectedAmount: String(v.paymentCollectedAmount || 0)
-    });
-    setIsModalOpen(true);
-  };
-
-  const handleRetailerChange = (retId) => {
-    const selectedRet = retailers.find((r) => r.id === parseInt(retId));
-    setFormData((prev) => ({
-      ...prev,
-      retailerId: retId,
-      district: selectedRet?.district || prev.district,
-      tehsil: selectedRet?.tehsil || prev.tehsil,
-      locality: selectedRet?.locality || prev.locality
-    }));
-  };
-
-  const handleSave = async (e) => {
-    e.preventDefault();
-    setError('');
-    setSubmitting(true);
-
-    try {
-      if (!formData.retailerId) {
-        setError('Please select a Retailer.');
-        setSubmitting(false);
-        return;
-      }
-
-      if (editingVisit) {
-        await api.updatePjpVisit(editingVisit.id, formData);
+      const raw = localStorage.getItem(DB_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        setDb(parsed);
+        if (parsed.profile) setProfile(parsed.profile);
       } else {
-        await api.createPjpVisit(formData);
+        // Pre-seed Himachal Pradesh November 2026 Journey Plan for Suraj
+        const seededDb = {
+          profile: { name: 'SURAJ (PZ7550)', employeeId: 'PZ7550' },
+          visits: {
+            '2026-11-03': { place: 'Sundernagar Urban', remarks: 'Sharma Paint & Sanitary, Cinema Chowk beat' },
+            '2026-11-04': { place: 'Sundernagar Bhojpur', remarks: 'Mandi Valley Building Materials Depot stock audit' },
+            '2026-11-05': { place: 'Balh / Ner Chowk', remarks: 'Himalayan Hardware & Medical College Road' },
+            '2026-11-06': { place: 'Mandi Sadar', remarks: 'Beas Traders & Hardware, Indira Market beat' },
+            '2026-11-07': { place: 'Mandi Sadar', remarks: 'Old Bus Stand paint retail counters' },
+            '2026-11-10': { place: 'Joginder Nagar', remarks: 'Joginder Nagar Paint House, Railway Station Road' },
+            '2026-11-11': { place: 'Joginder Nagar Rural', remarks: 'Chauntra & Highway hardware counters' },
+            '2026-11-12': { place: 'Pandoh Dam Belt', remarks: 'Hill View Decor & Hardware, site visit' },
+            '2026-11-13': { place: 'Sarkaghat', remarks: 'Sarkaghat Building Solutions & Baldwara beat' },
+            '2026-11-14': { place: 'Sundernagar', remarks: 'Key dealer review meeting & secondary orders' },
+            '2026-11-17': { place: 'Balh / Ner Chowk', remarks: 'Collection follow-up & new retailer mapping' },
+            '2026-11-18': { place: 'Mandi Sadar', remarks: 'White Portland Cement bulk order booking' },
+            '2026-11-19': { place: 'Joginder Nagar', remarks: 'Dhauladhar Building Store depot visit' },
+            '2026-11-20': { place: 'Sundernagar Model Town', remarks: 'Extocare Primer demo & contractor meet' }
+          },
+          holidays: {
+            '2026-11-01': 'Sunday',
+            '2026-11-08': 'Sunday',
+            '2026-11-15': 'Sunday',
+            '2026-11-22': 'Sunday',
+            '2026-11-29': 'Sunday',
+            '2026-11-16': 'State Holiday'
+          },
+          counters: {
+            '2026-11': {
+              'sundernagar urban': 8,
+              'sundernagar bhojpur': 6,
+              'balh / ner chowk': 7,
+              'mandi sadar': 10,
+              'joginder nagar': 8,
+              'pandoh dam belt': 4,
+              'sarkaghat': 5
+            }
+          }
+        };
+        localStorage.setItem(DB_KEY, JSON.stringify(seededDb));
+        setDb(seededDb);
       }
-      setIsModalOpen(false);
-      loadVisits();
-    } catch (err) {
-      setError(err.message || 'Failed to save PJP visit');
-    } finally {
-      setSubmitting(false);
+    } catch (e) {
+      console.error('Error loading PJP db:', e);
     }
   };
 
-  const handleDeleteConfirm = async () => {
-    if (!deleteModal.visit) return;
-    setSubmitting(true);
+  const saveDbToStorage = (updatedDb) => {
     try {
-      await api.deletePjpVisit(deleteModal.visit.id);
-      setDeleteModal({ isOpen: false, visit: null });
-      loadVisits();
-    } catch (err) {
-      alert(err.message || 'Failed to delete PJP visit');
-    } finally {
-      setSubmitting(false);
+      localStorage.setItem(DB_KEY, JSON.stringify(updatedDb));
+      setDb({ ...updatedDb });
+    } catch (e) {
+      alert('Could not save PJP data (storage error).');
     }
   };
 
-  const formatCurrency = (amt) => {
-    return '₹ ' + Number(amt || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const showToast = (msg) => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(''), 3000);
   };
 
-  const formatDate = (dateStr) => {
-    if (!dateStr) return 'N/A';
-    return new Date(dateStr).toLocaleDateString('en-IN', {
-      weekday: 'short',
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric'
-    });
+  // Helper date methods
+  const pad = (n) => String(n).padStart(2, '0');
+  const formatDateKey = (year, month, day) => `${year}-${pad(month)}-${pad(day)}`;
+
+  // Monthly Data Calculation
+  const monthData = useMemo(() => {
+    const daysInMonth = new Date(selectedYear, selectedMonth, 0).getDate();
+    const rows = [];
+    const placeCounts = {};
+    let workingDays = 0;
+    let holidayDays = 0;
+    let visitDays = 0;
+
+    const counterKey = `${selectedYear}-${selectedMonth}`;
+    const monthCounters = db.counters[counterKey] || {};
+
+    for (let day = 1; day <= daysInMonth; day++) {
+      const dt = new Date(selectedYear, selectedMonth - 1, day);
+      const dateKey = formatDateKey(selectedYear, selectedMonth, day);
+      const dayOfWeek = dt.getDay(); // 0 is Sunday
+      const isSunday = dayOfWeek === 0;
+      const manualHoliday = db.holidays[dateKey];
+      const isHoliday = isSunday || !!manualHoliday;
+      const holidayReason = isSunday ? 'Sunday' : (manualHoliday || 'Holiday');
+
+      const visit = db.visits[dateKey] || {};
+      const place = isHoliday ? '' : (visit.place || '');
+      const remarks = isHoliday ? '' : (visit.remarks || '');
+
+      rows.push({
+        date: dateKey,
+        day: DAY_NAMES[dayOfWeek],
+        dayNumber: day,
+        place,
+        remarks,
+        isHoliday,
+        holidayReason
+      });
+
+      if (isHoliday) {
+        holidayDays++;
+      } else {
+        workingDays++;
+        if (place) {
+          visitDays++;
+          const normalized = place.trim();
+          placeCounts[normalized] = (placeCounts[normalized] || 0) + 1;
+        }
+      }
+    }
+
+    const places = Object.keys(placeCounts)
+      .map((place) => ({
+        place,
+        days: placeCounts[place],
+        counter: Number(monthCounters[place.toLowerCase()] || 0)
+      }))
+      .sort((a, b) => b.days - a.days || a.place.localeCompare(b.place));
+
+    const summary = {
+      name: profile.name,
+      employeeId: profile.employeeId,
+      year: selectedYear,
+      month: selectedMonth,
+      totalDays: daysInMonth,
+      workingDays,
+      holidayDays,
+      visitDays,
+      places
+    };
+
+    return {
+      name: profile.name,
+      employeeId: profile.employeeId,
+      year: selectedYear,
+      month: selectedMonth,
+      days: rows,
+      summary
+    };
+  }, [db, selectedYear, selectedMonth, profile]);
+
+  // Save Single Visit
+  const handleSaveVisit = () => {
+    if (!fillModal.place.trim()) {
+      alert('Please enter or select a place of visit.');
+      return;
+    }
+    const updatedDb = { ...db };
+    updatedDb.visits[fillModal.date] = {
+      place: fillModal.place.trim(),
+      remarks: fillModal.remarks.trim()
+    };
+    delete updatedDb.holidays[fillModal.date];
+    saveDbToStorage(updatedDb);
+    setFillModal({ isOpen: false, date: '', place: '', remarks: '' });
+    showToast('Visit saved successfully!');
   };
+
+  // Mark Holiday
+  const handleMarkHoliday = () => {
+    const updatedDb = { ...db };
+    updatedDb.holidays[holidayModal.date] = holidayModal.reason.trim() || 'Holiday';
+    delete updatedDb.visits[holidayModal.date];
+    saveDbToStorage(updatedDb);
+    setHolidayModal({ isOpen: false, date: '', reason: '' });
+    showToast('Marked as Holiday!');
+  };
+
+  // Unmark Holiday
+  const handleUnmarkHoliday = (dateKey) => {
+    const updatedDb = { ...db };
+    delete updatedDb.holidays[dateKey];
+    saveDbToStorage(updatedDb);
+    showToast('Holiday removed.');
+  };
+
+  // Clear Visit
+  const handleClearVisit = (dateKey) => {
+    const updatedDb = { ...db };
+    delete updatedDb.visits[dateKey];
+    saveDbToStorage(updatedDb);
+    showToast('Visit cleared.');
+  };
+
+  // Multi-Date Bulk Visit
+  const handleSaveBulkVisit = () => {
+    if (!bulkModal.place.trim()) {
+      alert('Please specify a place of visit.');
+      return;
+    }
+    if (!bulkModal.selectedDates || bulkModal.selectedDates.length === 0) {
+      alert('Please select at least one calendar date.');
+      return;
+    }
+
+    const updatedDb = { ...db };
+    bulkModal.selectedDates.forEach((dateKey) => {
+      const dt = new Date(dateKey + 'T00:00:00');
+      if (dt.getDay() === 0 || updatedDb.holidays[dateKey]) return; // Skip holidays
+      updatedDb.visits[dateKey] = {
+        place: bulkModal.place.trim(),
+        remarks: bulkModal.remarks.trim()
+      };
+    });
+    saveDbToStorage(updatedDb);
+    setBulkModal({ isOpen: false, place: '', remarks: '', selectedDates: [] });
+    showToast(`${bulkModal.selectedDates.length} visits scheduled in batch!`);
+  };
+
+  // Save Counter for Place
+  const handleSaveCounter = () => {
+    const updatedDb = { ...db };
+    const counterKey = `${selectedYear}-${selectedMonth}`;
+    updatedDb.counters[counterKey] = updatedDb.counters[counterKey] || {};
+    updatedDb.counters[counterKey][counterModal.place.toLowerCase()] = Math.max(0, Number(counterModal.counter || 0));
+    saveDbToStorage(updatedDb);
+    setCounterModal({ isOpen: false, place: '', counter: 0 });
+    showToast('Counter updated successfully!');
+  };
+
+  // Export to Styled Excel (.xlsx)
+  const handleExportXlsx = () => {
+    try {
+      exportPjpToExcel(monthData, selectedYear, selectedMonth);
+      showToast('PJP Excel spreadsheet generated successfully!');
+    } catch (e) {
+      alert('Excel export error: ' + e.message);
+    }
+  };
+
+  // Backup JSON
+  const handleExportBackup = () => {
+    const jsonStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(db, null, 2));
+    const dlAnchor = document.createElement('a');
+    dlAnchor.setAttribute('href', jsonStr);
+    dlAnchor.setAttribute('download', `PJP_Backup_Suraj_${selectedYear}_${pad(selectedMonth)}.json`);
+    dlAnchor.click();
+    showToast('PJP backup downloaded!');
+  };
+
+  // Restore JSON
+  const handleRestoreBackup = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const parsed = JSON.parse(event.target.result);
+        if (parsed.visits) {
+          saveDbToStorage(parsed);
+          showToast('PJP backup restored successfully!');
+        } else {
+          alert('Invalid PJP backup file.');
+        }
+      } catch (err) {
+        alert('Error parsing JSON backup file.');
+      }
+    };
+    reader.readAsText(file);
+  };
+
+  // Navigation handlers
+  const handlePrevMonth = () => {
+    if (selectedMonth === 1) {
+      setSelectedMonth(12);
+      setSelectedYear((y) => y - 1);
+    } else {
+      setSelectedMonth((m) => m - 1);
+    }
+  };
+
+  const handleNextMonth = () => {
+    if (selectedMonth === 12) {
+      setSelectedMonth(1);
+      setSelectedYear((y) => y + 1);
+    } else {
+      setSelectedMonth((m) => m + 1);
+    }
+  };
+
+  const summary = monthData.summary;
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <h1 className="text-xl font-black text-slate-900 tracking-tight flex items-center space-x-2">
-            <CalendarCheck2 className="w-6 h-6 text-birla-crimson" />
-            <span>Permanent Journey Plan (PJP) & Beat Module</span>
-          </h1>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Territory field routing for Suraj (PZ7550): Schedule dealer visits by location (Tehsil/Locality), log discussions, orders booked and payments collected.
-          </p>
+    <div className="space-y-5 animate-in fade-in duration-300">
+      {/* Toast Alert */}
+      {toastMessage && (
+        <div className="fixed bottom-6 right-6 z-50 bg-slate-900 text-white px-4 py-3 rounded-xl shadow-2xl border border-slate-700 flex items-center space-x-2.5 text-xs font-semibold">
+          <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+          <span>{toastMessage}</span>
+        </div>
+      )}
+
+      {/* TOP HEADER / EXECUTIVE TOOLBAR */}
+      <div className="bg-slate-900 text-white rounded-2xl p-4 md:p-5 border border-slate-800 shadow-md flex flex-wrap items-center justify-between gap-4">
+        {/* Officer & Unit Badge */}
+        <div className="flex items-center space-x-3.5">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-birla-crimson to-birla-darkRed flex items-center justify-center font-black text-white text-sm shadow-sm ring-1 ring-white/10">
+            PJP
+          </div>
+          <div>
+            <div className="flex items-center space-x-2">
+              <h1 className="text-base md:text-lg font-bold tracking-tight text-white">
+                Permanent Journey Plan (PJP)
+              </h1>
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-birla-gold/20 text-birla-gold border border-birla-gold/30">
+                Himachal Pradesh Division
+              </span>
+            </div>
+            <p className="text-xs text-slate-400 mt-0.5">
+              Officer: <strong className="text-slate-200">{profile.name}</strong> • Headquarter: Mandi • UltraTech Cement Ltd. (Unit Birla White)
+            </p>
+          </div>
         </div>
 
-        <button
-          onClick={handleOpenAdd}
-          className="px-4 py-2.5 bg-birla-crimson hover:bg-birla-darkRed text-white text-xs font-bold rounded-xl shadow-sm transition-all flex items-center space-x-2"
-        >
-          <Plus className="w-4 h-4" />
-          <span>Schedule Dealer Visit</span>
-        </button>
+        {/* Action Buttons */}
+        <div className="flex items-center space-x-2.5 flex-wrap">
+          <button
+            onClick={() => setBulkModal({ isOpen: true, place: '', remarks: '', selectedDates: [] })}
+            className="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold rounded-xl border border-slate-700 flex items-center space-x-1.5 transition-all"
+            title="Assign multi-date visit route in bulk"
+          >
+            <Layers className="w-3.5 h-3.5 text-birla-blue" />
+            <span>Multi-Date Visit</span>
+          </button>
+
+          <button
+            onClick={handleExportXlsx}
+            className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-xs flex items-center space-x-1.5 transition-all ring-1 ring-white/10"
+            title="Download Official Styled Excel Report (.xlsx)"
+          >
+            <FileSpreadsheet className="w-3.5 h-3.5 text-white" />
+            <span>Export Excel (.xlsx)</span>
+          </button>
+
+          <button
+            onClick={handleExportBackup}
+            className="p-2 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-xl border border-slate-700"
+            title="Backup PJP Data JSON"
+          >
+            <Download className="w-4 h-4" />
+          </button>
+
+          <label
+            className="p-2 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-xl border border-slate-700 cursor-pointer"
+            title="Restore PJP Data JSON"
+          >
+            <Upload className="w-4 h-4" />
+            <input type="file" accept=".json,application/json" onChange={handleRestoreBackup} className="hidden" />
+          </label>
+        </div>
       </div>
 
-      {/* Filter Bar */}
-      <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs flex flex-wrap items-center justify-between gap-4 text-xs">
-        <div className="flex items-center space-x-3">
-          <div className="flex items-center space-x-1.5">
-            <span className="text-slate-500 font-semibold">Status:</span>
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="px-3 py-1.5 bg-slate-50 border border-slate-300 rounded-xl font-medium focus:outline-none"
-            >
-              <option value="All">All Visit Statuses</option>
-              <option value="Scheduled">Scheduled</option>
-              <option value="Completed">Completed</option>
-              <option value="Order Booked">Order Booked</option>
-              <option value="Payment Collected">Payment Collected</option>
-              <option value="Rescheduled">Rescheduled</option>
-            </select>
-          </div>
-
-          <div className="flex items-center space-x-1.5">
-            <span className="text-slate-500 font-semibold">Tehsil:</span>
-            <select
-              value={tehsilFilter}
-              onChange={(e) => setTehsilFilter(e.target.value)}
-              className="px-3 py-1.5 bg-slate-50 border border-slate-300 rounded-xl font-medium focus:outline-none"
-            >
-              <option value="All">All Tehsils</option>
-              <option value="Sundernagar">Sundernagar</option>
-              <option value="Balh">Balh / Ner Chowk</option>
-              <option value="Joginder Nagar">Joginder Nagar</option>
-              <option value="Mandi Sadar">Mandi Sadar</option>
-              <option value="Sarkaghat">Sarkaghat</option>
-            </select>
-          </div>
-        </div>
-
+      {/* MONTH SELECTOR & PERIOD SUMMARY CARDS */}
+      <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-[0_1px_3px_rgba(0,0,0,0.03)] flex flex-wrap items-center justify-between gap-4">
+        {/* Month & Year Navigation */}
         <div className="flex items-center space-x-2">
-          <span className="text-slate-500 font-semibold">Filter by Date:</span>
-          <input
-            type="date"
-            value={dateFilter}
-            onChange={(e) => setDateFilter(e.target.value)}
-            className="px-3 py-1.5 bg-slate-50 border border-slate-300 rounded-xl font-medium focus:outline-none"
-          />
-          {dateFilter && (
-            <button
-              onClick={() => setDateFilter('')}
-              className="text-slate-400 hover:text-slate-700 text-xs font-bold"
-            >
-              Clear
-            </button>
-          )}
+          <button
+            onClick={handlePrevMonth}
+            className="p-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl transition-all"
+            title="Previous Month"
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </button>
+
+          <select
+            value={selectedMonth}
+            onChange={(e) => setSelectedMonth(Number(e.target.value))}
+            className="px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-birla-blue/20"
+          >
+            {MONTH_NAMES.map((name, idx) => (
+              <option key={idx + 1} value={idx + 1}>
+                {name}
+              </option>
+            ))}
+          </select>
+
+          <select
+            value={selectedYear}
+            onChange={(e) => setSelectedYear(Number(e.target.value))}
+            className="px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-birla-blue/20"
+          >
+            {[2025, 2026, 2027, 2028].map((y) => (
+              <option key={y} value={y}>
+                {y}
+              </option>
+            ))}
+          </select>
+
+          <button
+            onClick={handleNextMonth}
+            className="p-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl transition-all"
+            title="Next Month"
+          >
+            <ChevronRight className="w-4 h-4" />
+          </button>
+        </div>
+
+        {/* 4 Summary Counters */}
+        <div className="flex items-center space-x-2 md:space-x-3 text-center">
+          <div className="px-3.5 py-1.5 bg-slate-50 rounded-xl border border-slate-200/80">
+            <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">Calendar</span>
+            <span className="text-base font-black text-slate-900">{summary.totalDays} Days</span>
+          </div>
+
+          <div className="px-3.5 py-1.5 bg-blue-50/70 rounded-xl border border-blue-200/80">
+            <span className="text-[10px] uppercase font-bold text-birla-blue block tracking-wider">Working</span>
+            <span className="text-base font-black text-slate-900">{summary.workingDays} Days</span>
+          </div>
+
+          <div className="px-3.5 py-1.5 bg-rose-50/70 rounded-xl border border-rose-200/80">
+            <span className="text-[10px] uppercase font-bold text-rose-600 block tracking-wider">Holidays</span>
+            <span className="text-base font-black text-rose-700">{summary.holidayDays} Days</span>
+          </div>
+
+          <div className="px-3.5 py-1.5 bg-emerald-50/70 rounded-xl border border-emerald-200/80">
+            <span className="text-[10px] uppercase font-bold text-emerald-700 block tracking-wider">Planned Visits</span>
+            <span className="text-base font-black text-emerald-700">{summary.visitDays} Days</span>
+          </div>
         </div>
       </div>
 
-      {/* PJP Visits Table */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead className="bg-slate-900 text-white font-semibold">
-              <tr>
-                <th className="py-3 px-4">Visit Date & Day</th>
-                <th className="py-3 px-4">Retailer (Firm & Owner)</th>
-                <th className="py-3 px-4">Beat Location (Tehsil/Locality)</th>
-                <th className="py-3 px-4">Sales Officer</th>
-                <th className="py-3 px-4 text-center">Visit Status</th>
-                <th className="py-3 px-4">Discussion Notes / Outcome</th>
-                <th className="py-3 px-4 text-right">Order Booked</th>
-                <th className="py-3 px-4 text-right">Payment Collected</th>
-                <th className="py-3 px-4 text-center">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {loading ? (
-                <tr>
-                  <td colSpan={9} className="py-8 text-center text-slate-400">
-                    Loading PJP visits...
-                  </td>
-                </tr>
-              ) : visits.length === 0 ? (
-                <tr>
-                  <td colSpan={9} className="py-8 text-center text-slate-400">
-                    No PJP visits scheduled matching criteria.
-                  </td>
-                </tr>
-              ) : (
-                visits.map((v) => (
-                  <tr key={v.id} className="hover:bg-slate-50/80 transition-colors">
-                    {/* Date */}
-                    <td className="py-3.5 px-4">
-                      <span className="font-bold text-slate-900 block">{formatDate(v.visitDate)}</span>
-                      <span className="text-[10px] text-slate-400">
-                        {new Date(v.visitDate).toDateString() === new Date().toDateString()
-                          ? 'Today (Active)'
-                          : ''}
-                      </span>
-                    </td>
+      {/* TWO-COLUMN LAYOUT: CALENDAR STREAM (LEFT) & PLACE-WISE SUMMARY (RIGHT) */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+        {/* Left Column (8/12): Day-by-Day Journey Plan Rows */}
+        <div className="lg:col-span-8 bg-white rounded-2xl border border-slate-200/80 shadow-[0_1px_3px_rgba(0,0,0,0.03)] overflow-hidden">
+          <div className="px-5 py-3.5 border-b border-slate-100 flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <Calendar className="w-4 h-4 text-birla-blue" />
+              <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+                Daily Beat Schedule • {MONTH_NAMES[selectedMonth - 1]} {selectedYear}
+              </h3>
+            </div>
+            <span className="text-[11px] text-slate-500 font-medium">Click on any date to edit or mark holiday</span>
+          </div>
 
-                    {/* Retailer */}
-                    <td className="py-3.5 px-4">
-                      <span className="font-bold text-slate-900 block">{v.retailer?.firmName}</span>
-                      <span className="text-[11px] text-slate-500">
-                        {v.retailer?.ownerName} • Mob: {v.retailer?.mobileNumber}
-                      </span>
-                    </td>
+          {/* Calendar List */}
+          <div className="divide-y divide-slate-100 max-h-[750px] overflow-y-auto">
+            {monthData.days.map((row) => {
+              const isSunday = row.day === 'Sunday';
+              return (
+                <div
+                  key={row.date}
+                  className={`p-3.5 flex flex-wrap items-center justify-between gap-3 transition-colors ${
+                    row.isHoliday
+                      ? 'bg-rose-50/60 border-l-4 border-rose-600'
+                      : 'hover:bg-slate-50/80 border-l-4 border-transparent'
+                  }`}
+                >
+                  {/* Date & Day Badge */}
+                  <div className="flex items-center space-x-3 min-w-[130px]">
+                    <div
+                      className={`w-10 h-10 rounded-xl flex flex-col items-center justify-center font-bold text-xs ${
+                        row.isHoliday
+                          ? 'bg-rose-600 text-white shadow-xs'
+                          : 'bg-slate-100 text-slate-800'
+                      }`}
+                    >
+                      <span className="text-sm font-black leading-none">{pad(row.dayNumber)}</span>
+                      <span className="text-[9px] uppercase font-bold opacity-80">{row.day.slice(0, 3)}</span>
+                    </div>
 
-                    {/* Location */}
-                    <td className="py-3.5 px-4 text-slate-600">
-                      <div className="flex items-start space-x-1">
-                        <MapPin className="w-3.5 h-3.5 text-birla-crimson flex-shrink-0 mt-0.5" />
-                        <div>
-                          <span className="font-semibold text-slate-900 block">{v.locality}</span>
-                          <span className="text-[10px] text-slate-500">Tehsil: {v.tehsil}, {v.district}</span>
+                    <div>
+                      <span className="text-xs font-bold text-slate-900 block">
+                        {pad(row.dayNumber)} {MONTH_NAMES[selectedMonth - 1].slice(0, 3)}
+                      </span>
+                      <span className="text-[10px] text-slate-400">{row.day}</span>
+                    </div>
+                  </div>
+
+                  {/* Visit Place & Remarks */}
+                  <div className="flex-1 min-w-[200px]">
+                    {row.isHoliday ? (
+                      <div>
+                        <span className="inline-flex items-center space-x-1 text-xs font-extrabold text-rose-700 bg-rose-100 px-2 py-0.5 rounded-md">
+                          <Sun className="w-3 h-3" />
+                          <span>{row.holidayReason || 'Holiday'}</span>
+                        </span>
+                        <span className="text-[11px] text-rose-500 block mt-0.5">District headquarter off / holiday</span>
+                      </div>
+                    ) : row.place ? (
+                      <div>
+                        <div className="flex items-center space-x-1.5">
+                          <MapPin className="w-3.5 h-3.5 text-birla-blue" />
+                          <span className="text-xs font-bold text-slate-900">{row.place}</span>
                         </div>
+                        {row.remarks && (
+                          <p className="text-[11px] text-slate-500 mt-0.5 pl-5">{row.remarks}</p>
+                        )}
                       </div>
-                    </td>
+                    ) : (
+                      <span className="text-xs text-slate-400 italic">No visit scheduled yet</span>
+                    )}
+                  </div>
 
-                    {/* Officer */}
-                    <td className="py-3.5 px-4 font-medium text-slate-800">
-                      {v.salesOfficer || 'Suraj (PZ7550)'}
-                    </td>
-
-                    {/* Status */}
-                    <td className="py-3.5 px-4 text-center">
-                      <span
-                        className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
-                          v.status === 'Completed'
-                            ? 'bg-emerald-100 text-emerald-800'
-                            : v.status === 'Order Booked'
-                            ? 'bg-blue-100 text-blue-800'
-                            : v.status === 'Payment Collected'
-                            ? 'bg-purple-100 text-purple-800'
-                            : v.status === 'Scheduled'
-                            ? 'bg-amber-100 text-amber-900'
-                            : 'bg-slate-100 text-slate-600'
-                        }`}
-                      >
-                        {v.status}
-                      </span>
-                    </td>
-
-                    {/* Notes */}
-                    <td className="py-3.5 px-4 max-w-xs text-slate-700">
-                      <p className="line-clamp-2" title={v.notes || ''}>
-                        {v.notes || <span className="text-slate-400 italic">No notes logged yet.</span>}
-                      </p>
-                    </td>
-
-                    {/* Order Booked */}
-                    <td className="py-3.5 px-4 text-right font-bold text-slate-900">
-                      {v.orderBookedAmount > 0 ? (
-                        <span className="text-blue-700">{formatCurrency(v.orderBookedAmount)}</span>
-                      ) : (
-                        <span className="text-slate-400">-</span>
-                      )}
-                    </td>
-
-                    {/* Payment Collected */}
-                    <td className="py-3.5 px-4 text-right font-bold text-slate-900">
-                      {v.paymentCollectedAmount > 0 ? (
-                        <span className="text-emerald-700">{formatCurrency(v.paymentCollectedAmount)}</span>
-                      ) : (
-                        <span className="text-slate-400">-</span>
-                      )}
-                    </td>
-
-                    {/* Actions */}
-                    <td className="py-3.5 px-4 text-center">
-                      <div className="flex items-center justify-center space-x-1.5">
+                  {/* Row Action Buttons */}
+                  <div className="flex items-center space-x-1.5">
+                    {row.isHoliday ? (
+                      !isSunday && (
                         <button
-                          onClick={() => handleOpenEdit(v)}
-                          className="p-1.5 text-slate-600 hover:text-birla-blue hover:bg-blue-50 rounded-lg transition-colors"
-                          title="Update Visit / Mark Done"
+                          onClick={() => handleUnmarkHoliday(row.date)}
+                          className="px-2.5 py-1 bg-white hover:bg-slate-100 text-slate-700 text-[10px] font-bold rounded-lg border border-slate-200 transition-all"
                         >
-                          <Edit2 className="w-4 h-4" />
+                          Remove Holiday
                         </button>
+                      )
+                    ) : (
+                      <>
                         <button
-                          onClick={() => setDeleteModal({ isOpen: true, visit: v })}
-                          className="p-1.5 text-slate-600 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
-                          title="Delete Visit"
+                          onClick={() =>
+                            setFillModal({
+                              isOpen: true,
+                              date: row.date,
+                              place: row.place || '',
+                              remarks: row.remarks || ''
+                            })
+                          }
+                          className="px-2.5 py-1 bg-slate-900 hover:bg-slate-800 text-white text-[10px] font-bold rounded-lg transition-all shadow-xs flex items-center space-x-1"
                         >
-                          <Trash2 className="w-4 h-4" />
+                          <Edit2 className="w-2.5 h-2.5" />
+                          <span>{row.place ? 'Edit' : 'Fill Visit'}</span>
                         </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+
+                        <button
+                          onClick={() => setHolidayModal({ isOpen: true, date: row.date, reason: '' })}
+                          className="px-2 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 text-[10px] font-bold rounded-lg border border-rose-200 transition-all"
+                          title="Mark date as official holiday"
+                        >
+                          Holiday
+                        </button>
+
+                        {row.place && (
+                          <button
+                            onClick={() => handleClearVisit(row.date)}
+                            className="p-1 text-slate-400 hover:text-rose-600 transition-colors"
+                            title="Clear visit"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                      </>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
-      </div>
 
-      {/* Add / Edit PJP Visit Modal */}
-      {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-sm overflow-y-auto">
-          <div className="bg-white rounded-2xl max-w-xl w-full shadow-2xl border border-slate-200 overflow-hidden my-6">
-            <div className="px-6 py-4 bg-slate-900 text-white flex items-center justify-between border-b border-slate-800">
+        {/* Right Column (4/12): Place-wise Visit Summary & Counter Tracker */}
+        <div className="lg:col-span-4 space-y-5">
+          {/* Place-wise Table matching PJP-Suraj */}
+          <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-[0_1px_3px_rgba(0,0,0,0.03)]">
+            <div className="flex items-center justify-between mb-3.5">
               <div className="flex items-center space-x-2">
-                <span className="w-2 h-2 rounded-full bg-birla-crimson"></span>
-                <h3 className="font-bold text-sm tracking-wide">
-                  {editingVisit ? 'Update / Complete' : 'Schedule New'} PJP Beat Visit
+                <Store className="w-4 h-4 text-emerald-600" />
+                <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+                  Place-wise Visit Summary
                 </h3>
               </div>
+              <span className="text-[10px] font-bold bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md">
+                {summary.places.length} Places
+              </span>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs border border-slate-200 rounded-xl overflow-hidden">
+                <thead className="bg-slate-100 text-slate-700 font-bold uppercase text-[10px]">
+                  <tr>
+                    <th className="py-2.5 px-3 border-b border-slate-200">District HQ / Place</th>
+                    <th className="py-2.5 px-2 text-center border-b border-slate-200">Days</th>
+                    <th className="py-2.5 px-2 text-center border-b border-slate-200">No of Counter</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {summary.places.length === 0 ? (
+                    <tr>
+                      <td colSpan={3} className="py-6 text-center text-slate-400 italic">
+                        No visits recorded for this month.
+                      </td>
+                    </tr>
+                  ) : (
+                    summary.places.map((item, idx) => (
+                      <tr key={idx} className="hover:bg-slate-50">
+                        <td className="py-2.5 px-3 font-semibold text-slate-900">
+                          {item.place}
+                        </td>
+                        <td className="py-2.5 px-2 text-center font-bold text-slate-800">
+                          {item.days}
+                        </td>
+                        <td className="py-2.5 px-2 text-center">
+                          <button
+                            onClick={() =>
+                              setCounterModal({
+                                isOpen: true,
+                                place: item.place,
+                                counter: item.counter
+                              })
+                            }
+                            className="px-2 py-0.5 bg-blue-50 hover:bg-blue-100 text-birla-blue font-extrabold rounded-md border border-blue-200 text-xs transition-colors"
+                            title="Click to edit counter"
+                          >
+                            {item.counter || 0} ✎
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+                {/* Total Row */}
+                {summary.places.length > 0 && (
+                  <tfoot className="bg-slate-200/80 font-bold text-slate-900">
+                    <tr>
+                      <td className="py-2.5 px-3">TOTAL</td>
+                      <td className="py-2.5 px-2 text-center">
+                        {summary.places.reduce((sum, p) => sum + p.days, 0)}
+                      </td>
+                      <td className="py-2.5 px-2 text-center">
+                        {summary.places.reduce((sum, p) => sum + (p.counter || 0), 0)}
+                      </td>
+                    </tr>
+                  </tfoot>
+                )}
+              </table>
+            </div>
+
+            <p className="text-[10px] text-slate-400 mt-2.5">
+              Click on the blue counter number to update retailer counters for that beat.
+            </p>
+          </div>
+
+          {/* Quick Place Beats in Himachal Pradesh */}
+          <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-[0_1px_3px_rgba(0,0,0,0.03)]">
+            <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider mb-2.5">
+              Active Himachal Pradesh Beats
+            </h4>
+            <div className="flex flex-wrap gap-1.5">
+              {[
+                'Sundernagar Urban',
+                'Sundernagar Bhojpur',
+                'Mandi Sadar',
+                'Balh / Ner Chowk',
+                'Joginder Nagar',
+                'Chauntra Highway',
+                'Pandoh Dam Belt',
+                'Sarkaghat'
+              ].map((beat, i) => (
+                <span
+                  key={i}
+                  className="px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-slate-100 text-slate-700 border border-slate-200/60"
+                >
+                  {beat}
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* MODAL 1: FILL / EDIT SINGLE DAY VISIT */}
+      {fillModal.isOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
+          <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl border border-slate-200 p-6 space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <h3 className="font-bold text-sm text-slate-900">
+                Plan Visit for {fillModal.date}
+              </h3>
               <button
-                onClick={() => setIsModalOpen(false)}
-                className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors"
+                onClick={() => setFillModal({ isOpen: false, date: '', place: '', remarks: '' })}
+                className="text-slate-400 hover:text-slate-600"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <form onSubmit={handleSave} className="p-6 space-y-4">
-              {error && (
-                <div className="p-3 bg-rose-50 border border-rose-200 text-rose-800 text-xs rounded-xl flex items-center space-x-2">
-                  <AlertCircle className="w-4 h-4 flex-shrink-0 text-rose-600" />
-                  <span>{error}</span>
-                </div>
-              )}
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1">Place / Market Beat *</label>
+              <input
+                type="text"
+                value={fillModal.place}
+                onChange={(e) => setFillModal({ ...fillModal, place: e.target.value })}
+                placeholder="e.g. Sundernagar Cinema Chowk, Mandi Sadar"
+                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-birla-blue/20"
+                list="place-suggestions"
+              />
+              <datalist id="place-suggestions">
+                <option value="Sundernagar Urban" />
+                <option value="Sundernagar Bhojpur" />
+                <option value="Mandi Sadar" />
+                <option value="Balh / Ner Chowk" />
+                <option value="Joginder Nagar" />
+                <option value="Pandoh Dam Belt" />
+                <option value="Sarkaghat" />
+              </datalist>
+            </div>
 
-              {/* Retailer Selection */}
-              <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
-                  Retailer to Visit *
-                </label>
-                <select
-                  required
-                  value={formData.retailerId}
-                  onChange={(e) => handleRetailerChange(e.target.value)}
-                  className="w-full px-3 py-2 text-xs bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-birla-blue focus:outline-none"
-                >
-                  <option value="">-- Choose Retailer --</option>
-                  {retailers.map((r) => (
-                    <option key={r.id} value={r.id}>
-                      {r.firmName} ({r.locality}, {r.tehsil})
-                    </option>
-                  ))}
-                </select>
-              </div>
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1">Remarks / Retailers to Visit</label>
+              <textarea
+                value={fillModal.remarks}
+                onChange={(e) => setFillModal({ ...fillModal, remarks: e.target.value })}
+                placeholder="e.g. Sharma Paint Store, order booking, payment collection"
+                rows={3}
+                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-birla-blue/20"
+              />
+            </div>
 
-              {/* Visit Date & Status */}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
-                    Planned / Actual Date *
-                  </label>
-                  <input
-                    type="date"
-                    required
-                    value={formData.visitDate}
-                    onChange={(e) => setFormData({ ...formData, visitDate: e.target.value })}
-                    className="w-full px-3 py-2 text-xs bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-birla-blue focus:outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
-                    Visit Status *
-                  </label>
-                  <select
-                    value={formData.status}
-                    onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                    className="w-full px-3 py-2 text-xs bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-birla-blue focus:outline-none"
-                  >
-                    <option value="Scheduled">Scheduled</option>
-                    <option value="Completed">Completed</option>
-                    <option value="Order Booked">Order Booked</option>
-                    <option value="Payment Collected">Payment Collected</option>
-                    <option value="Rescheduled">Rescheduled</option>
-                  </select>
-                </div>
-              </div>
-
-              {/* Location details */}
-              <div className="grid grid-cols-3 gap-3">
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">District</label>
-                  <input
-                    type="text"
-                    value={formData.district}
-                    onChange={(e) => setFormData({ ...formData, district: e.target.value })}
-                    className="w-full px-3 py-2 text-xs bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-birla-blue focus:outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">Tehsil</label>
-                  <input
-                    type="text"
-                    value={formData.tehsil}
-                    onChange={(e) => setFormData({ ...formData, tehsil: e.target.value })}
-                    className="w-full px-3 py-2 text-xs bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-birla-blue focus:outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">Locality</label>
-                  <input
-                    type="text"
-                    value={formData.locality}
-                    onChange={(e) => setFormData({ ...formData, locality: e.target.value })}
-                    className="w-full px-3 py-2 text-xs bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-birla-blue focus:outline-none"
-                  />
-                </div>
-              </div>
-
-              {/* Discussion Notes */}
-              <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
-                  Visit Discussion Notes / Outcome:
-                </label>
-                <textarea
-                  rows={2}
-                  placeholder="e.g. Discussed WallCare Putty secondary sales, checked store display, booked 50 bags..."
-                  value={formData.notes}
-                  onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                  className="w-full px-3 py-2 text-xs bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-birla-blue focus:outline-none"
-                />
-              </div>
-
-              {/* Order Booked & Payment Collected during visit */}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">
-                    Order Booked Amount (₹):
-                  </label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    value={formData.orderBookedAmount}
-                    onChange={(e) => setFormData({ ...formData, orderBookedAmount: e.target.value })}
-                    className="w-full px-3 py-2 text-xs bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-birla-blue focus:outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">
-                    Payment Collected (₹):
-                  </label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    value={formData.paymentCollectedAmount}
-                    onChange={(e) => setFormData({ ...formData, paymentCollectedAmount: e.target.value })}
-                    className="w-full px-3 py-2 text-xs bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-birla-blue focus:outline-none"
-                  />
-                </div>
-              </div>
-
-              {/* Footer */}
-              <div className="flex items-center justify-end space-x-3 pt-3 border-t border-slate-200">
-                <button
-                  type="button"
-                  onClick={() => setIsModalOpen(false)}
-                  disabled={submitting}
-                  className="px-4 py-2 text-xs font-medium text-slate-700 bg-white border border-slate-300 rounded-xl hover:bg-slate-50 transition-all shadow-sm"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={submitting}
-                  className="px-5 py-2 text-xs font-bold text-white bg-birla-crimson hover:bg-birla-darkRed rounded-xl shadow-md transition-all flex items-center space-x-2 disabled:opacity-50"
-                >
-                  {submitting ? (
-                    <span className="flex items-center space-x-2">
-                      <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      <span>Saving PJP...</span>
-                    </span>
-                  ) : (
-                    <span>Save Visit Details</span>
-                  )}
-                </button>
-              </div>
-            </form>
+            <div className="flex items-center justify-end space-x-2 pt-2">
+              <button
+                onClick={() => setFillModal({ isOpen: false, date: '', place: '', remarks: '' })}
+                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSaveVisit}
+                className="px-4 py-2 bg-birla-crimson hover:bg-birla-darkRed text-white text-xs font-bold rounded-xl shadow-xs"
+              >
+                Save Visit
+              </button>
+            </div>
           </div>
         </div>
       )}
 
-      {/* Delete Confirmation */}
-      <ConfirmDeleteModal
-        isOpen={deleteModal.isOpen}
-        title="Delete PJP Visit?"
-        message={`Are you sure you want to permanently delete the visit for "${deleteModal.visit?.retailer?.firmName}" scheduled on ${formatDate(deleteModal.visit?.visitDate)}?`}
-        onConfirm={handleDeleteConfirm}
-        onCancel={() => setDeleteModal({ isOpen: false, visit: null })}
-        isDeleting={submitting}
-      />
+      {/* MODAL 2: MARK HOLIDAY */}
+      {holidayModal.isOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
+          <div className="bg-white rounded-2xl max-w-sm w-full shadow-2xl border border-slate-200 p-6 space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <h3 className="font-bold text-sm text-slate-900">
+                Mark Holiday for {holidayModal.date}
+              </h3>
+              <button
+                onClick={() => setHolidayModal({ isOpen: false, date: '', reason: '' })}
+                className="text-slate-400 hover:text-slate-600"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1">Holiday Reason</label>
+              <input
+                type="text"
+                value={holidayModal.reason}
+                onChange={(e) => setHolidayModal({ ...holidayModal, reason: e.target.value })}
+                placeholder="e.g. Diwali, State Holiday, Gazetted Off"
+                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-birla-blue/20"
+              />
+            </div>
+
+            <div className="flex items-center justify-end space-x-2 pt-2">
+              <button
+                onClick={() => setHolidayModal({ isOpen: false, date: '', reason: '' })}
+                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleMarkHoliday}
+                className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold rounded-xl shadow-xs"
+              >
+                Confirm Holiday
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 3: MULTI-DATE BULK ASSIGNMENT */}
+      {bulkModal.isOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
+          <div className="bg-white rounded-2xl max-w-lg w-full shadow-2xl border border-slate-200 p-6 space-y-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <div>
+                <h3 className="font-bold text-sm text-slate-900">
+                  Multi-Date Bulk Beat Assignment
+                </h3>
+                <p className="text-[11px] text-slate-500">
+                  Assign repetitive markets to multiple dates in {MONTH_NAMES[selectedMonth - 1]} {selectedYear}
+                </p>
+              </div>
+              <button
+                onClick={() => setBulkModal({ isOpen: false, place: '', remarks: '', selectedDates: [] })}
+                className="text-slate-400 hover:text-slate-600"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1">Place / Market *</label>
+              <input
+                type="text"
+                value={bulkModal.place}
+                onChange={(e) => setBulkModal({ ...bulkModal, place: e.target.value })}
+                placeholder="e.g. Sundernagar Cinema Chowk"
+                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-birla-blue/20"
+                list="place-suggestions"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1">Default Remarks</label>
+              <input
+                type="text"
+                value={bulkModal.remarks}
+                onChange={(e) => setBulkModal({ ...bulkModal, remarks: e.target.value })}
+                placeholder="e.g. Routine retail beat and payment follow-up"
+                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-birla-blue/20"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                Select Calendar Dates ({bulkModal.selectedDates.length} selected)
+              </label>
+              <div className="grid grid-cols-7 gap-1.5 p-2 bg-slate-50 rounded-xl border border-slate-200 text-center">
+                {monthData.days.map((d) => {
+                  const isSelected = bulkModal.selectedDates.includes(d.date);
+                  const isDisabled = d.day === 'Sunday' || d.isHoliday;
+                  return (
+                    <button
+                      key={d.date}
+                      type="button"
+                      disabled={isDisabled}
+                      onClick={() => {
+                        if (isSelected) {
+                          setBulkModal({
+                            ...bulkModal,
+                            selectedDates: bulkModal.selectedDates.filter((x) => x !== d.date)
+                          });
+                        } else {
+                          setBulkModal({
+                            ...bulkModal,
+                            selectedDates: [...bulkModal.selectedDates, d.date]
+                          });
+                        }
+                      }}
+                      className={`p-1.5 rounded-lg text-xs font-bold transition-all ${
+                        isDisabled
+                          ? 'bg-slate-200/50 text-slate-400 cursor-not-allowed'
+                          : isSelected
+                          ? 'bg-birla-blue text-white shadow-xs'
+                          : 'bg-white hover:bg-slate-100 text-slate-800 border border-slate-200'
+                      }`}
+                    >
+                      <span className="block text-[11px] leading-tight">{pad(d.dayNumber)}</span>
+                      <span className="text-[8px] uppercase opacity-75">{d.day.slice(0, 2)}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end space-x-2 pt-2">
+              <button
+                onClick={() => setBulkModal({ isOpen: false, place: '', remarks: '', selectedDates: [] })}
+                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSaveBulkVisit}
+                className="px-4 py-2 bg-birla-crimson hover:bg-birla-darkRed text-white text-xs font-bold rounded-xl shadow-xs"
+              >
+                Save {bulkModal.selectedDates.length} Dates
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 4: EDIT COUNTERS */}
+      {counterModal.isOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
+          <div className="bg-white rounded-2xl max-w-sm w-full shadow-2xl border border-slate-200 p-6 space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <h3 className="font-bold text-sm text-slate-900">
+                Update Counters for {counterModal.place}
+              </h3>
+              <button
+                onClick={() => setCounterModal({ isOpen: false, place: '', counter: 0 })}
+                className="text-slate-400 hover:text-slate-600"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1">Number of Counters Active</label>
+              <input
+                type="number"
+                min="0"
+                value={counterModal.counter}
+                onChange={(e) => setCounterModal({ ...counterModal, counter: Number(e.target.value) })}
+                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-birla-blue/20"
+              />
+            </div>
+
+            <div className="flex items-center justify-end space-x-2 pt-2">
+              <button
+                onClick={() => setCounterModal({ isOpen: false, place: '', counter: 0 })}
+                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSaveCounter}
+                className="px-4 py-2 bg-birla-blue hover:bg-blue-600 text-white text-xs font-bold rounded-xl shadow-xs"
+              >
+                Save Counter
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

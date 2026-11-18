@@ -19,9 +19,11 @@ import {
   Download,
   X,
   PlusCircle,
-  MinusCircle
+  MinusCircle,
+  FileSpreadsheet
 } from 'lucide-react';
 import { api } from '../api';
+import { exportOrdersToExcel } from '../utils/excelExporter';
 import DualReceiptModal from '../components/DualReceiptModal';
 import PartialDispatchModal from '../components/PartialDispatchModal';
 import ConfirmDeleteModal from '../components/ConfirmDeleteModal';
@@ -280,13 +282,24 @@ export default function Orders({ openCreateModalProp, onCloseCreateModalProp }) 
           </p>
         </div>
 
-        <button
-          onClick={handleOpenCreate}
-          className="px-4 py-2.5 bg-birla-crimson hover:bg-birla-darkRed text-white text-xs font-bold rounded-xl shadow-sm transition-all flex items-center space-x-2"
-        >
-          <Plus className="w-4 h-4" />
-          <span>Book New Sales Order</span>
-        </button>
+        <div className="flex items-center space-x-2.5">
+          <button
+            onClick={() => exportOrdersToExcel(orders)}
+            className="px-3.5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-xs transition-all flex items-center space-x-1.5"
+            title="Download full Orders & Line Items breakdown in styled Excel (.xlsx)"
+          >
+            <FileSpreadsheet className="w-4 h-4" />
+            <span>Export Orders (.xlsx)</span>
+          </button>
+
+          <button
+            onClick={handleOpenCreate}
+            className="px-4 py-2.5 bg-birla-crimson hover:bg-birla-darkRed text-white text-xs font-bold rounded-xl shadow-sm transition-all flex items-center space-x-2"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Book New Sales Order</span>
+          </button>
+        </div>
       </div>
 
       {/* Filters & Search */}

@@ -15,9 +15,11 @@ import {
   ChevronRight,
   ChevronDown,
   Trash2,
-  Edit2
+  Edit2,
+  FileSpreadsheet
 } from 'lucide-react';
 import { api } from '../api';
+import { exportLedgerToExcel } from '../utils/excelExporter';
 import PaymentModal from '../components/PaymentModal';
 import ConfirmDeleteModal from '../components/ConfirmDeleteModal';
 
@@ -112,13 +114,24 @@ export default function LedgerPayments() {
           </p>
         </div>
 
-        <button
-          onClick={() => handleOpenPayment()}
-          className="px-4 py-2.5 bg-birla-crimson hover:bg-birla-darkRed text-white text-xs font-bold rounded-xl shadow-sm transition-all flex items-center space-x-2"
-        >
-          <Plus className="w-4 h-4" />
-          <span>Record New Payment</span>
-        </button>
+        <div className="flex items-center space-x-2.5">
+          <button
+            onClick={() => exportLedgerToExcel(ledgerData, payments)}
+            className="px-3.5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-xs transition-all flex items-center space-x-1.5"
+            title="Download Retailer Ageing & Payment History in styled Excel (.xlsx)"
+          >
+            <FileSpreadsheet className="w-4 h-4" />
+            <span>Export Ledger (.xlsx)</span>
+          </button>
+
+          <button
+            onClick={() => handleOpenPayment()}
+            className="px-4 py-2.5 bg-birla-crimson hover:bg-birla-darkRed text-white text-xs font-bold rounded-xl shadow-sm transition-all flex items-center space-x-2"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Record New Payment</span>
+          </button>
+        </div>
       </div>
 
       {/* Aggregate Financial Cards */}

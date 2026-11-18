@@ -10,9 +10,11 @@ import {
   AlertCircle,
   X,
   Layers,
-  Scale
+  Scale,
+  FileSpreadsheet
 } from 'lucide-react';
 import { api } from '../api';
+import { exportProductsToExcel } from '../utils/excelExporter';
 import ConfirmDeleteModal from '../components/ConfirmDeleteModal';
 
 export default function ProductCatalogue() {
@@ -161,13 +163,24 @@ export default function ProductCatalogue() {
           </p>
         </div>
 
-        <button
-          onClick={handleOpenAdd}
-          className="px-4 py-2 bg-birla-crimson hover:bg-birla-darkRed text-white text-xs font-bold rounded-xl shadow-sm transition-all flex items-center space-x-2"
-        >
-          <Plus className="w-4 h-4" />
-          <span>Add New Product</span>
-        </button>
+        <div className="flex items-center space-x-2">
+          <button
+            onClick={() => exportProductsToExcel(products)}
+            className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-xs transition-all flex items-center space-x-1.5"
+            title="Download product catalogue in styled Excel (.xlsx)"
+          >
+            <FileSpreadsheet className="w-4 h-4" />
+            <span>Export SKUs (.xlsx)</span>
+          </button>
+
+          <button
+            onClick={handleOpenAdd}
+            className="px-4 py-2 bg-birla-crimson hover:bg-birla-darkRed text-white text-xs font-bold rounded-xl shadow-sm transition-all flex items-center space-x-2"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Add New Product</span>
+          </button>
+        </div>
       </div>
 
       {/* Search & Filters */}

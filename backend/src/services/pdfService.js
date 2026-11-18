@@ -1,4 +1,8 @@
 const PDFDocument = require('pdfkit');
+const path = require('path');
+const fs = require('fs');
+
+const logoImagePath = path.join(__dirname, '../assets/birla-ultratech-white.jpg');
 
 /**
  * Utility function to format currency in INR (₹)
@@ -24,19 +28,29 @@ function drawCorporateHeader(doc, title, subtitle = '') {
   // Top brand banner accent
   doc.rect(0, 0, doc.page.width, 10).fill('#A02225'); // Aditya Birla Crimson
 
-  // Logo / Brand text
-  doc.fillColor('#0087CF').fontSize(18).font('Helvetica-Bold').text('BIRLA WHITE', 50, 25);
-  doc.fillColor('#666666').fontSize(8).font('Helvetica').text('Unit: Birla White | UltraTech Cement Ltd.', 50, 47);
-  doc.fillColor('#888888').fontSize(7.5).text('Aditya Birla Group | Corporate Identity: L26940MH2000PLC128420', 50, 57);
+  // Logo / Brand image
+  if (fs.existsSync(logoImagePath)) {
+    try {
+      doc.image(logoImagePath, 50, 16, { width: 115, height: 45 });
+    } catch (e) {
+      doc.fillColor('#0087CF').fontSize(16).font('Helvetica-Bold').text('BIRLA WHITE', 50, 22);
+    }
+  } else {
+    doc.fillColor('#0087CF').fontSize(16).font('Helvetica-Bold').text('BIRLA WHITE', 50, 22);
+  }
+
+  doc.fillColor('#444444').fontSize(7.5).font('Helvetica-Bold').text('UltraTech Cement Ltd. - Unit: Birla White', 175, 23);
+  doc.fillColor('#666666').fontSize(7).font('Helvetica').text('Aditya Birla Group | CIN: L26940MH2000PLC128420', 175, 34);
+  doc.fillColor('#888888').fontSize(6.5).text('Regd: Ahura Centre, Mahakali Caves Rd, Andheri (E), Mumbai | Mandi HQ (H.P.)', 175, 44);
 
   // Right side document banner
-  doc.fillColor('#A02225').fontSize(14).font('Helvetica-Bold').text(title, 250, 25, { align: 'right', width: 300 });
+  doc.fillColor('#A02225').fontSize(13).font('Helvetica-Bold').text(title, 280, 22, { align: 'right', width: 270 });
   if (subtitle) {
-    doc.fillColor('#444444').fontSize(8).font('Helvetica-Oblique').text(subtitle, 250, 42, { align: 'right', width: 300 });
+    doc.fillColor('#444444').fontSize(7.5).font('Helvetica-Oblique').text(subtitle, 280, 38, { align: 'right', width: 270 });
   }
 
   // Divider line
-  doc.strokeColor('#D1D5DB').lineWidth(1).moveTo(50, 72).lineTo(550, 72).stroke();
+  doc.strokeColor('#D1D5DB').lineWidth(1).moveTo(50, 68).lineTo(550, 68).stroke();
 }
 
 /**
