@@ -27,6 +27,8 @@ import { exportOrdersToExcel } from '../utils/excelExporter';
 import DualReceiptModal from '../components/DualReceiptModal';
 import PartialDispatchModal from '../components/PartialDispatchModal';
 import ConfirmDeleteModal from '../components/ConfirmDeleteModal';
+import OrderDetailsModal from '../components/OrderDetailsModal';
+import DispatchChallanModal from '../components/DispatchChallanModal';
 
 export default function Orders({ openCreateModalProp, onCloseCreateModalProp }) {
   const [orders, setOrders] = useState([]);
@@ -47,6 +49,8 @@ export default function Orders({ openCreateModalProp, onCloseCreateModalProp }) 
   const [receiptModal, setReceiptModal] = useState({ isOpen: false, order: null });
   const [dispatchModal, setDispatchModal] = useState({ isOpen: false, order: null });
   const [deleteModal, setDeleteModal] = useState({ isOpen: false, order: null });
+  const [orderDetailsModal, setOrderDetailsModal] = useState({ isOpen: false, order: null });
+  const [challanModal, setChallanModal] = useState({ isOpen: false, order: null, mode: 'dispatched' });
   const [submitting, setSubmitting] = useState(false);
   const [orderError, setOrderError] = useState('');
 
@@ -400,7 +404,14 @@ export default function Orders({ openCreateModalProp, onCloseCreateModalProp }) 
                   <tr key={order.id} className="hover:bg-slate-50/80 transition-colors">
                     {/* Order No & Date */}
                     <td className="py-3.5 px-4">
-                      <span className="font-mono font-bold text-slate-900 text-sm block">{order.orderNumber}</span>
+                      <button
+                        type="button"
+                        onClick={() => setOrderDetailsModal({ isOpen: true, order })}
+                        className="font-mono font-bold text-slate-900 text-sm block hover:text-birlaRed-800 hover:underline text-left cursor-pointer transition-colors"
+                        title="Click to view full Order Details"
+                      >
+                        {order.orderNumber}
+                      </button>
                       <span className="text-[11px] text-slate-500 flex items-center space-x-1 mt-0.5">
                         <Calendar className="w-3 h-3 text-slate-400" />
                         <span>{formatDate(order.orderDate)}</span>
@@ -413,10 +424,15 @@ export default function Orders({ openCreateModalProp, onCloseCreateModalProp }) 
                     {/* Stockist & Retailer Mapping */}
                     <td className="py-3.5 px-4">
                       <div className="space-y-1">
-                        <div className="flex items-center space-x-1 text-slate-900">
+                        <button
+                          type="button"
+                          onClick={() => setOrderDetailsModal({ isOpen: true, order })}
+                          className="flex items-center space-x-1 text-slate-900 hover:text-birlaRed-800 text-left cursor-pointer group"
+                          title="Click to view full Order Details"
+                        >
                           <Store className="w-3.5 h-3.5 text-birla-blue flex-shrink-0" />
-                          <span className="font-bold">{order.retailer?.firmName}</span>
-                        </div>
+                          <span className="font-bold group-hover:underline">{order.retailer?.firmName}</span>
+                        </button>
                         <div className="flex items-center space-x-1 text-slate-500 text-[11px]">
                           <Building2 className="w-3.5 h-3.5 text-amber-600 flex-shrink-0" />
                           <span>Fulfill via: {order.stockist?.firmName}</span>
@@ -500,15 +516,28 @@ export default function Orders({ openCreateModalProp, onCloseCreateModalProp }) 
                       </div>
                     </td>
 
-                    {/* Dual-Receipt Triggers */}
+                    {/* Dual-Receipt & Challan Triggers */}
                     <td className="py-3.5 px-4 text-center">
-                      <button
-                        onClick={() => setReceiptModal({ isOpen: true, order })}
-                        className="px-2.5 py-1.5 bg-slate-900 hover:bg-birla-crimson text-white text-[11px] font-bold rounded-lg shadow-xs transition-all flex items-center space-x-1 mx-auto"
-                      >
-                        <FileText className="w-3.5 h-3.5" />
-                        <span>Dual Receipts</span>
-                      </button>
+                      <div className="flex items-center justify-center space-x-1">
+                        <button
+                          type="button"
+                          onClick={() => setReceiptModal({ isOpen: true, order })}
+                          className="px-2.5 py-1.5 bg-birlaRed-800 hover:bg-birlaRed-900 text-white text-[11px] font-bold rounded-lg shadow-xs transition-all flex items-center space-x-1 cursor-pointer"
+                          title="View Tax Invoice & Official Receipt"
+                        >
+                          <FileText className="w-3.5 h-3.5" />
+                          <span>Receipt</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setChallanModal({ isOpen: true, order, mode: 'dispatched' })}
+                          className="px-2.5 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white text-[11px] font-bold rounded-lg shadow-xs transition-all flex items-center space-x-1 cursor-pointer"
+                          title="View Delivery Challan / Pending Slip"
+                        >
+                          <Truck className="w-3.5 h-3.5" />
+                          <span>Challan</span>
+                        </button>
+                      </div>
                     </td>
 
                     {/* Actions: Dispatch, Edit, Delete */}
@@ -857,6 +886,27 @@ export default function Orders({ openCreateModalProp, onCloseCreateModalProp }) 
             </form>
           </div>
         </div>
+      )}
+
+      {/* ORDER DETAILS MODAL */}
+      {orderDetailsModal.isOpen && orderDetailsModal.order && (
+        <OrderDetailsModal
+          isOpen={orderDetailsModal.isOpen}
+          order={orderDetailsModal.order}
+          onClose={() => setOrderDetailsModal({ isOpen: false, order: null })}
+          onOpenReceipt={(ord) => setReceiptModal({ isOpen: true, order: ord })}
+          onOpenChallan={(ord, mode) => setChallanModal({ isOpen: true, order: ord, mode: mode || 'dispatched' })}
+        />
+      )}
+
+      {/* DISPATCH CHALLAN & PENDING SLIP MODAL */}
+      {challanModal.isOpen && challanModal.order && (
+        <DispatchChallanModal
+          isOpen={challanModal.isOpen}
+          order={challanModal.order}
+          initialMode={challanModal.mode}
+          onClose={() => setChallanModal({ isOpen: false, order: null, mode: 'dispatched' })}
+        />
       )}
 
       {/* DUAL-RECEIPT MODAL (Retailer vs Stockist) */}

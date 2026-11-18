@@ -49,6 +49,8 @@ import { api } from '../api';
 import { exportOrdersToExcel, exportBiAnalyticsToExcel } from '../utils/excelExporter';
 import DualReceiptModal from '../components/DualReceiptModal';
 import PaymentModal from '../components/PaymentModal';
+import OrderDetailsModal from '../components/OrderDetailsModal';
+import DispatchChallanModal from '../components/DispatchChallanModal';
 
 const BRAND_PALETTE = ['#9E1B22', '#D97706', '#EAB308', '#059669', '#7C3AED', '#2563EB', '#EA580C'];
 
@@ -71,6 +73,8 @@ export default function Dashboard({ onOpenNewOrder }) {
   // Modals
   const [receiptModal, setReceiptModal] = useState({ isOpen: false, order: null });
   const [paymentModal, setPaymentModal] = useState({ isOpen: false, defaultRetailerId: null });
+  const [orderDetailsModal, setOrderDetailsModal] = useState({ isOpen: false, order: null });
+  const [challanModal, setChallanModal] = useState({ isOpen: false, order: null, mode: 'dispatched' });
 
   // Notification Toast
   const [toastMessage, setToastMessage] = useState('');
@@ -690,14 +694,31 @@ export default function Dashboard({ onOpenNewOrder }) {
                 filteredOrders.map((o) => (
                   <tr key={o.id} className="hover:bg-[#FAF6E8]/70 transition-colors">
                     <td className="py-3 px-4 font-mono font-bold text-birlaRed-900">
-                      {o.orderNumber}
+                      <button
+                        type="button"
+                        onClick={() => setOrderDetailsModal({ isOpen: true, order: o })}
+                        className="hover:underline text-left font-mono font-black text-birlaRed-900 hover:text-amber-700 flex items-center space-x-1 cursor-pointer transition-colors group"
+                        title="Click to view full Order Details"
+                      >
+                        <span>{o.orderNumber}</span>
+                        <ArrowUpRight className="w-3 h-3 text-amber-700 opacity-60 group-hover:opacity-100" />
+                      </button>
                     </td>
                     <td className="py-3 px-4 text-stone-500 font-mono">
                       {formatDate(o.orderDate)}
                     </td>
                     <td className="py-3 px-4">
-                      <div className="font-bold text-stone-900">{o.retailer?.firmName}</div>
-                      <div className="text-[10px] text-stone-400">{o.retailer?.locality}</div>
+                      <button
+                        type="button"
+                        onClick={() => setOrderDetailsModal({ isOpen: true, order: o })}
+                        className="text-left cursor-pointer group block"
+                        title="Click to view full Order Details"
+                      >
+                        <div className="font-bold text-stone-900 group-hover:text-birlaRed-900 group-hover:underline">
+                          {o.retailer?.firmName}
+                        </div>
+                        <div className="text-[10px] text-stone-400">{o.retailer?.locality}</div>
+                      </button>
                     </td>
                     <td className="py-3 px-4 text-stone-600">
                       {o.retailer?.tehsil || 'Mandi Sadar'}
@@ -730,20 +751,32 @@ export default function Dashboard({ onOpenNewOrder }) {
                       </span>
                     </td>
                     <td className="py-3 px-4 text-right">
-                      <div className="flex items-center justify-end space-x-1.5">
+                      <div className="flex items-center justify-end space-x-1.5 flex-wrap gap-y-1">
                         <button
+                          type="button"
                           onClick={() => setReceiptModal({ isOpen: true, order: o })}
-                          className="px-2.5 py-1 bg-white hover:bg-birlaRed-800 hover:text-white text-stone-800 border border-[#EEDFB8] rounded-lg text-[11px] font-bold shadow-xs transition-all flex items-center space-x-1"
-                          title="View Dual Drop-Shipping Tax Invoice & Delivery Challan"
+                          className="px-2.5 py-1 bg-white hover:bg-birlaRed-800 hover:text-white text-stone-800 border border-[#EEDFB8] rounded-lg text-[11px] font-bold shadow-xs transition-all flex items-center space-x-1 cursor-pointer"
+                          title="View Dual Drop-Shipping Tax Invoice & Delivery Receipt"
                         >
                           <Receipt className="w-3.5 h-3.5 text-birlaRed-800" />
                           <span>Receipt</span>
                         </button>
 
+                        <button
+                          type="button"
+                          onClick={() => setChallanModal({ isOpen: true, order: o, mode: 'dispatched' })}
+                          className="px-2 py-1 bg-[#FAF6E8] hover:bg-emerald-700 hover:text-white text-emerald-900 border border-[#EEDFB8] rounded-lg text-[11px] font-bold shadow-xs transition-all flex items-center space-x-1 cursor-pointer"
+                          title="View Dispatched Material Delivery Challan"
+                        >
+                          <Truck className="w-3.5 h-3.5" />
+                          <span>Challan</span>
+                        </button>
+
                         {o.deliveryStatus !== 'Delivered' && (
                           <button
+                            type="button"
                             onClick={() => handleMarkDelivered(o.id)}
-                            className="px-2.5 py-1 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-[11px] font-bold shadow-xs transition-all"
+                            className="px-2.5 py-1 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-[11px] font-bold shadow-xs transition-all cursor-pointer"
                             title="Mark Order as Delivered"
                           >
                             Delivered
@@ -1065,9 +1098,32 @@ export default function Dashboard({ onOpenNewOrder }) {
         </div>
       </section>
 
+      {/* ORDER DETAILS MODAL */}
+      {orderDetailsModal.isOpen && orderDetailsModal.order && (
+        <OrderDetailsModal
+          isOpen={orderDetailsModal.isOpen}
+          order={orderDetailsModal.order}
+          onClose={() => setOrderDetailsModal({ isOpen: false, order: null })}
+          onOpenReceipt={(ord) => setReceiptModal({ isOpen: true, order: ord })}
+          onOpenChallan={(ord, mode) => setChallanModal({ isOpen: true, order: ord, mode: mode || 'dispatched' })}
+          onOpenPayment={(ord) => setPaymentModal({ isOpen: true, defaultRetailerId: ord.retailerId || ord.retailer?.id })}
+        />
+      )}
+
+      {/* DISPATCH CHALLAN & PENDING SLIP MODAL */}
+      {challanModal.isOpen && challanModal.order && (
+        <DispatchChallanModal
+          isOpen={challanModal.isOpen}
+          order={challanModal.order}
+          initialMode={challanModal.mode}
+          onClose={() => setChallanModal({ isOpen: false, order: null, mode: 'dispatched' })}
+        />
+      )}
+
       {/* DUAL RECEIPT MODAL */}
       {receiptModal.isOpen && receiptModal.order && (
         <DualReceiptModal
+          isOpen={receiptModal.isOpen}
           order={receiptModal.order}
           onClose={() => setReceiptModal({ isOpen: false, order: null })}
         />

@@ -19,12 +19,12 @@ import brandLogo from '../assets/birla-ultratech-white.jpg';
 export default function Sidebar({ mobileOpen = false, onCloseMobile = () => {} }) {
   const navItems = [
     { to: '/', label: 'Executive Dashboard', icon: LayoutDashboard, badge: 'Live' },
-    { to: '/masters', label: 'Master Directory', icon: Users, badge: 'Dealers' },
-    { to: '/catalog', label: 'Product Catalogue', icon: Package, badge: 'SKUs' },
+    { to: '/analytics', label: 'BI & Analytics Hub', icon: BarChart3, badge: '2nd Hub' },
     { to: '/orders', label: 'Sales & Booking', icon: ShoppingCart, badge: 'Dual-Bill' },
     { to: '/dispatches', label: 'Dispatches & Splits', icon: Truck, badge: 'Challan' },
+    { to: '/masters', label: 'Master Directory', icon: Users, badge: 'Dealers' },
+    { to: '/catalog', label: 'Product Catalogue', icon: Package, badge: 'SKUs' },
     { to: '/ledger', label: 'Ledger & Ageing', icon: CreditCard, badge: 'Due' },
-    { to: '/analytics', label: 'BI & Analytics Hub', icon: BarChart3, badge: 'BI Hub' },
     { to: '/pjp', label: 'PJP Beat Planner', icon: CalendarCheck2, badge: 'Field Beat' }
   ];
 
