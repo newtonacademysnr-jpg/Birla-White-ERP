@@ -465,3 +465,113 @@ export function exportPjpToExcel(pjpData, year, month) {
   XLSX.utils.book_append_sheet(wb, ws, `PJP ${monthName} ${year}`);
   XLSX.writeFile(wb, `PJP_Suraj_${monthName}_${year}.xlsx`);
 }
+
+/**
+ * 6. EXPORT ADVANCED BI & ANALYTICS REPORT TO EXCEL
+ */
+export function exportBiAnalyticsToExcel(biData, timeframe = 'quarterly', filename = 'Birla_White_BI_Executive_Report') {
+  const wb = XLSX.utils.book_new();
+  const ws = {};
+  const merges = [];
+
+  const set = (r, c, v, s) => {
+    ws[XLSX.utils.encode_cell({ r, c })] = {
+      v: v === undefined || v === null ? '' : v,
+      t: typeof v === 'number' ? 'n' : 's',
+      s
+    };
+  };
+
+  const fill = (rgb) => ({ patternType: 'solid', fgColor: { rgb } });
+  const base = (extra = {}) => ({
+    font: { name: 'Arial', sz: 9.5, color: { rgb: COLORS.TEXT_DARK } },
+    alignment: { vertical: 'center' },
+    ...extra
+  });
+
+  // Title Banner
+  const titleStyle = base({
+    font: { name: 'Arial', sz: 14, bold: true, color: { rgb: COLORS.WHITE } },
+    fill: fill(COLORS.BLUE),
+    alignment: { horizontal: 'center', vertical: 'center' }
+  });
+  for (let c = 0; c < 8; c++) set(0, c, c === 0 ? 'ADITYA BIRLA ULTRATECH • BIRLA WHITE EXECUTIVE BI REPORT' : '', titleStyle);
+  merges.push({ s: { r: 0, c: 0 }, e: { r: 0, c: 7 } });
+
+  const subStyle = base({
+    font: { name: 'Arial', sz: 9.5, color: { rgb: COLORS.WHITE } },
+    fill: fill(COLORS.NAVY),
+    alignment: { horizontal: 'center', vertical: 'center' }
+  });
+  const subText = `Officer: Suraj (PZ7550) • Mandi Division, HP • Timeframe: ${timeframe.toUpperCase()} • Generated: ${new Date().toLocaleDateString('en-IN')}`;
+  for (let c = 0; c < 8; c++) set(1, c, c === 0 ? subText : '', subStyle);
+  merges.push({ s: { r: 1, c: 0 }, e: { r: 1, c: 7 } });
+
+  // Period Scorecard
+  const p = biData?.periodMetrics || {};
+  set(3, 0, 'KEY PERFORMANCE INDICATORS (KPIs)', base({ font: { name: 'Arial', sz: 11, bold: true, color: { rgb: COLORS.BLUE } } }));
+
+  const kpis = [
+    ['Total Invoiced Sales (INR)', p.totalInvoiced || 0],
+    ['Total Realized Collections (INR)', p.totalCollected || 0],
+    ['Outstanding Market Receivables (INR)', p.totalDue || 0],
+    ['Collection Efficiency Rate (%)', p.totalInvoiced ? `${Math.round((p.totalCollected / p.totalInvoiced) * 100)}%` : '100%'],
+    ['Total Sales Orders Processed', p.orderCount || 0],
+    ['Total Payment Receipts Cleared', p.paymentCount || 0]
+  ];
+
+  kpis.forEach(([label, val], idx) => {
+    const r = 4 + idx;
+    set(r, 0, label, base({ fill: fill(idx % 2 === 0 ? COLORS.LIGHT_GRAY : COLORS.WHITE), border: borderStyle, font: { name: 'Arial', sz: 9.5, bold: true } }));
+    set(r, 1, val, base({ fill: fill(idx % 2 === 0 ? COLORS.LIGHT_GRAY : COLORS.WHITE), border: borderStyle, alignment: { horizontal: 'right' }, font: { name: 'Arial', sz: 9.5, bold: true } }));
+    merges.push({ s: { r, c: 1 }, e: { r, c: 2 } });
+  });
+
+  // Top Selling Products Table
+  const prodRow = 12;
+  set(prodRow, 0, 'PRODUCT VOLUME & REVENUE BREAKDOWN', base({ font: { name: 'Arial', sz: 11, bold: true, color: { rgb: COLORS.BLUE } } }));
+
+  const headers = ['#', 'Product Description', 'Unit Type', 'Packaging Size', 'Units Sold', 'Total Volume (MT / Ltr)', 'Invoiced Revenue (INR)', 'Revenue Share (%)'];
+  const thStyle = base({
+    font: { name: 'Arial', sz: 10, bold: true, color: { rgb: COLORS.WHITE } },
+    fill: fill(COLORS.NAVY),
+    alignment: { horizontal: 'center', vertical: 'center' },
+    border: borderStyle
+  });
+
+  headers.forEach((h, c) => set(prodRow + 1, c, h, thStyle));
+
+  const prods = biData?.topSellingProducts || [];
+  const totRev = prods.reduce((s, x) => s + Number(x.totalRevenue || 0), 0) || 1;
+
+  prods.forEach((item, i) => {
+    const r = prodRow + 2 + i;
+    const bg = i % 2 === 0 ? COLORS.LIGHT_GRAY : COLORS.WHITE;
+    const bStyle = base({ fill: fill(bg), border: borderStyle });
+
+    set(r, 0, i + 1, { ...bStyle, alignment: { horizontal: 'center' } });
+    set(r, 1, item.productName, { ...bStyle, font: { name: 'Arial', sz: 9.5, bold: true } });
+    set(r, 2, item.unitType, { ...bStyle, alignment: { horizontal: 'center' } });
+    set(r, 3, `${item.unitWeight} ${item.weightUnit}`, { ...bStyle, alignment: { horizontal: 'center' } });
+    set(r, 4, item.totalQuantity, { ...bStyle, alignment: { horizontal: 'center' } });
+    const volStr = item.totalWeightVolume >= 1000 && item.weightUnit === 'Kg'
+      ? `${(item.totalWeightVolume / 1000).toFixed(2)} MT`
+      : `${item.totalWeightVolume} ${item.weightUnit}`;
+    set(r, 5, volStr, { ...bStyle, alignment: { horizontal: 'right' } });
+    set(r, 6, item.totalRevenue, { ...bStyle, alignment: { horizontal: 'right' }, font: { name: 'Arial', sz: 9.5, bold: true } });
+    const share = Math.round((Number(item.totalRevenue || 0) / totRev) * 100);
+    set(r, 7, `${share}%`, { ...bStyle, alignment: { horizontal: 'center' } });
+  });
+
+  // Footer
+  const lastR = prodRow + prods.length + 4;
+  for (let c = 0; c < 8; c++) set(lastR, c, c === 0 ? 'Official Executive Report • UltraTech Cement Ltd. Unit Birla White • Confidential' : '', base({ font: { name: 'Arial', sz: 8.5, italic: true, color: { rgb: '64748B' } }, alignment: { horizontal: 'center' } }));
+  merges.push({ s: { r: lastR, c: 0 }, e: { r: lastR, c: 7 } });
+
+  ws['!merges'] = merges;
+  ws['!cols'] = [{ wch: 6 }, { wch: 46 }, { wch: 14 }, { wch: 16 }, { wch: 14 }, { wch: 22 }, { wch: 24 }, { wch: 18 }];
+  ws['!ref'] = XLSX.utils.encode_range({ s: { r: 0, c: 0 }, e: { r: lastR, c: 7 } });
+
+  XLSX.utils.book_append_sheet(wb, ws, 'Executive BI Analytics');
+  XLSX.writeFile(wb, `${filename}_${timeframe}_${new Date().toISOString().slice(0, 10)}.xlsx`);
+}

@@ -96,7 +96,7 @@ export default function DualReceiptModal({ isOpen, onClose, order }) {
           <div className="flex items-center space-x-2">
             <button
               onClick={handlePrint}
-              className="px-3.5 py-1.5 bg-birla-crimson hover:bg-birla-darkRed text-white text-xs font-bold rounded-lg flex items-center space-x-1.5 shadow-sm transition-all"
+              className="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-lg flex items-center space-x-1.5 shadow-sm transition-all"
               title="Print or Save Official PDF"
             >
               <Printer className="w-3.5 h-3.5" />
@@ -115,7 +115,7 @@ export default function DualReceiptModal({ isOpen, onClose, order }) {
         <div className="p-6 md:p-8 overflow-y-auto flex-1 bg-slate-50 print-container">
           <div className="bg-white p-7 rounded-xl shadow-xs border border-slate-200 max-w-3xl mx-auto text-slate-800 print:border-none print:shadow-none print:p-0">
             {/* 1. Official Corporate Header */}
-            <div className="border-b-2 border-birla-crimson pb-4 mb-5 flex items-start justify-between">
+            <div className="border-b-2 border-slate-900 pb-4 mb-5 flex items-start justify-between">
               <div className="flex items-center space-x-3.5">
                 <div className="bg-white p-1 rounded border border-slate-200 shadow-2xs">
                   <img
@@ -125,7 +125,7 @@ export default function DualReceiptModal({ isOpen, onClose, order }) {
                   />
                 </div>
                 <div>
-                  <h1 className="text-base md:text-lg font-black tracking-tight text-birla-crimson leading-tight">
+                  <h1 className="text-base md:text-lg font-black tracking-tight text-slate-900 leading-tight">
                     UltraTech Cement Ltd. - Unit: Birla White
                   </h1>
                   <p className="text-[11px] text-slate-600 font-bold">
