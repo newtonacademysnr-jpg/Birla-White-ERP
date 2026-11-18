@@ -107,7 +107,7 @@ export default function OrderDetailsModal({ isOpen = true, onClose, order, onOpe
               Ordered Products & Quantities
             </div>
             <div className="overflow-x-auto">
-              <table className="w-full text-left">
+              <table className="w-full text-left min-w-[550px]">
                 <thead className="bg-[#1A0B0E] text-amber-100 font-semibold text-[11px]">
                   <tr>
                     <th className="py-2 px-3">Product</th>

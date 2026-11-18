@@ -189,7 +189,7 @@ export default function PaymentModal({ isOpen, onClose, defaultRetailerId, defau
           )}
 
           {/* Amount Paid & Date */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             <div>
               <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
                 Amount Paid (₹) *
@@ -224,7 +224,7 @@ export default function PaymentModal({ isOpen, onClose, defaultRetailerId, defau
             <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
               Payment Mode *
             </label>
-            <div className="grid grid-cols-4 gap-2">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
               {['UPI', 'Cash', 'Cheque', 'Online'].map((mode) => (
                 <button
                   type="button"

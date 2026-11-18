@@ -369,10 +369,109 @@ export default function Orders({ openCreateModalProp, onCloseCreateModalProp }) 
         </div>
       </div>
 
-      {/* Orders Table */}
+      {/* Orders Container */}
       <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
+        {/* Mobile View: High-Touch Order Cards (Visible on screens < md) */}
+        <div className="block md:hidden divide-y divide-slate-100">
+          {loading ? (
+            <div className="p-8 text-center text-slate-400 text-xs">Loading orders...</div>
+          ) : orders.length === 0 ? (
+            <div className="p-8 text-center text-slate-400 text-xs">No orders found matching filters.</div>
+          ) : (
+            orders.map((order) => (
+              <div key={order.id} className="p-4 space-y-3 hover:bg-slate-50/60 transition-colors">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex-1 min-w-0">
+                    <button
+                      type="button"
+                      onClick={() => setOrderDetailsModal({ isOpen: true, order })}
+                      className="font-mono font-black text-sm text-birlaRed-900 hover:underline text-left cursor-pointer"
+                    >
+                      {order.orderNumber}
+                    </button>
+                    <div className="font-bold text-slate-900 text-xs mt-0.5 truncate">{order.retailer?.firmName}</div>
+                    <div className="text-[10px] text-slate-500 truncate">Via: {order.stockist?.firmName || 'Direct'}</div>
+                  </div>
+                  <div className="text-right flex-shrink-0">
+                    <div className="font-mono font-black text-sm text-slate-900">{formatCurrency(order.grandTotal)}</div>
+                    <div className="text-[10px] text-slate-400 font-mono">{formatDate(order.orderDate)}</div>
+                  </div>
+                </div>
+
+                {order.fulfillmentStatus === 'Partial' && (
+                  <div className="flex justify-between items-center bg-amber-50 px-2.5 py-1.5 rounded-lg border border-amber-200 text-[10px]">
+                    <span className="text-emerald-700 font-bold">Dispatched: {formatCurrency(order.dispatchedAmount)}</span>
+                    <span className="text-rose-700 font-bold">Pending: {formatCurrency(order.pendingAmount)}</span>
+                  </div>
+                )}
+
+                <div className="flex items-center justify-between gap-2 pt-2 border-t border-slate-100 text-xs">
+                  <div className="flex items-center space-x-1.5 flex-wrap gap-y-1">
+                    <span
+                      className={`inline-block px-2 py-0.5 rounded-full text-[9px] font-bold ${
+                        order.fulfillmentStatus === 'Full'
+                          ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                          : order.fulfillmentStatus === 'Partial'
+                          ? 'bg-amber-100 text-amber-900 border border-amber-300'
+                          : 'bg-rose-100 text-rose-800 border border-rose-300'
+                      }`}
+                    >
+                      {order.fulfillmentStatus}
+                    </span>
+                    <span
+                      className={`inline-block px-2 py-0.5 rounded-full text-[9px] font-bold ${
+                        order.deliveryStatus === 'Delivered'
+                          ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                          : 'bg-stone-100 text-stone-600 border border-stone-200'
+                      }`}
+                    >
+                      {order.deliveryStatus || 'Pending'}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center space-x-1.5">
+                    <button
+                      type="button"
+                      onClick={() => setReceiptModal({ isOpen: true, order })}
+                      className="px-2.5 py-1 bg-birlaRed-800 hover:bg-birlaRed-900 text-white text-[10px] font-bold rounded-lg shadow-xs transition-all flex items-center space-x-1 cursor-pointer"
+                    >
+                      <FileText className="w-3 h-3" />
+                      <span>Receipt</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setChallanModal({ isOpen: true, order, mode: 'dispatched' })}
+                      className="px-2 py-1 bg-emerald-700 hover:bg-emerald-800 text-white text-[10px] font-bold rounded-lg shadow-xs transition-all flex items-center space-x-1 cursor-pointer"
+                    >
+                      <Truck className="w-3 h-3" />
+                      <span>Challan</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setDispatchModal({ isOpen: true, order })}
+                      className="p-1 text-slate-600 hover:text-amber-600 bg-slate-100 rounded-lg"
+                      title="Dispatch"
+                    >
+                      <Truck className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setDeleteModal({ isOpen: true, order })}
+                      className="p-1 text-slate-500 hover:text-rose-600 bg-slate-100 rounded-lg"
+                      title="Delete"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+
+        {/* Desktop / Tablet View: Full Table (Hidden on screens < md) */}
+        <div className="hidden md:block overflow-x-auto">
+          <table className="w-full text-left text-xs min-w-[850px]">
             <thead className="bg-slate-900 text-white font-semibold">
               <tr>
                 <th className="py-3 px-4">Order No & Date</th>
@@ -593,7 +692,7 @@ export default function Orders({ openCreateModalProp, onCloseCreateModalProp }) 
               </button>
             </div>
 
-            <form onSubmit={handleCreateOrder} className="p-6 overflow-y-auto flex-1 space-y-5">
+            <form onSubmit={handleCreateOrder} className="p-4 sm:p-6 overflow-y-auto flex-1 space-y-4 sm:space-y-5">
               {orderError && (
                 <div className="p-3 bg-rose-50 border border-rose-200 text-rose-800 text-xs rounded-xl flex items-center space-x-2">
                   <AlertCircle className="w-4 h-4 flex-shrink-0 text-rose-600" />
@@ -602,7 +701,7 @@ export default function Orders({ openCreateModalProp, onCloseCreateModalProp }) 
               )}
 
               {/* 1. Parties Mapping */}
-              <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 grid grid-cols-2 gap-4">
+              <div className="bg-slate-50 p-3.5 sm:p-4 rounded-xl border border-slate-200 grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 {/* Select Stockist */}
                 <div>
                   <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1 flex items-center space-x-1">
@@ -647,10 +746,10 @@ export default function Orders({ openCreateModalProp, onCloseCreateModalProp }) 
               </div>
 
               {/* 2. Order Metadata & Dates */}
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
                 <div>
                   <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
-                    Order Date * (Manual/Custom selectable)
+                    Order Date * (Manual/Custom)
                   </label>
                   <input
                     type="date"
@@ -688,12 +787,12 @@ export default function Orders({ openCreateModalProp, onCloseCreateModalProp }) 
               </div>
 
               {/* 3. Delivery Location & Site Contact Details */}
-              <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-3">
+              <div className="p-3.5 sm:p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-3">
                 <span className="text-xs font-bold text-slate-900 block uppercase tracking-wider">
                   Site Delivery Details:
                 </span>
-                <div className="grid grid-cols-3 gap-3">
-                  <div className="col-span-1">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div>
                     <label className="block text-xs font-semibold text-slate-700 mb-1">Contact Person Name *</label>
                     <input
                       type="text"
@@ -716,11 +815,11 @@ export default function Orders({ openCreateModalProp, onCloseCreateModalProp }) 
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">Location of Delivery (Site Address) *</label>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">Location of Delivery *</label>
                     <input
                       type="text"
                       required
-                      placeholder="e.g. Cinema Chowk, Model Town, Sundernagar Site"
+                      placeholder="e.g. Cinema Chowk, Sundernagar"
                       value={orderForm.deliveryLocation}
                       onChange={(e) => setOrderForm({ ...orderForm, deliveryLocation: e.target.value })}
                       className="w-full px-3 py-2 text-xs bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-birla-blue focus:outline-none"
@@ -733,20 +832,20 @@ export default function Orders({ openCreateModalProp, onCloseCreateModalProp }) 
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <label className="text-xs font-bold text-slate-900 uppercase tracking-wider">
-                    Product Line Items & Manual Negotiated Rates:
+                    Product Line Items & Rates:
                   </label>
                   <button
                     type="button"
                     onClick={handleAddItem}
-                    className="px-3 py-1 bg-birla-blue text-white text-xs font-bold rounded-lg flex items-center space-x-1 hover:bg-blue-600 transition-all shadow-xs"
+                    className="px-3 py-1 bg-birla-blue text-white text-xs font-bold rounded-lg flex items-center space-x-1 hover:bg-blue-600 transition-all shadow-xs active:scale-95"
                   >
                     <Plus className="w-3.5 h-3.5" />
                     <span>Add Item</span>
                   </button>
                 </div>
 
-                <div className="border border-slate-200 rounded-xl overflow-hidden">
-                  <table className="w-full text-left text-xs">
+                <div className="border border-slate-200 rounded-xl overflow-x-auto">
+                  <table className="w-full text-left text-xs min-w-[580px]">
                     <thead className="bg-slate-100 text-slate-700 font-semibold">
                       <tr>
                         <th className="py-2.5 px-3">Product</th>

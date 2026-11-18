@@ -103,25 +103,27 @@ export default function DispatchChallanModal({ isOpen = true, onClose, order, in
           <div className="flex bg-[#2D1217] p-1 rounded-xl border border-amber-900/50">
             <button
               onClick={() => setActiveTab('dispatched')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center space-x-1.5 transition-all ${
+              className={`px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold flex items-center space-x-1 sm:space-x-1.5 transition-all ${
                 activeTab === 'dispatched'
                   ? 'bg-emerald-700 text-white shadow-sm ring-1 ring-emerald-400/40'
                   : 'text-stone-300 hover:text-white'
               }`}
             >
               <Truck className="w-3.5 h-3.5" />
-              <span>1. Dispatch Challan</span>
+              <span className="hidden sm:inline">1. Dispatch Challan</span>
+              <span className="sm:hidden">1. Challan</span>
             </button>
             <button
               onClick={() => setActiveTab('pending')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center space-x-1.5 transition-all ${
+              className={`px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold flex items-center space-x-1 sm:space-x-1.5 transition-all ${
                 activeTab === 'pending'
                   ? 'bg-amber-600 text-white shadow-sm ring-1 ring-amber-300/40'
                   : 'text-stone-300 hover:text-white'
               }`}
             >
               <Clock className="w-3.5 h-3.5" />
-              <span>2. Pending Slip</span>
+              <span className="hidden sm:inline">2. Pending Slip</span>
+              <span className="sm:hidden">2. Pending</span>
             </button>
           </div>
 
@@ -233,7 +235,7 @@ export default function DispatchChallanModal({ isOpen = true, onClose, order, in
 
             {/* Items Table */}
             <div className="overflow-x-auto mb-4">
-              <table className="w-full text-left text-xs border border-slate-200">
+              <table className="w-full text-left text-xs border border-slate-200 min-w-[650px]">
                 <thead className="bg-[#1A0B0E] text-amber-100 font-semibold">
                   <tr>
                     <th className="py-2.5 px-3">#</th>

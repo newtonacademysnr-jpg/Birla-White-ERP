@@ -482,25 +482,25 @@ export default function PjpModule() {
         </div>
 
         {/* 4 Summary Counters */}
-        <div className="flex items-center space-x-2 md:space-x-3 text-center">
-          <div className="px-3.5 py-1.5 bg-slate-50 rounded-xl border border-slate-200/80">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 text-center w-full lg:w-auto">
+          <div className="px-3 py-1.5 bg-slate-50 rounded-xl border border-slate-200/80">
             <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">Calendar</span>
-            <span className="text-base font-black text-slate-900">{summary.totalDays} Days</span>
+            <span className="text-sm sm:text-base font-black text-slate-900">{summary.totalDays} Days</span>
           </div>
 
-          <div className="px-3.5 py-1.5 bg-blue-50/70 rounded-xl border border-blue-200/80">
+          <div className="px-3 py-1.5 bg-blue-50/70 rounded-xl border border-blue-200/80">
             <span className="text-[10px] uppercase font-bold text-birla-blue block tracking-wider">Working</span>
-            <span className="text-base font-black text-slate-900">{summary.workingDays} Days</span>
+            <span className="text-sm sm:text-base font-black text-slate-900">{summary.workingDays} Days</span>
           </div>
 
-          <div className="px-3.5 py-1.5 bg-rose-50/70 rounded-xl border border-rose-200/80">
+          <div className="px-3 py-1.5 bg-rose-50/70 rounded-xl border border-rose-200/80">
             <span className="text-[10px] uppercase font-bold text-rose-600 block tracking-wider">Holidays</span>
-            <span className="text-base font-black text-rose-700">{summary.holidayDays} Days</span>
+            <span className="text-sm sm:text-base font-black text-rose-700">{summary.holidayDays} Days</span>
           </div>
 
-          <div className="px-3.5 py-1.5 bg-emerald-50/70 rounded-xl border border-emerald-200/80">
+          <div className="px-3 py-1.5 bg-emerald-50/70 rounded-xl border border-emerald-200/80">
             <span className="text-[10px] uppercase font-bold text-emerald-700 block tracking-wider">Planned Visits</span>
-            <span className="text-base font-black text-emerald-700">{summary.visitDays} Days</span>
+            <span className="text-sm sm:text-base font-black text-emerald-700">{summary.visitDays} Days</span>
           </div>
         </div>
       </div>

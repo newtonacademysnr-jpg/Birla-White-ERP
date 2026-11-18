@@ -102,12 +102,12 @@ export default function PartialDispatchModal({ isOpen, onClose, order, onDispatc
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-sm overflow-y-auto">
-      <div className="bg-white rounded-2xl max-w-3xl w-full shadow-2xl border border-slate-200 overflow-hidden my-6">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-slate-900/70 backdrop-blur-sm overflow-y-auto">
+      <div className="bg-white rounded-2xl max-w-3xl w-full shadow-2xl border border-slate-200 overflow-hidden my-auto max-h-[92vh] flex flex-col">
         {/* Header */}
-        <div className="px-6 py-4 bg-slate-900 text-white flex items-center justify-between border-b border-slate-800">
+        <div className="px-5 py-4 bg-slate-900 text-white flex items-center justify-between border-b border-slate-800">
           <div className="flex items-center space-x-3">
-            <div className="w-9 h-9 rounded-xl bg-birla-blue/20 text-birla-blue flex items-center justify-center">
+            <div className="w-9 h-9 rounded-xl bg-birla-blue/20 text-birla-blue flex items-center justify-center flex-shrink-0">
               <Truck className="w-5 h-5" />
             </div>
             <div>
@@ -123,7 +123,7 @@ export default function PartialDispatchModal({ isOpen, onClose, order, onDispatc
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-5">
+        <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-4 sm:space-y-5 overflow-y-auto flex-1">
           {error && (
             <div className="p-3 bg-rose-50 border border-rose-200 text-rose-800 text-xs rounded-xl flex items-center space-x-2">
               <AlertCircle className="w-4 h-4 flex-shrink-0 text-rose-600" />
@@ -132,11 +132,11 @@ export default function PartialDispatchModal({ isOpen, onClose, order, onDispatc
           )}
 
           {/* Dispatch Type Selection */}
-          <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
+          <div className="bg-slate-50 p-3.5 sm:p-4 rounded-xl border border-slate-200">
             <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
               Select Dispatch Fulfillment Mode:
             </label>
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3">
               {[
                 { id: 'Full', label: 'Full Dispatch', color: 'border-emerald-500 bg-emerald-50 text-emerald-900' },
                 { id: 'Partial', label: 'Partial Dispatch', color: 'border-amber-500 bg-amber-50 text-amber-900' },
@@ -146,9 +146,9 @@ export default function PartialDispatchModal({ isOpen, onClose, order, onDispatc
                   type="button"
                   key={opt.id}
                   onClick={() => setDispatchType(opt.id)}
-                  className={`py-2.5 px-3 rounded-xl border-2 font-semibold text-xs transition-all text-center ${
+                  className={`py-2 px-3 rounded-xl border-2 font-semibold text-xs transition-all text-center ${
                     dispatchType === opt.id
-                      ? `${opt.color} shadow-sm`
+                      ? `${opt.color} shadow-sm font-bold`
                       : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
                   }`}
                 >
@@ -160,7 +160,7 @@ export default function PartialDispatchModal({ isOpen, onClose, order, onDispatc
 
           {/* Partial Reason (Mandatory when Partial) */}
           {dispatchType === 'Partial' && (
-            <div className="bg-amber-50/70 p-4 rounded-xl border border-amber-200 space-y-2">
+            <div className="bg-amber-50/70 p-3.5 sm:p-4 rounded-xl border border-amber-200 space-y-2">
               <label className="block text-xs font-bold text-amber-900 uppercase tracking-wider">
                 Reason for Partial Dispatch * (Mandatory):
               </label>
@@ -179,7 +179,7 @@ export default function PartialDispatchModal({ isOpen, onClose, order, onDispatc
           )}
 
           {/* Transporter Details */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             <div>
               <label className="block text-xs font-semibold text-slate-700 mb-1">Vehicle / Tempo No:</label>
               <input
@@ -209,12 +209,12 @@ export default function PartialDispatchModal({ isOpen, onClose, order, onDispatc
                 Item-Wise Dispatch Fulfillment:
               </label>
               <span className="text-[11px] text-slate-500 font-medium">
-                Adjust quantities to dispatch in this shipment
+                Adjust quantities
               </span>
             </div>
 
-            <div className="border border-slate-200 rounded-xl overflow-hidden max-h-56 overflow-y-auto">
-              <table className="w-full text-left text-xs">
+            <div className="border border-slate-200 rounded-xl overflow-x-auto max-h-56 overflow-y-auto">
+              <table className="w-full text-left text-xs min-w-[500px]">
                 <thead className="bg-slate-100 text-slate-700 font-semibold sticky top-0">
                   <tr>
                     <th className="py-2 px-3">Product</th>

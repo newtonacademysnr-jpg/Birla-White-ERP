@@ -129,7 +129,101 @@ export default function Dispatches() {
           </div>
         </div>
 
-        <div className="overflow-x-auto">
+        {/* Mobile View: High-Touch Dispatch Cards (Visible on screens < md) */}
+        <div className="block md:hidden divide-y divide-[#EEDFB8]/70">
+          {loading ? (
+            <div className="p-8 text-center text-stone-400 text-xs">Loading dispatch records...</div>
+          ) : orders.length === 0 ? (
+            <div className="p-8 text-center text-stone-400 text-xs">No orders in dispatch queue.</div>
+          ) : (
+            orders.map((order) => (
+              <div key={order.id} className="p-4 space-y-3 bg-[#FFFDF7] hover:bg-[#FAF6E8]/70 transition-colors">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex-1 min-w-0">
+                    <button
+                      type="button"
+                      onClick={() => setOrderDetailsModal({ isOpen: true, order })}
+                      className="font-mono font-black text-xs text-birlaRed-950 hover:underline block text-left cursor-pointer"
+                    >
+                      {order.orderNumber}
+                    </button>
+                    <div className="font-bold text-stone-900 text-xs mt-0.5 truncate">{order.retailer?.firmName}</div>
+                    <div className="text-[10px] text-stone-500 truncate">{order.deliveryLocation || order.retailer?.locality}</div>
+                  </div>
+                  <div className="text-right flex-shrink-0">
+                    <span
+                      className={`inline-block px-2 py-0.5 rounded-full text-[9px] font-bold border ${
+                        order.fulfillmentStatus === 'Full'
+                          ? 'bg-emerald-50 text-emerald-800 border-emerald-300'
+                          : order.fulfillmentStatus === 'Partial'
+                          ? 'bg-amber-100 text-amber-900 border-amber-300'
+                          : 'bg-rose-50 text-rose-800 border-rose-300'
+                      }`}
+                    >
+                      {order.fulfillmentStatus}
+                    </span>
+                    <div className="text-[10px] text-stone-400 font-mono mt-0.5">{formatDate(order.orderDate)}</div>
+                  </div>
+                </div>
+
+                {/* Values strip */}
+                <div className="grid grid-cols-2 gap-2 bg-[#FAF6E8] p-2 rounded-xl border border-[#EEDFB8] text-xs">
+                  <div>
+                    <span className="text-[10px] text-stone-500 block">Dispatched Value:</span>
+                    <span className="font-mono font-bold text-emerald-700">{formatCurrency(order.dispatchedAmount)}</span>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-[10px] text-stone-500 block">Pending Balance:</span>
+                    <span className="font-mono font-bold text-rose-700">{formatCurrency(order.pendingAmount)}</span>
+                  </div>
+                </div>
+
+                {order.partialReason && (
+                  <div className="text-[11px] text-amber-900 bg-amber-50 p-2 rounded-lg border border-amber-300">
+                    <strong>Reason:</strong> {order.partialReason}
+                  </div>
+                )}
+
+                {/* Mobile Action Buttons */}
+                <div className="flex items-center space-x-2 pt-1 border-t border-[#EEDFB8]/50">
+                  <button
+                    type="button"
+                    onClick={() => setChallanModal({ isOpen: true, order, mode: 'dispatched' })}
+                    className="flex-1 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white text-[11px] font-bold rounded-lg transition-all flex items-center justify-center space-x-1 shadow-xs active:scale-95"
+                  >
+                    <Truck className="w-3 h-3 text-amber-300" />
+                    <span>1. Dispatch Challan</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setChallanModal({ isOpen: true, order, mode: 'pending' })}
+                    className={`flex-1 py-1.5 text-[11px] font-bold rounded-lg transition-all flex items-center justify-center space-x-1 shadow-xs active:scale-95 ${
+                      order.pendingAmount > 0 || order.fulfillmentStatus === 'Partial'
+                        ? 'bg-amber-600 hover:bg-amber-700 text-white'
+                        : 'bg-[#FAF6E8] text-stone-600 border border-[#EEDFB8]'
+                    }`}
+                  >
+                    <Clock className="w-3 h-3" />
+                    <span>2. Pending Slip</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setDispatchModal({ isOpen: true, order })}
+                    className="py-1.5 px-3 bg-birlaRed-800 hover:bg-birlaRed-700 text-white text-[11px] font-bold rounded-lg shadow-xs active:scale-95"
+                    title="Fulfill"
+                  >
+                    Fulfill
+                  </button>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+
+        {/* Desktop / Tablet View: Full Table (Hidden on screens < md) */}
+        <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-left text-xs min-w-[850px]">
             <thead className="bg-[#1A0B0E] text-amber-100 font-semibold">
               <tr>
