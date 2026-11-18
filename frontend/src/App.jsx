@@ -30,7 +30,7 @@ export default function App() {
         <Sidebar />
 
         {/* Main Content Area */}
-        <main className="flex-1 p-6 max-w-7xl mx-auto w-full overflow-x-hidden">
+        <main className="flex-1 p-4 md:p-6 max-w-[1600px] mx-auto w-full overflow-x-hidden">
           <Routes>
             <Route path="/" element={<Dashboard onOpenNewOrder={handleOpenNewOrder} />} />
             <Route path="/masters" element={<MasterManagement />} />

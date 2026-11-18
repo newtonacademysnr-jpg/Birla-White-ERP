@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { X, Printer, Download, Eye, ShieldCheck, Truck, CheckCircle2 } from 'lucide-react';
-import logoSvg from '../assets/birlaabg.svg';
+import brandLogo from '../assets/birla-ultratech-white.jpg';
 
 export default function DualReceiptModal({ isOpen, onClose, order }) {
   const [activeTab, setActiveTab] = useState('retailer'); // 'retailer' or 'stockist'
@@ -34,7 +34,7 @@ export default function DualReceiptModal({ isOpen, onClose, order }) {
         {/* Top Header / Mode Switcher (Hidden in Print) */}
         <div className="px-6 py-4 bg-slate-900 text-white flex flex-wrap items-center justify-between gap-4 border-b border-slate-800 no-print">
           <div className="flex items-center space-x-3">
-            <img src={logoSvg} alt="Birla White" className="h-8 bg-white p-1 rounded-lg" />
+            <img src={brandLogo} alt="Birla White" className="h-9 bg-white p-1 rounded-lg object-contain" />
             <div>
               <h3 className="font-bold text-sm tracking-wide text-white">DUAL-RECEIPT GENERATION ENGINE</h3>
               <p className="text-xs text-slate-400">Blind Drop-Shipping Architecture | Order #{order.orderNumber}</p>
@@ -105,7 +105,7 @@ export default function DualReceiptModal({ isOpen, onClose, order }) {
             {/* Header with Logo */}
             <div className="border-b-2 border-birla-crimson pb-5 mb-6 flex items-start justify-between">
               <div className="flex items-center space-x-4">
-                <img src={logoSvg} alt="Aditya Birla - Birla White" className="h-14 object-contain" />
+                <img src={brandLogo} alt="Aditya Birla UltraTech - Birla White" className="h-14 object-contain bg-white rounded p-1 border border-slate-200" />
                 <div>
                   <h1 className="text-lg font-extrabold tracking-tight text-birla-crimson">
                     UltraTech Cement Ltd. - Unit Birla White

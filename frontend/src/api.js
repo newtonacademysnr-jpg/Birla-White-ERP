@@ -1270,9 +1270,12 @@ export const api = {
     const today = new Date();
     let totalOverdueAmount = 0;
     let totalOverdueInvoices = 0;
+    const overdueRetailers = [];
 
     dbRetailers.forEach((ret) => {
       const creditDays = ret.creditDays || 30;
+      let retOverdueAmount = 0;
+      let maxOverdueDays = 0;
       dbOrders
         .filter((o) => o.retailerId === ret.id && o.balanceDueAmount > 0)
         .forEach((o) => {
@@ -1280,9 +1283,41 @@ export const api = {
           if (diffDays > creditDays) {
             totalOverdueAmount += o.balanceDueAmount;
             totalOverdueInvoices += 1;
+            retOverdueAmount += o.balanceDueAmount;
+            if (diffDays > maxOverdueDays) maxOverdueDays = diffDays;
           }
         });
+      if (retOverdueAmount > 0) {
+        overdueRetailers.push({
+          retailerId: ret.id,
+          retailerName: ret.firmName,
+          locality: ret.locality,
+          tehsil: ret.tehsil,
+          contact: ret.mobileNumber,
+          overdueAmount: retOverdueAmount,
+          creditDays: ret.creditDays,
+          maxDaysOverdue: maxOverdueDays,
+          dueDaysBeyondLimit: Math.max(0, maxOverdueDays - creditDays)
+        });
+      }
     });
+
+    // Monthly Target (e.g. 8 Lakh for Himachal Zone)
+    const monthlyTarget = 800000;
+    const targetAchievementPct = Math.min(100, Math.round((totalSales / monthlyTarget) * 100));
+
+    const topSellingProducts = [
+      { productName: 'Birla White WallCare Putty (40 Kg Bag)', unitType: 'Bag', unitWeight: 40, weightUnit: 'Kg', totalQuantity: 350, totalRevenue: 365565, totalWeightVolume: 14.0, volumeUnit: 'MT' },
+      { productName: 'Birla White White Portland Cement (50 Kg Bag)', unitType: 'Bag', unitWeight: 50, weightUnit: 'Kg', totalQuantity: 70, totalRevenue: 104960, totalWeightVolume: 3.5, volumeUnit: 'MT' },
+      { productName: 'Birla White Extocare Primer (20 Ltr Bucket)', unitType: 'Bucket', unitWeight: 20, weightUnit: 'Ltr', totalQuantity: 17, totalRevenue: 41713, totalWeightVolume: 340, volumeUnit: 'Ltr' }
+    ];
+
+    const salesVsCollectionTrend = [
+      { month: 'Aug 26', sales: 75000, collections: 60000 },
+      { month: 'Sep 26', sales: 110000, collections: 85000 },
+      { month: 'Oct 26', sales: 145000, collections: 127853 },
+      { month: 'Nov 26', sales: 218590, collections: 182000 }
+    ];
 
     return {
       kpis: {
@@ -1293,6 +1328,8 @@ export const api = {
         totalOutstanding,
         totalOverdueAmount,
         totalOverdueInvoices,
+        monthlyTarget,
+        targetAchievementPct,
         activePjpToday: dbPjpVisits.length
       },
       counts: {
@@ -1301,7 +1338,15 @@ export const api = {
         products: dbProducts.length,
         orders: dbOrders.length
       },
-      recentOrders: dbOrders.slice(0, 5).map(hydrateOrder)
+      overdueRetailers,
+      topSellingProducts,
+      salesVsCollectionTrend,
+      allOrders: dbOrders.map(hydrateOrder),
+      recentOrders: dbOrders.slice(0, 8).map(hydrateOrder),
+      pjpVisits: dbPjpVisits.map((v) => ({
+        ...v,
+        retailer: dbRetailers.find((r) => r.id === v.retailerId)
+      }))
     };
   },
 
