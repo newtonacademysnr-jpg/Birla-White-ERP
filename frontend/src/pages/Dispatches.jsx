@@ -215,29 +215,37 @@ export default function Dispatches() {
                         {latestDispatch ? (
                           <div className="flex items-center justify-center space-x-1.5">
                             {/* 1. Dispatched Goods Challan */}
-                            <a
-                              href={`/api/dispatches/${latestDispatch.id}/receipt/dispatched`}
-                              target="_blank"
-                              rel="noreferrer"
+                            <button
+                              onClick={() => {
+                                if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+                                  window.open(`/api/dispatches/${latestDispatch.id}/receipt/dispatched`, '_blank');
+                                } else {
+                                  window.print();
+                                }
+                              }}
                               className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold rounded-lg transition-all flex items-center space-x-1 shadow-xs"
-                              title="Download Stage 1: Dispatched Delivery Challan"
+                              title="Stage 1: Dispatched Delivery Challan"
                             >
                               <Download className="w-3 h-3" />
                               <span>1. Dispatch Challan</span>
-                            </a>
+                            </button>
 
                             {/* 2. Pending Backorder Slip */}
                             {order.fulfillmentStatus === 'Partial' && (
-                              <a
-                                href={`/api/dispatches/${latestDispatch.id}/receipt/pending`}
-                                target="_blank"
-                                rel="noreferrer"
+                              <button
+                                onClick={() => {
+                                  if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+                                    window.open(`/api/dispatches/${latestDispatch.id}/receipt/pending`, '_blank');
+                                  } else {
+                                    window.print();
+                                  }
+                                }}
                                 className="px-2.5 py-1 bg-rose-600 hover:bg-rose-700 text-white text-[11px] font-bold rounded-lg transition-all flex items-center space-x-1 shadow-xs"
-                                title="Download Stage 2: Pending Backorder & Balance Slip"
+                                title="Stage 2: Pending Backorder & Balance Slip"
                               >
                                 <Download className="w-3 h-3" />
                                 <span>2. Pending Slip</span>
-                              </a>
+                              </button>
                             )}
                           </div>
                         ) : (

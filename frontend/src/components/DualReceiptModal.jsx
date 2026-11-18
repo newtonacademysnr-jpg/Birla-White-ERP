@@ -69,15 +69,20 @@ export default function DualReceiptModal({ isOpen, onClose, order }) {
 
           {/* Action Buttons */}
           <div className="flex items-center space-x-2">
-            <a
-              href={activeTab === 'retailer' ? retailerReceiptUrl : stockistReceiptUrl}
-              target="_blank"
-              rel="noreferrer"
+            <button
+              onClick={() => {
+                if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+                  window.open(activeTab === 'retailer' ? retailerReceiptUrl : stockistReceiptUrl, '_blank');
+                } else {
+                  handlePrint();
+                }
+              }}
               className="px-3 py-1.5 bg-birla-crimson hover:bg-birla-darkRed text-white text-xs font-semibold rounded-lg flex items-center space-x-1.5 shadow-sm transition-all"
+              title="Download or Save as PDF"
             >
               <Download className="w-3.5 h-3.5" />
               <span>Download PDF</span>
-            </a>
+            </button>
             <button
               onClick={handlePrint}
               className="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-white text-xs font-semibold rounded-lg flex items-center space-x-1.5 transition-all"

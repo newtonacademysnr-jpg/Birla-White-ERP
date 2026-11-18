@@ -500,15 +500,20 @@ export default function LedgerPayments() {
 
                       {/* Download Receipt PDF */}
                       <td className="py-3.5 px-4 text-center">
-                        <a
-                          href={`/api/payments/${p.id}/receipt`}
-                          target="_blank"
-                          rel="noreferrer"
+                        <button
+                          onClick={() => {
+                            if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+                              window.open(`/api/payments/${p.id}/receipt`, '_blank');
+                            } else {
+                              window.print();
+                            }
+                          }}
                           className="px-2.5 py-1 bg-birla-blue hover:bg-blue-600 text-white rounded-lg text-[11px] font-bold transition-all inline-flex items-center space-x-1 shadow-xs"
+                          title="Print or Save Official Receipt PDF"
                         >
                           <Download className="w-3 h-3" />
                           <span>Receipt PDF</span>
-                        </a>
+                        </button>
                       </td>
 
                       {/* Delete */}
