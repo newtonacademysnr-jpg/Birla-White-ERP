@@ -1,8 +1,8 @@
 import React from 'react';
-import { X, Receipt, Truck, CreditCard, ChevronRight, MapPin, Building2, Phone, Calendar, Clock, CheckCircle2 } from 'lucide-react';
+import { X, Receipt, Truck, CreditCard, ChevronRight, MapPin, Building2, Phone, Calendar, Clock, CheckCircle2, Edit2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
-export default function OrderDetailsModal({ isOpen = true, onClose, order, onOpenReceipt, onOpenChallan, onOpenPayment }) {
+export default function OrderDetailsModal({ isOpen = true, onClose, order, onOpenReceipt, onOpenChallan, onOpenPayment, onEditOrder }) {
   const navigate = useNavigate();
 
   if (!isOpen || !order) return null;
@@ -165,12 +165,25 @@ export default function OrderDetailsModal({ isOpen = true, onClose, order, onOpe
           </button>
 
           <div className="flex items-center space-x-2">
+            {onEditOrder && (
+              <button
+                onClick={() => {
+                  onClose();
+                  onEditOrder(order);
+                }}
+                className="px-3 py-1.5 bg-blue-700 hover:bg-blue-800 text-white rounded-lg text-xs font-bold shadow-xs flex items-center space-x-1.5 transition-all cursor-pointer"
+              >
+                <Edit2 className="w-3.5 h-3.5" />
+                <span>Edit Order</span>
+              </button>
+            )}
+
             <button
               onClick={() => {
                 onClose();
                 if (onOpenReceipt) onOpenReceipt(order);
               }}
-              className="px-3 py-1.5 bg-birlaRed-800 hover:bg-birlaRed-700 text-white rounded-lg text-xs font-bold shadow-xs flex items-center space-x-1.5 transition-all"
+              className="px-3 py-1.5 bg-birlaRed-800 hover:bg-birlaRed-700 text-white rounded-lg text-xs font-bold shadow-xs flex items-center space-x-1.5 transition-all cursor-pointer"
             >
               <Receipt className="w-3.5 h-3.5" />
               <span>Tax Receipt</span>

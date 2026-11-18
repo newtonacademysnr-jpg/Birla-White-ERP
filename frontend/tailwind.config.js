@@ -43,7 +43,11 @@ export default {
           500: '#EAB308',
           600: '#CA8A04',
           warm: '#FFC107'
-        }
+        },
+        'birla-crimson': '#9E1B22',
+        'birla-darkRed': '#7F1318',
+        'birla-blue': '#0054A6',
+        'birla-gold': '#CA8A04',
       },
       boxShadow: {
         'card': '0 1px 3px 0 rgba(127, 19, 24, 0.04), 0 2px 6px -1px rgba(127, 19, 24, 0.03)',

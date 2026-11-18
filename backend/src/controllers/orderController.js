@@ -240,10 +240,11 @@ exports.createOrder = async (req, res) => {
   }
 };
 
-// Update order metadata (State, Delivery Date, Delivery Info, etc.)
+// Update order metadata and line items (Edit / Modify Order)
 exports.updateOrder = async (req, res) => {
   try {
     const { id } = req.params;
+    const orderId = parseInt(id);
     const {
       state,
       deliveryDate,
@@ -252,21 +253,98 @@ exports.updateOrder = async (req, res) => {
       deliveryContactMobile,
       remarks,
       createdBy,
-      createdMobile
+      createdMobile,
+      stockistId,
+      retailerId,
+      orderDate,
+      items
     } = req.body;
 
+    const existingOrder = await prisma.order.findUnique({
+      where: { id: orderId },
+      include: { items: true }
+    });
+
+    if (!existingOrder) {
+      return res.status(404).json({ error: 'Order not found' });
+    }
+
+    let subtotal = 0;
+    let gstTotal = 0;
+    let grandTotal = 0;
+    const orderItemsData = [];
+
+    if (items && Array.isArray(items) && items.length > 0) {
+      for (const item of items) {
+        const product = await prisma.product.findUnique({
+          where: { id: parseInt(item.productId) }
+        });
+
+        if (!product) continue;
+
+        const manualUnitRate = parseFloat(item.manualUnitRate);
+        const orderedQty = parseInt(item.orderedQty);
+        const gstRate = parseFloat(product.gstRate || 18.0);
+
+        // Rule: Rate is INCLUSIVE of 18% GST (e.g. 980 * 10 = 9800)
+        const lineTotal = manualUnitRate * orderedQty;
+        const lineSubtotal = lineTotal / (1 + gstRate / 100);
+        const lineGst = lineTotal - lineSubtotal;
+
+        subtotal += lineSubtotal;
+        gstTotal += lineGst;
+        grandTotal += lineTotal;
+
+        orderItemsData.push({
+          orderId,
+          productId: product.id,
+          productName: product.name,
+          unitType: product.unitType,
+          unitWeight: product.unitWeight,
+          weightUnit: product.weightUnit,
+          catalogueReferencePrice: product.referencePrice,
+          manualUnitRate,
+          orderedQty,
+          dispatchedQty: item.dispatchedQty !== undefined ? parseInt(item.dispatchedQty) : 0,
+          pendingQty: Math.max(0, orderedQty - (item.dispatchedQty !== undefined ? parseInt(item.dispatchedQty) : 0)),
+          gstRate,
+          lineSubtotal,
+          lineGst,
+          lineTotal
+        });
+      }
+
+      // Replace items
+      await prisma.orderItem.deleteMany({ where: { orderId } });
+      await prisma.orderItem.createMany({ data: orderItemsData });
+    }
+
+    const updateData = {
+      state: state !== undefined ? state : undefined,
+      deliveryDate: deliveryDate ? new Date(deliveryDate) : undefined,
+      deliveryLocation: deliveryLocation !== undefined ? deliveryLocation : undefined,
+      deliveryContactPerson: deliveryContactPerson !== undefined ? deliveryContactPerson : undefined,
+      deliveryContactMobile: deliveryContactMobile !== undefined ? deliveryContactMobile : undefined,
+      remarks: remarks !== undefined ? remarks : undefined,
+      createdBy: createdBy !== undefined ? createdBy : undefined,
+      createdMobile: createdMobile !== undefined ? createdMobile : undefined,
+      stockistId: stockistId ? parseInt(stockistId) : undefined,
+      retailerId: retailerId ? parseInt(retailerId) : undefined,
+      orderDate: orderDate ? new Date(orderDate) : undefined
+    };
+
+    if (orderItemsData.length > 0) {
+      const paid = existingOrder.totalPaidAmount || 0;
+      updateData.subtotal = subtotal;
+      updateData.gstTotal = gstTotal;
+      updateData.grandTotal = grandTotal;
+      updateData.pendingAmount = Math.max(0, grandTotal - (existingOrder.dispatchedAmount || 0));
+      updateData.balanceDueAmount = Math.max(0, grandTotal - paid);
+    }
+
     const order = await prisma.order.update({
-      where: { id: parseInt(id) },
-      data: {
-        state: state !== undefined ? state : undefined,
-        deliveryDate: deliveryDate ? new Date(deliveryDate) : undefined,
-        deliveryLocation: deliveryLocation !== undefined ? deliveryLocation : undefined,
-        deliveryContactPerson: deliveryContactPerson !== undefined ? deliveryContactPerson : undefined,
-        deliveryContactMobile: deliveryContactMobile !== undefined ? deliveryContactMobile : undefined,
-        remarks: remarks !== undefined ? remarks : undefined,
-        createdBy: createdBy !== undefined ? createdBy : undefined,
-        createdMobile: createdMobile !== undefined ? createdMobile : undefined
-      },
+      where: { id: orderId },
+      data: updateData,
       include: {
         retailer: true,
         stockist: true,

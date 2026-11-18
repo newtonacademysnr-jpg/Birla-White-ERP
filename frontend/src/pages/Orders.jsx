@@ -51,6 +51,9 @@ export default function Orders({ openCreateModalProp, onCloseCreateModalProp }) 
   const [deleteModal, setDeleteModal] = useState({ isOpen: false, order: null });
   const [orderDetailsModal, setOrderDetailsModal] = useState({ isOpen: false, order: null });
   const [challanModal, setChallanModal] = useState({ isOpen: false, order: null, mode: 'dispatched' });
+  const [editModal, setEditModal] = useState({ isOpen: false, order: null });
+  const [editForm, setEditForm] = useState(null);
+  const [editError, setEditError] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [orderError, setOrderError] = useState('');
 
@@ -237,6 +240,111 @@ export default function Orders({ openCreateModalProp, onCloseCreateModalProp }) 
       setReceiptModal({ isOpen: true, order: newOrder });
     } catch (err) {
       setOrderError(err.message || 'Failed to create order.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  // Edit / Modify Order Handlers
+  const handleOpenEdit = (order) => {
+    const rawItems = order.items || order.orderItems || [];
+    setEditForm({
+      stockistId: order.stockistId ? String(order.stockistId) : (order.stockist?.id ? String(order.stockist.id) : ''),
+      retailerId: order.retailerId ? String(order.retailerId) : (order.retailer?.id ? String(order.retailer.id) : ''),
+      orderDate: order.orderDate ? new Date(order.orderDate).toISOString().split('T')[0] : '',
+      deliveryDate: order.deliveryDate ? new Date(order.deliveryDate).toISOString().split('T')[0] : '',
+      deliveryLocation: order.deliveryLocation || '',
+      deliveryContactPerson: order.deliveryContactPerson || '',
+      deliveryContactMobile: order.deliveryContactMobile || '',
+      remarks: order.remarks || '',
+      items: rawItems.length > 0 ? rawItems.map((it) => ({
+        id: it.id,
+        productId: String(it.productId || it.product?.id || ''),
+        manualUnitRate: String(it.manualUnitRate !== undefined ? it.manualUnitRate : (it.unitPrice || '')),
+        orderedQty: String(it.orderedQty !== undefined ? it.orderedQty : (it.quantity || '')),
+        dispatchedQty: it.dispatchedQty !== undefined ? it.dispatchedQty : (it.dispatchedQuantity !== undefined ? it.dispatchedQuantity : 0)
+      })) : [
+        { productId: products[0]?.id || '', manualUnitRate: products[0]?.referencePrice || '', orderedQty: '25' }
+      ]
+    });
+    setEditError('');
+    setEditModal({ isOpen: true, order });
+  };
+
+  const handleEditItemChange = (index, field, value) => {
+    if (!editForm) return;
+    const updated = [...editForm.items];
+    updated[index] = { ...updated[index], [field]: value };
+    if (field === 'productId') {
+      const selectedPrd = products.find((p) => p.id === parseInt(value));
+      if (selectedPrd && (!updated[index].manualUnitRate || updated[index].manualUnitRate === '')) {
+        updated[index].manualUnitRate = String(selectedPrd.referencePrice || '');
+      }
+    }
+    setEditForm({ ...editForm, items: updated });
+  };
+
+  const handleAddEditItem = () => {
+    if (!editForm) return;
+    const firstPrd = products[0];
+    setEditForm({
+      ...editForm,
+      items: [
+        ...editForm.items,
+        { productId: firstPrd?.id || '', manualUnitRate: firstPrd?.referencePrice || '', orderedQty: '25' }
+      ]
+    });
+  };
+
+  const handleRemoveEditItem = (index) => {
+    if (!editForm || editForm.items.length <= 1) return;
+    const updated = editForm.items.filter((_, i) => i !== index);
+    setEditForm({ ...editForm, items: updated });
+  };
+
+  // Live Calculations for Edit Modal - 18% GST Inclusive Rule
+  let editSubtotal = 0;
+  let editGstTotal = 0;
+  let editGrandTotal = 0;
+  if (editForm && editForm.items) {
+    editForm.items.forEach((item) => {
+      const prd = products.find((p) => p.id === parseInt(item.productId));
+      const rate = parseFloat(item.manualUnitRate) || 0;
+      const qty = parseInt(item.orderedQty) || 0;
+      const gstRate = prd?.gstRate || 18.0;
+
+      const lineTotal = rate * qty;
+      const lineSub = lineTotal / (1 + gstRate / 100);
+      const lineGst = lineTotal - lineSub;
+
+      editGrandTotal += lineTotal;
+      editSubtotal += lineSub;
+      editGstTotal += lineGst;
+    });
+  }
+
+  const handleSaveEdit = async (e) => {
+    e.preventDefault();
+    setEditError('');
+    setSubmitting(true);
+    try {
+      if (!editForm.stockistId || !editForm.retailerId) {
+        setEditError('Please select both Stockist and Retailer.');
+        setSubmitting(false);
+        return;
+      }
+      const invalidItem = editForm.items.find((i) => !i.productId || !i.manualUnitRate || !i.orderedQty);
+      if (invalidItem) {
+        setEditError('Please ensure all product line items have valid product, agreed unit rate, and quantity.');
+        setSubmitting(false);
+        return;
+      }
+      await api.updateOrder(editModal.order.id, editForm);
+      setEditModal({ isOpen: false, order: null });
+      setEditForm(null);
+      await loadOrders();
+    } catch (err) {
+      setEditError(err.message || 'Failed to update order.');
     } finally {
       setSubmitting(false);
     }
@@ -433,6 +541,15 @@ export default function Orders({ openCreateModalProp, onCloseCreateModalProp }) 
                   </div>
 
                   <div className="flex items-center space-x-1.5">
+                    <button
+                      type="button"
+                      onClick={() => handleOpenEdit(order)}
+                      className="px-2 py-1 bg-blue-700 hover:bg-blue-800 text-white text-[10px] font-bold rounded-lg shadow-xs transition-all flex items-center space-x-1 cursor-pointer"
+                      title="Edit & Modify Order"
+                    >
+                      <Edit2 className="w-3 h-3" />
+                      <span>Edit</span>
+                    </button>
                     <button
                       type="button"
                       onClick={() => setReceiptModal({ isOpen: true, order })}
@@ -646,8 +763,15 @@ export default function Orders({ openCreateModalProp, onCloseCreateModalProp }) 
                     <td className="py-3.5 px-4 text-center">
                       <div className="flex items-center justify-center space-x-1.5">
                         <button
+                          onClick={() => handleOpenEdit(order)}
+                          className="p-1.5 text-blue-700 hover:text-blue-900 hover:bg-blue-50 rounded-lg transition-colors cursor-pointer"
+                          title="Edit & Modify Order"
+                        >
+                          <Edit2 className="w-4 h-4" />
+                        </button>
+                        <button
                           onClick={() => setDispatchModal({ isOpen: true, order })}
-                          className="p-1.5 text-slate-600 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"
+                          className="p-1.5 text-slate-600 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-colors cursor-pointer"
                           title="Fulfill / Partial Dispatch Engine"
                         >
                           <Truck className="w-4 h-4" />
@@ -834,16 +958,21 @@ export default function Orders({ openCreateModalProp, onCloseCreateModalProp }) 
               {/* 4. Product Line Items with Manual Rate Entry */}
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <label className="text-xs font-bold text-slate-900 uppercase tracking-wider">
-                    Product Line Items & Rates:
-                  </label>
+                  <div className="flex items-center space-x-2">
+                    <label className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+                      Product Line Items & Rates:
+                    </label>
+                    <span className="text-[11px] bg-emerald-100 text-emerald-900 border border-emerald-300 px-2 py-0.5 rounded-full font-bold">
+                      {orderForm.items.length} Product{orderForm.items.length > 1 ? 's' : ''} Added
+                    </span>
+                  </div>
                   <button
                     type="button"
                     onClick={handleAddItem}
-                    className="px-3 py-1 bg-birla-blue text-white text-xs font-bold rounded-lg flex items-center space-x-1 hover:bg-blue-600 transition-all shadow-xs active:scale-95"
+                    className="px-3.5 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold rounded-lg flex items-center space-x-1.5 shadow-sm active:scale-95 transition-all cursor-pointer"
                   >
-                    <Plus className="w-3.5 h-3.5" />
-                    <span>Add Item</span>
+                    <Plus className="w-4 h-4" />
+                    <span>+ Add Product Item</span>
                   </button>
                 </div>
 
@@ -878,7 +1007,7 @@ export default function Orders({ openCreateModalProp, onCloseCreateModalProp }) 
                                 required
                                 value={item.productId}
                                 onChange={(e) => handleItemChange(index, 'productId', e.target.value)}
-                                className="w-full px-2.5 py-1.5 text-xs bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-birla-blue focus:outline-none font-medium"
+                                className="w-full px-2.5 py-1.5 text-xs bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:outline-none font-medium"
                               >
                                 <option value="">-- Select Product --</option>
                                 {products.map((p) => (
@@ -902,7 +1031,7 @@ export default function Orders({ openCreateModalProp, onCloseCreateModalProp }) 
                                 placeholder="Inc. GST Rate"
                                 value={item.manualUnitRate}
                                 onChange={(e) => handleItemChange(index, 'manualUnitRate', e.target.value)}
-                                className="w-full px-2.5 py-1.5 text-xs font-bold text-slate-900 border border-slate-300 rounded-lg text-center focus:ring-2 focus:ring-birla-blue focus:outline-none"
+                                className="w-full px-2.5 py-1.5 text-xs font-bold text-slate-900 border border-slate-300 rounded-lg text-center focus:ring-2 focus:ring-blue-600 focus:outline-none"
                               />
                             </td>
 
@@ -914,7 +1043,7 @@ export default function Orders({ openCreateModalProp, onCloseCreateModalProp }) 
                                 placeholder="Qty"
                                 value={item.orderedQty}
                                 onChange={(e) => handleItemChange(index, 'orderedQty', e.target.value)}
-                                className="w-full px-2.5 py-1.5 text-xs font-bold text-slate-900 border border-slate-300 rounded-lg text-center focus:ring-2 focus:ring-birla-blue focus:outline-none"
+                                className="w-full px-2.5 py-1.5 text-xs font-bold text-slate-900 border border-slate-300 rounded-lg text-center focus:ring-2 focus:ring-blue-600 focus:outline-none"
                               />
                             </td>
 
@@ -931,7 +1060,7 @@ export default function Orders({ openCreateModalProp, onCloseCreateModalProp }) 
                                 <button
                                   type="button"
                                   onClick={() => handleRemoveItem(index)}
-                                  className="text-slate-400 hover:text-rose-600 p-1"
+                                  className="text-slate-400 hover:text-rose-600 p-1 cursor-pointer"
                                   title="Remove Item"
                                 >
                                   <MinusCircle className="w-4 h-4" />
@@ -944,6 +1073,21 @@ export default function Orders({ openCreateModalProp, onCloseCreateModalProp }) 
                     </tbody>
                   </table>
                 </div>
+
+                {/* Second Prominent Button for Multiple Products */}
+                <div className="mt-2.5 flex flex-wrap items-center justify-between gap-2">
+                  <button
+                    type="button"
+                    onClick={handleAddItem}
+                    className="px-4 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 text-xs font-bold rounded-xl flex items-center space-x-2 transition-all cursor-pointer shadow-2xs"
+                  >
+                    <Plus className="w-4 h-4 text-emerald-700" />
+                    <span>+ Add Another Product Item (Multiple Products)</span>
+                  </button>
+                  <span className="text-[11px] text-slate-500 font-medium italic">
+                    Click to add multiple Birla White products to this single order booking.
+                  </span>
+                </div>
               </div>
 
               {/* Order Total Bar */}
@@ -954,7 +1098,7 @@ export default function Orders({ openCreateModalProp, onCloseCreateModalProp }) 
                 </div>
                 <div className="text-right">
                   <span className="text-xs text-slate-500 font-semibold block">Total (Incl. 18% GST):</span>
-                  <span className="text-xl font-extrabold text-birla-crimson">{formatCurrency(liveGrandTotal)}</span>
+                  <span className="text-xl font-extrabold text-birlaRed-800 font-mono">{formatCurrency(liveGrandTotal)}</span>
                 </div>
               </div>
 
@@ -964,14 +1108,14 @@ export default function Orders({ openCreateModalProp, onCloseCreateModalProp }) 
                   type="button"
                   onClick={() => setIsCreateModalOpen(false)}
                   disabled={submitting}
-                  className="px-4 py-2 text-xs font-medium text-slate-700 bg-white border border-slate-300 rounded-xl hover:bg-slate-50 transition-all shadow-sm"
+                  className="px-4 py-2.5 text-xs font-bold text-slate-700 bg-white border border-slate-300 rounded-xl hover:bg-slate-50 transition-all shadow-sm cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="px-6 py-2.5 text-xs font-black text-white bg-birla-crimson hover:bg-birla-darkRed rounded-xl shadow-md transition-all flex items-center space-x-2 disabled:opacity-50 uppercase tracking-wider"
+                  className="px-6 py-2.5 text-xs font-black text-white bg-birlaRed-800 hover:bg-birlaRed-900 border border-amber-400/40 rounded-xl shadow-lg transition-all flex items-center space-x-2 disabled:opacity-50 uppercase tracking-wider cursor-pointer active:scale-95"
                 >
                   {submitting ? (
                     <span className="flex items-center space-x-2">
@@ -980,8 +1124,350 @@ export default function Orders({ openCreateModalProp, onCloseCreateModalProp }) 
                     </span>
                   ) : (
                     <>
-                      <CheckCircle2 className="w-4 h-4" />
+                      <CheckCircle2 className="w-4 h-4 text-amber-300" />
                       <span>Confirm Order & Generate Dual Receipts</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* EDIT / MODIFY ORDER MODAL */}
+      {editModal.isOpen && editForm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-black/75 backdrop-blur-xs overflow-y-auto">
+          <div className="bg-[#FFFDF7] rounded-2xl max-w-4xl w-full shadow-2xl border border-[#EEDFB8] overflow-hidden my-auto max-h-[94vh] flex flex-col animate-in zoom-in-95 duration-200">
+            {/* Header */}
+            <div className="px-5 py-4 bg-[#1A0B0E] text-white flex items-center justify-between border-b border-amber-950/60">
+              <div className="flex items-center space-x-3">
+                <div className="w-9 h-9 rounded-xl bg-blue-600/30 text-blue-400 flex items-center justify-center border border-blue-500/30">
+                  <Edit2 className="w-5 h-5 text-blue-300" />
+                </div>
+                <div>
+                  <div className="flex items-center space-x-2">
+                    <h3 className="font-display font-black text-sm uppercase tracking-wide text-white">
+                      EDIT & MODIFY SALES ORDER
+                    </h3>
+                    <span className="px-2 py-0.5 bg-amber-400/20 text-amber-300 border border-amber-400/30 rounded text-[11px] font-mono font-bold">
+                      {editModal.order?.orderNumber}
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-stone-300">
+                    Modify mapped parties, delivery site, products, agreed rates, and quantities.
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setEditModal({ isOpen: false, order: null })}
+                className="p-1.5 text-stone-400 hover:text-white rounded-lg hover:bg-white/10 transition-colors cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Error notification */}
+            {editError && (
+              <div className="mx-6 mt-4 p-3 bg-rose-50 border border-rose-200 rounded-xl text-rose-800 text-xs flex items-center space-x-2">
+                <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                <span>{editError}</span>
+              </div>
+            )}
+
+            <form onSubmit={handleSaveEdit} className="p-4 sm:p-6 overflow-y-auto flex-1 space-y-5">
+              {/* 1. Mapped Parties */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                    Supplying Stockist *
+                  </label>
+                  <select
+                    required
+                    value={editForm.stockistId}
+                    onChange={(e) => setEditForm({ ...editForm, stockistId: e.target.value })}
+                    className="w-full px-3 py-2 text-xs bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-600 focus:outline-none"
+                  >
+                    <option value="">-- Select Supplying Stockist --</option>
+                    {stockists.map((s) => (
+                      <option key={s.id} value={s.id}>
+                        {s.firmName} ({s.locality}, {s.tehsil})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                    Billed Retailer / Dealer *
+                  </label>
+                  <select
+                    required
+                    value={editForm.retailerId}
+                    onChange={(e) => setEditForm({ ...editForm, retailerId: e.target.value })}
+                    className="w-full px-3 py-2 text-xs bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-600 focus:outline-none"
+                  >
+                    <option value="">-- Select Retailer / Dealer --</option>
+                    {retailers.map((r) => (
+                      <option key={r.id} value={r.id}>
+                        {r.firmName} ({r.locality}, {r.tehsil})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* 2. Order Dates */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Order Date *</label>
+                  <input
+                    type="date"
+                    required
+                    value={editForm.orderDate}
+                    onChange={(e) => setEditForm({ ...editForm, orderDate: e.target.value })}
+                    className="w-full px-3 py-2 text-xs bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-600 focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Expected Delivery Date</label>
+                  <input
+                    type="date"
+                    value={editForm.deliveryDate}
+                    onChange={(e) => setEditForm({ ...editForm, deliveryDate: e.target.value })}
+                    className="w-full px-3 py-2 text-xs bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-600 focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Confirmed Officer</label>
+                  <input
+                    type="text"
+                    disabled
+                    value="Suraj (PZ7550) • 8219796922"
+                    className="w-full px-3 py-2 text-xs bg-slate-100 border border-slate-200 rounded-xl text-slate-700 font-bold"
+                  />
+                </div>
+              </div>
+
+              {/* 3. Site Delivery Details */}
+              <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl">
+                <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider mb-3">
+                  Site Delivery Details:
+                </h4>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">Contact Person *</label>
+                    <input
+                      type="text"
+                      required
+                      value={editForm.deliveryContactPerson}
+                      onChange={(e) => setEditForm({ ...editForm, deliveryContactPerson: e.target.value })}
+                      className="w-full px-3 py-2 text-xs bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-600 focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">Contact Mobile *</label>
+                    <input
+                      type="tel"
+                      required
+                      value={editForm.deliveryContactMobile}
+                      onChange={(e) => setEditForm({ ...editForm, deliveryContactMobile: e.target.value })}
+                      className="w-full px-3 py-2 text-xs bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-600 focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">Location of Delivery *</label>
+                    <input
+                      type="text"
+                      required
+                      value={editForm.deliveryLocation}
+                      onChange={(e) => setEditForm({ ...editForm, deliveryLocation: e.target.value })}
+                      className="w-full px-3 py-2 text-xs bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-600 focus:outline-none"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* 4. Product Line Items with Multiple Products & Manual Rates */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center space-x-2">
+                    <label className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+                      Product Line Items & Rates:
+                    </label>
+                    <span className="text-[11px] bg-emerald-100 text-emerald-900 border border-emerald-300 px-2 py-0.5 rounded-full font-bold">
+                      {editForm.items.length} Product{editForm.items.length > 1 ? 's' : ''} in Order
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleAddEditItem}
+                    className="px-3.5 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold rounded-lg flex items-center space-x-1.5 shadow-sm active:scale-95 transition-all cursor-pointer"
+                  >
+                    <Plus className="w-4 h-4" />
+                    <span>+ Add Product Item</span>
+                  </button>
+                </div>
+
+                <div className="border border-slate-200 rounded-xl overflow-x-auto">
+                  <table className="w-full text-left text-xs min-w-[580px]">
+                    <thead className="bg-slate-100 text-slate-700 font-semibold">
+                      <tr>
+                        <th className="py-2.5 px-3">Product</th>
+                        <th className="py-2.5 px-3 text-center">Catalogue Base (Ref)</th>
+                        <th className="py-2.5 px-3 text-center w-40">Rate (Inc. 18% GST ₹) *</th>
+                        <th className="py-2.5 px-3 text-center w-28">Quantity *</th>
+                        <th className="py-2.5 px-3 text-center">GST %</th>
+                        <th className="py-2.5 px-3 text-right">Line Total (₹)</th>
+                        <th className="py-2.5 px-2 text-center w-10"></th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 bg-white">
+                      {editForm.items.map((item, index) => {
+                        const selectedPrd = products.find((p) => p.id === parseInt(item.productId));
+                        const rate = parseFloat(item.manualUnitRate) || 0;
+                        const qty = parseInt(item.orderedQty) || 0;
+                        const gstRate = selectedPrd?.gstRate || 18.0;
+                        const lineTotal = rate * qty;
+
+                        return (
+                          <tr key={index} className="hover:bg-slate-50/50">
+                            <td className="py-2.5 px-3">
+                              <select
+                                required
+                                value={item.productId}
+                                onChange={(e) => handleEditItemChange(index, 'productId', e.target.value)}
+                                className="w-full px-2.5 py-1.5 text-xs bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:outline-none font-medium"
+                              >
+                                <option value="">-- Select Product --</option>
+                                {products.map((p) => (
+                                  <option key={p.id} value={p.id}>
+                                    {p.name} ({p.unitType} - {p.unitWeight}{p.weightUnit})
+                                  </option>
+                                ))}
+                              </select>
+                            </td>
+
+                            <td className="py-2.5 px-3 text-center text-slate-500 font-mono">
+                              {selectedPrd ? `₹${selectedPrd.referencePrice?.toFixed(2)}` : '-'}
+                            </td>
+
+                            <td className="py-2.5 px-3 text-center">
+                              <input
+                                type="number"
+                                step="0.01"
+                                min="1"
+                                required
+                                placeholder="Inc. GST Rate"
+                                value={item.manualUnitRate}
+                                onChange={(e) => handleEditItemChange(index, 'manualUnitRate', e.target.value)}
+                                className="w-full px-2.5 py-1.5 text-xs font-bold text-slate-900 border border-slate-300 rounded-lg text-center focus:ring-2 focus:ring-blue-600 focus:outline-none"
+                              />
+                            </td>
+
+                            <td className="py-2.5 px-3 text-center">
+                              <input
+                                type="number"
+                                min="1"
+                                required
+                                placeholder="Qty"
+                                value={item.orderedQty}
+                                onChange={(e) => handleEditItemChange(index, 'orderedQty', e.target.value)}
+                                className="w-full px-2.5 py-1.5 text-xs font-bold text-slate-900 border border-slate-300 rounded-lg text-center focus:ring-2 focus:ring-blue-600 focus:outline-none"
+                              />
+                            </td>
+
+                            <td className="py-2.5 px-3 text-center font-medium text-slate-600">
+                              {gstRate}%
+                            </td>
+
+                            <td className="py-2.5 px-3 text-right font-bold text-slate-900 font-mono">
+                              {formatCurrency(lineTotal)}
+                            </td>
+
+                            <td className="py-2.5 px-2 text-center">
+                              {editForm.items.length > 1 && (
+                                <button
+                                  type="button"
+                                  onClick={() => handleRemoveEditItem(index)}
+                                  className="text-slate-400 hover:text-rose-600 p-1 cursor-pointer"
+                                  title="Remove Item"
+                                >
+                                  <MinusCircle className="w-4 h-4" />
+                                </button>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+
+                <div className="mt-2.5 flex flex-wrap items-center justify-between gap-2">
+                  <button
+                    type="button"
+                    onClick={handleAddEditItem}
+                    className="px-4 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 text-xs font-bold rounded-xl flex items-center space-x-2 transition-all cursor-pointer shadow-2xs"
+                  >
+                    <Plus className="w-4 h-4 text-emerald-700" />
+                    <span>+ Add Another Product Item (Multiple Products)</span>
+                  </button>
+                  <span className="text-[11px] text-slate-500 font-medium italic">
+                    You can add, edit, or remove multiple products in this order.
+                  </span>
+                </div>
+              </div>
+
+              {/* Order Total Bar */}
+              <div className="bg-slate-100 p-4 rounded-xl flex items-center justify-between">
+                <div className="text-xs text-slate-600">
+                  <span>Taxable Subtotal: <strong className="text-slate-900">{formatCurrency(editSubtotal)}</strong></span> •{' '}
+                  <span>GST (18%): <strong className="text-slate-900">{formatCurrency(editGstTotal)}</strong></span>
+                </div>
+                <div className="text-right">
+                  <span className="text-xs text-slate-500 font-semibold block">Total (Incl. 18% GST):</span>
+                  <span className="text-xl font-extrabold text-birlaRed-800 font-mono">{formatCurrency(editGrandTotal)}</span>
+                </div>
+              </div>
+
+              {/* Remarks */}
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">Order Modification Remarks</label>
+                <input
+                  type="text"
+                  placeholder="e.g. Rate updated per stockist approval or extra items added"
+                  value={editForm.remarks}
+                  onChange={(e) => setEditForm({ ...editForm, remarks: e.target.value })}
+                  className="w-full px-3 py-2 text-xs bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-600 focus:outline-none"
+                />
+              </div>
+
+              {/* Footer */}
+              <div className="flex items-center justify-end space-x-3 pt-3 border-t border-slate-200">
+                <button
+                  type="button"
+                  onClick={() => setEditModal({ isOpen: false, order: null })}
+                  disabled={submitting}
+                  className="px-4 py-2.5 text-xs font-bold text-slate-700 bg-white border border-slate-300 rounded-xl hover:bg-slate-50 transition-all shadow-sm cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={submitting}
+                  className="px-6 py-2.5 text-xs font-black text-white bg-blue-700 hover:bg-blue-800 rounded-xl shadow-lg transition-all flex items-center space-x-2 disabled:opacity-50 uppercase tracking-wider cursor-pointer active:scale-95"
+                >
+                  {submitting ? (
+                    <span className="flex items-center space-x-2">
+                      <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      <span>Saving Changes...</span>
+                    </span>
+                  ) : (
+                    <>
+                      <CheckCircle2 className="w-4 h-4 text-emerald-300" />
+                      <span>Save & Update Order Changes</span>
                     </>
                   )}
                 </button>
@@ -999,6 +1485,7 @@ export default function Orders({ openCreateModalProp, onCloseCreateModalProp }) 
           onClose={() => setOrderDetailsModal({ isOpen: false, order: null })}
           onOpenReceipt={(ord) => setReceiptModal({ isOpen: true, order: ord })}
           onOpenChallan={(ord, mode) => setChallanModal({ isOpen: true, order: ord, mode: mode || 'dispatched' })}
+          onEditOrder={(ord) => handleOpenEdit(ord)}
         />
       )}
 

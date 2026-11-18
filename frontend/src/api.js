@@ -999,6 +999,91 @@ export const api = {
     return hydrateOrder(newOrder);
   },
 
+  updateOrder: async (id, data) => {
+    try {
+      const res = await fetch(`${BASE_URL}/orders/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      if (res.ok) {
+        const updated = await res.json();
+        dbOrders = dbOrders.map((o) => (o.id === parseInt(id) ? { ...o, ...updated } : o));
+        setLocal('orders', dbOrders);
+        return updated;
+      }
+    } catch (e) {}
+
+    // Fallback update in localStorage
+    let subtotal = 0;
+    let gstTotal = 0;
+    let grandTotal = 0;
+
+    const items = (data.items || []).map((item, idx) => {
+      const prd = dbProducts.find((p) => p.id === parseInt(item.productId));
+      const rate = parseFloat(item.manualUnitRate) || 0;
+      const qty = parseInt(item.orderedQty) || 0;
+      const gstRate = prd?.gstRate || 18.0;
+
+      // Rule: Rate is INCLUSIVE of 18% GST (e.g. 980 * 10 = 9800)
+      const lineTotal = rate * qty;
+      const lineSub = lineTotal / (1 + gstRate / 100);
+      const lineGst = lineTotal - lineSub;
+
+      subtotal += lineSub;
+      gstTotal += lineGst;
+      grandTotal += lineTotal;
+
+      return {
+        id: item.id || Date.now() + idx,
+        productId: prd?.id || 1,
+        productName: prd?.name || 'Birla White Product',
+        unitType: prd?.unitType || 'Bag',
+        unitWeight: prd?.unitWeight || 40,
+        weightUnit: prd?.weightUnit || 'Kg',
+        catalogueReferencePrice: prd?.referencePrice || rate,
+        manualUnitRate: rate,
+        orderedQty: qty,
+        dispatchedQty: item.dispatchedQty !== undefined ? parseInt(item.dispatchedQty) : 0,
+        pendingQty: Math.max(0, qty - (item.dispatchedQty !== undefined ? parseInt(item.dispatchedQty) : 0)),
+        gstRate,
+        lineSubtotal: lineSub,
+        lineGst,
+        lineTotal
+      };
+    });
+
+    dbOrders = dbOrders.map((o) => {
+      if (o.id === parseInt(id)) {
+        const paid = o.totalPaidAmount || 0;
+        const newGrand = items.length > 0 ? grandTotal : o.grandTotal;
+        const newBalance = Math.max(0, newGrand - paid);
+        return {
+          ...o,
+          stockistId: parseInt(data.stockistId) || o.stockistId,
+          retailerId: parseInt(data.retailerId) || o.retailerId,
+          orderDate: data.orderDate ? new Date(data.orderDate).toISOString() : o.orderDate,
+          deliveryLocation: data.deliveryLocation !== undefined ? data.deliveryLocation : o.deliveryLocation,
+          deliveryContactPerson: data.deliveryContactPerson !== undefined ? data.deliveryContactPerson : o.deliveryContactPerson,
+          deliveryContactMobile: data.deliveryContactMobile !== undefined ? data.deliveryContactMobile : o.deliveryContactMobile,
+          deliveryDate: data.deliveryDate ? new Date(data.deliveryDate).toISOString() : o.deliveryDate,
+          subtotal: items.length > 0 ? subtotal : o.subtotal,
+          gstTotal: items.length > 0 ? gstTotal : o.gstTotal,
+          grandTotal: newGrand,
+          pendingAmount: items.length > 0 ? Math.max(0, newGrand - (o.dispatchedAmount || 0)) : o.pendingAmount,
+          balanceDueAmount: newBalance,
+          remarks: data.remarks !== undefined ? data.remarks : o.remarks,
+          items: items.length > 0 ? items : o.items
+        };
+      }
+      return o;
+    });
+
+    setLocal('orders', dbOrders);
+    const updated = dbOrders.find((o) => o.id === parseInt(id));
+    return hydrateOrder(updated);
+  },
+
   markOrderDelivered: async (id) => {
     try {
       const res = await fetch(`${BASE_URL}/orders/${id}/deliver`, { method: 'PUT' });
