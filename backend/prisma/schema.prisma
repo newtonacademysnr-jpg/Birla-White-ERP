@@ -1,0 +1,245 @@
+// This is your Prisma schema file for Aditya Birla - Unit Birla White ERP
+// Learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// 1. Stockist Master
+model Stockist {
+  id           Int        @id @default(autoincrement())
+  firmName     String
+  gstNumber    String     @unique
+  ownerName    String     // Proprietor / Owner Name
+  mobileNumber String
+  
+  // Structured Address
+  district     String
+  tehsil       String
+  subTehsil    String?
+  locality     String
+  pincode      String
+  
+  status       String     @default("Active") // Active / Inactive
+  creditLimit  Float      @default(1500000.0)
+  creditDays   Int        @default(45)
+  
+  retailers    Retailer[]
+  orders       Order[]
+  
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  @@map("stockists")
+}
+
+// 2. Retailer Master
+model Retailer {
+  id                Int        @id @default(autoincrement())
+  firmName          String
+  gstNumber         String     @unique
+  ownerName         String     // Proprietor / Owner Name
+  mobileNumber      String
+  
+  // Structured Address
+  district          String
+  tehsil            String
+  subTehsil         String?
+  locality          String
+  pincode           String
+  
+  primaryStockistId Int?
+  primaryStockist   Stockist?  @relation(fields: [primaryStockistId], references: [id], onDelete: SetNull)
+  
+  status            String     @default("Active") // Active / Inactive
+  creditLimit       Float      @default(300000.0)
+  creditDays        Int        @default(30)
+  
+  orders            Order[]
+  payments          Payment[]
+  pjpVisits         PjpVisit[]
+  
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
+
+  @@map("retailers")
+}
+
+// 3. Product Catalogue
+model Product {
+  id             Int         @id @default(autoincrement())
+  name           String      @unique
+  category       String      // Wall Putty, White Cement, Primers & Paints, Waterproofing, Textures, Adhesives & Grouts
+  unitType       String      // Bag, Bucket, Box, PCS, Manual
+  manualUnitName String?     // If unitType is Manual
+  unitWeight     Float       // e.g. 40, 20, 5, 1
+  weightUnit     String      @default("Kg") // Kg or Ltr
+  referencePrice Float       // Catalogue reference base price
+  hsnCode        String      @default("32141000")
+  gstRate        Float       @default(18.0) // 18% or 28%
+  inStockQty     Int         @default(500)
+  status         String      @default("Active")
+  
+  orderItems     OrderItem[]
+  
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  @@map("products")
+}
+
+// 4. Order Management
+model Order {
+  id                    Int              @id @default(autoincrement())
+  orderNumber           String           @unique // e.g. BW-ORD-2026-001
+  
+  stockistId            Int
+  stockist              Stockist         @relation(fields: [stockistId], references: [id], onDelete: Restrict)
+  
+  retailerId            Int
+  retailer              Retailer         @relation(fields: [retailerId], references: [id], onDelete: Restrict)
+  
+  orderDate             DateTime         @default(now()) // Custom selectable
+  deliveryLocation      String           // Site / Delivery Address
+  deliveryContactPerson String           // Delivery Site Contact Person
+  deliveryContactMobile String           // Delivery Site Contact Mobile
+  deliveryDate          DateTime?        // Expected / Actual delivery date
+  deliveryStatus        String           @default("Pending") // Pending / Delivered
+  
+  // Status Layers
+  state                 String           @default("Active") // Active / Inactive
+  fulfillmentStatus     String           @default("Pending") // Full / Partial / Out of Stock / Pending
+  partialReason         String?          // Mandatory when Partial
+  
+  // Created & Confirmed By (Default: Suraj PZ7550)
+  createdBy             String           @default("Suraj (PZ7550)")
+  createdMobile         String           @default("8219796922")
+  createdEmail          String           @default("suraj-v@adityabirla.com")
+  createdCompany        String           @default("UltraTech Cement Ltd. - Unit Birla White")
+  
+  // Financial Calculations
+  subtotal              Float            @default(0.0)
+  gstTotal              Float            @default(0.0)
+  grandTotal            Float            @default(0.0)
+  dispatchedAmount      Float            @default(0.0)
+  pendingAmount         Float            @default(0.0)
+  totalPaidAmount       Float            @default(0.0)
+  balanceDueAmount      Float            @default(0.0)
+  
+  remarks               String?
+  
+  items                 OrderItem[]
+  dispatchRecords       DispatchRecord[]
+  payments              Payment[]
+  
+  createdAt             DateTime         @default(now())
+  updatedAt             DateTime         @updatedAt
+
+  @@map("orders")
+}
+
+// 5. Order Items with Manual Rate Entry
+model OrderItem {
+  id                      Int      @id @default(autoincrement())
+  orderId                 Int
+  order                   Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  
+  productId               Int
+  product                 Product  @relation(fields: [productId], references: [id])
+  
+  productName             String
+  unitType                String
+  unitWeight              Float
+  weightUnit              String
+  catalogueReferencePrice Float    // Displayed for reference
+  manualUnitRate          Float    // Actual entered unit rate
+  orderedQty              Int
+  dispatchedQty           Int      @default(0)
+  pendingQty              Int      @default(0)
+  gstRate                 Float    @default(18.0)
+  
+  lineSubtotal            Float
+  lineGst                 Float
+  lineTotal               Float
+
+  @@map("order_items")
+}
+
+// 6. Dispatch Records & Split Receipts
+model DispatchRecord {
+  id                   Int      @id @default(autoincrement())
+  dispatchNumber       String   @unique // e.g. BW-DSP-2026-001
+  orderId              Int
+  order                Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  
+  dispatchType         String   // Full / Partial / Out of Stock
+  reason               String?  // Mandatory reason if Partial
+  dispatchedBillAmount Float    // With GST
+  pendingBillAmount    Float    // With GST
+  
+  dispatchedItemsJson  String   // JSON string of item array
+  pendingItemsJson     String   // JSON string of item array
+  
+  vehicleNo            String?
+  driverContact        String?
+  dispatchedAt         DateTime @default(now())
+  
+  createdAt            DateTime @default(now())
+
+  @@map("dispatch_records")
+}
+
+// 7. Payment and Retailer Ledger
+model Payment {
+  id               Int       @id @default(autoincrement())
+  receiptNumber    String    @unique // e.g. BW-REC-2026-001
+  
+  retailerId       Int
+  retailer         Retailer  @relation(fields: [retailerId], references: [id], onDelete: Restrict)
+  
+  orderId          Int?
+  order            Order?    @relation(fields: [orderId], references: [id], onDelete: SetNull)
+  
+  amountPaid       Float
+  balanceRemaining Float     @default(0.0)
+  transactionDate  DateTime  @default(now())
+  
+  paymentMode      String    // Cash / UPI / Cheque / Online
+  chequeDate       DateTime? // Mandatory if mode is Cheque
+  referenceNo      String?   // UTR, Cheque No, Transaction Ref
+  notes            String?
+  recordedBy       String    @default("Suraj (PZ7550)")
+  
+  createdAt        DateTime  @default(now())
+
+  @@map("payments")
+}
+
+// 8. PJP (Permanent Journey Plan) Beat Module
+model PjpVisit {
+  id                     Int       @id @default(autoincrement())
+  retailerId             Int
+  retailer               Retailer  @relation(fields: [retailerId], references: [id], onDelete: Cascade)
+  
+  salesOfficer           String    @default("Suraj (PZ7550)")
+  visitDate              DateTime
+  district               String
+  tehsil                 String
+  locality               String
+  
+  status                 String    @default("Scheduled") // Scheduled, Completed, Rescheduled, Order Booked, Payment Collected
+  notes                  String?
+  orderBookedAmount      Float     @default(0.0)
+  paymentCollectedAmount Float     @default(0.0)
+  completedAt            DateTime?
+  
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
+
+  @@map("pjp_visits")
+}
