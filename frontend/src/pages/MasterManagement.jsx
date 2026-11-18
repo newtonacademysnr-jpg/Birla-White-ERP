@@ -372,64 +372,64 @@ export default function MasterManagement() {
 
         {/* Desktop / Tablet View: Full Table (Hidden on screens < md) */}
         <div className="hidden md:block overflow-x-auto">
-          <table className="w-full text-left text-xs min-w-[750px]">
-            <thead className="bg-slate-900 text-white font-semibold">
+          <table className="w-full text-left text-xs min-w-[1150px] border-collapse">
+            <thead className="bg-[#1A0B0E] text-amber-100 font-bold uppercase tracking-wider text-[11px]">
               <tr>
-                <th className="py-3 px-4">Firm Name & GSTIN</th>
-                <th className="py-3 px-4">Proprietor / Owner</th>
-                <th className="py-3 px-4">Contact</th>
-                <th className="py-3 px-4">Structured Address</th>
-                {activeTab === 'retailers' && <th className="py-3 px-4">Mapped Stockist</th>}
-                <th className="py-3 px-4">Credit Terms</th>
-                <th className="py-3 px-4 text-center">Status</th>
-                <th className="py-3 px-4 text-center">Actions</th>
+                <th className="py-3.5 px-4 whitespace-nowrap min-w-[220px]">Firm Name & GSTIN</th>
+                <th className="py-3.5 px-4 whitespace-nowrap min-w-[140px]">Proprietor / Owner</th>
+                <th className="py-3.5 px-4 whitespace-nowrap min-w-[125px]">Contact</th>
+                <th className="py-3.5 px-4 min-w-[220px]">Structured Address</th>
+                {activeTab === 'retailers' && <th className="py-3.5 px-4 min-w-[180px]">Mapped Stockist</th>}
+                <th className="py-3.5 px-4 whitespace-nowrap min-w-[130px]">Credit Terms</th>
+                <th className="py-3.5 px-4 text-center whitespace-nowrap min-w-[90px]">Status</th>
+                <th className="py-3.5 px-4 text-center whitespace-nowrap min-w-[100px]">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-[#EEDFB8]/70 bg-white">
               {loading ? (
                 <tr>
-                  <td colSpan={8} className="py-8 text-center text-slate-400">
+                  <td colSpan={8} className="py-8 text-center text-stone-400 font-medium">
                     Loading records...
                   </td>
                 </tr>
               ) : (activeTab === 'stockists' ? stockists : retailers).length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="py-8 text-center text-slate-400">
+                  <td colSpan={8} className="py-8 text-center text-stone-400 font-medium">
                     No {activeTab === 'stockists' ? 'Stockists' : 'Retailers'} found matching criteria.
                   </td>
                 </tr>
               ) : (
                 (activeTab === 'stockists' ? stockists : retailers).map((item) => (
-                  <tr key={item.id} className="hover:bg-slate-50/80 transition-colors">
+                  <tr key={item.id} className="hover:bg-[#FAF6E8]/70 transition-colors">
                     {/* Firm Name & GST */}
-                    <td className="py-3.5 px-4">
-                      <span className="font-bold text-slate-900 block text-sm">{item.firmName}</span>
-                      <span className="font-mono text-[11px] text-slate-500 flex items-center space-x-1 mt-0.5">
+                    <td className="py-3.5 px-4 align-middle">
+                      <span className="font-bold text-stone-900 block text-xs leading-snug">{item.firmName}</span>
+                      <span className="font-mono text-[11px] text-stone-500 flex items-center space-x-1 mt-0.5 whitespace-nowrap">
                         <FileText className="w-3 h-3 text-birla-blue" />
                         <span>GST: {item.gstNumber}</span>
                       </span>
                     </td>
 
                     {/* Owner */}
-                    <td className="py-3.5 px-4 font-medium text-slate-800">
+                    <td className="py-3.5 px-4 font-medium text-stone-800 whitespace-nowrap align-middle">
                       {item.ownerName}
                     </td>
 
                     {/* Mobile */}
-                    <td className="py-3.5 px-4">
-                      <span className="flex items-center space-x-1 text-slate-700 font-semibold">
-                        <Phone className="w-3 h-3 text-slate-400" />
+                    <td className="py-3.5 px-4 whitespace-nowrap align-middle">
+                      <span className="flex items-center space-x-1 text-stone-700 font-mono font-semibold">
+                        <Phone className="w-3 h-3 text-stone-400" />
                         <span>{item.mobileNumber}</span>
                       </span>
                     </td>
 
                     {/* Structured Address */}
-                    <td className="py-3.5 px-4 text-slate-600 max-w-xs">
+                    <td className="py-3.5 px-4 text-stone-600 align-middle max-w-xs">
                       <div className="flex items-start space-x-1">
                         <MapPin className="w-3.5 h-3.5 text-birla-crimson flex-shrink-0 mt-0.5" />
                         <div>
-                          <span className="font-medium text-slate-900 block">{item.locality}</span>
-                          <span className="text-[11px] text-slate-500">
+                          <span className="font-medium text-stone-900 block truncate">{item.locality}</span>
+                          <span className="text-[11px] text-stone-500 truncate block">
                             Tehsil: {item.tehsil} {item.subTehsil ? `(${item.subTehsil})` : ''}, Distt: {item.district} - {item.pincode}
                           </span>
                         </div>
@@ -438,35 +438,35 @@ export default function MasterManagement() {
 
                     {/* Mapped Stockist (for Retailer) */}
                     {activeTab === 'retailers' && (
-                      <td className="py-3.5 px-4">
+                      <td className="py-3.5 px-4 align-middle">
                         {item.primaryStockist ? (
                           <div>
-                            <span className="font-semibold text-birla-blue block">
+                            <span className="font-semibold text-birla-blue block leading-snug truncate">
                               {item.primaryStockist.firmName}
                             </span>
-                            <span className="text-[10px] text-slate-500">
+                            <span className="text-[10px] text-stone-500 truncate block">
                               {item.primaryStockist.locality}, {item.primaryStockist.tehsil}
                             </span>
                           </div>
                         ) : (
-                          <span className="text-[11px] text-slate-400 italic">Unassigned</span>
+                          <span className="text-[11px] text-stone-400 italic">Unassigned</span>
                         )}
                       </td>
                     )}
 
                     {/* Credit Terms */}
-                    <td className="py-3.5 px-4 text-slate-600">
-                      <span className="font-semibold text-slate-900">₹{Number(item.creditLimit || 0).toLocaleString('en-IN')}</span>
-                      <span className="text-[11px] text-slate-500 block">{item.creditDays || 30} Days Limit</span>
+                    <td className="py-3.5 px-4 text-stone-600 whitespace-nowrap align-middle font-mono">
+                      <span className="font-bold text-stone-900 block">₹{Number(item.creditLimit || 0).toLocaleString('en-IN')}</span>
+                      <span className="text-[11px] text-stone-500 block">{item.creditDays || 30} Days Limit</span>
                     </td>
 
                     {/* Status */}
-                    <td className="py-3.5 px-4 text-center">
+                    <td className="py-3.5 px-4 text-center whitespace-nowrap align-middle">
                       <span
-                        className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                        className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold border whitespace-nowrap ${
                           item.status === 'Active'
-                            ? 'bg-emerald-100 text-emerald-800'
-                            : 'bg-slate-100 text-slate-600'
+                            ? 'bg-emerald-50 text-emerald-800 border-emerald-300'
+                            : 'bg-stone-100 text-stone-600 border-stone-200'
                         }`}
                       >
                         {item.status}
@@ -474,8 +474,8 @@ export default function MasterManagement() {
                     </td>
 
                     {/* Actions: Edit & Delete */}
-                    <td className="py-3.5 px-4 text-center">
-                      <div className="flex items-center justify-center space-x-1.5">
+                    <td className="py-3.5 px-4 text-center whitespace-nowrap align-middle">
+                      <div className="flex items-center justify-center space-x-1.5 whitespace-nowrap">
                         <button
                           onClick={() => handleOpenEdit(item)}
                           className="p-1.5 text-slate-600 hover:text-birla-blue hover:bg-blue-50 rounded-lg transition-colors"

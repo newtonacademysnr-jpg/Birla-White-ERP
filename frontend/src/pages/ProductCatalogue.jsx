@@ -304,60 +304,60 @@ export default function ProductCatalogue() {
 
         {/* Desktop / Tablet View: Full Table (Hidden on screens < md) */}
         <div className="hidden md:block overflow-x-auto">
-          <table className="w-full text-left text-xs min-w-[750px]">
-            <thead className="bg-slate-900 text-white font-semibold">
+          <table className="w-full text-left text-xs min-w-[1050px] border-collapse">
+            <thead className="bg-[#1A0B0E] text-amber-100 font-bold uppercase tracking-wider text-[11px]">
               <tr>
-                <th className="py-3 px-4">Product Name & Category</th>
-                <th className="py-3 px-4">Unit Type & Packaging</th>
-                <th className="py-3 px-4 text-center">Unit Weight</th>
-                <th className="py-3 px-4 text-right">Reference Price</th>
-                <th className="py-3 px-4 text-center">GST Rate</th>
-                <th className="py-3 px-4 text-center">In-Stock</th>
-                <th className="py-3 px-4 text-center">Status</th>
-                <th className="py-3 px-4 text-center">Actions</th>
+                <th className="py-3.5 px-4 min-w-[220px]">Product Name & Category</th>
+                <th className="py-3.5 px-4 whitespace-nowrap min-w-[140px]">Unit Type & Packaging</th>
+                <th className="py-3.5 px-4 text-center whitespace-nowrap min-w-[100px]">Unit Weight</th>
+                <th className="py-3.5 px-4 text-right whitespace-nowrap min-w-[130px]">Reference Price</th>
+                <th className="py-3.5 px-4 text-center whitespace-nowrap min-w-[80px]">GST Rate</th>
+                <th className="py-3.5 px-4 text-center whitespace-nowrap min-w-[90px]">In-Stock</th>
+                <th className="py-3.5 px-4 text-center whitespace-nowrap min-w-[85px]">Status</th>
+                <th className="py-3.5 px-4 text-center whitespace-nowrap min-w-[95px]">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-[#EEDFB8]/70 bg-white">
               {loading ? (
                 <tr>
-                  <td colSpan={8} className="py-8 text-center text-slate-400">
+                  <td colSpan={8} className="py-8 text-center text-stone-400 font-medium">
                     Loading products...
                   </td>
                 </tr>
               ) : products.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="py-8 text-center text-slate-400">
+                  <td colSpan={8} className="py-8 text-center text-stone-400 font-medium">
                     No products found.
                   </td>
                 </tr>
               ) : (
                 products.map((product) => (
-                  <tr key={product.id} className="hover:bg-slate-50/80 transition-colors">
+                  <tr key={product.id} className="hover:bg-[#FAF6E8]/70 transition-colors">
                     {/* Name & Category */}
-                    <td className="py-3.5 px-4">
-                      <span className="font-bold text-slate-900 block text-sm">{product.name}</span>
-                      <div className="flex items-center space-x-2 mt-0.5">
-                        <span className="text-[10px] bg-blue-50 text-birla-blue font-bold px-1.5 py-0.2 rounded border border-blue-200/50">
+                    <td className="py-3.5 px-4 align-middle">
+                      <span className="font-bold text-stone-900 block text-xs leading-snug">{product.name}</span>
+                      <div className="flex items-center space-x-2 mt-0.5 whitespace-nowrap">
+                        <span className="text-[10px] bg-amber-50 text-amber-900 font-bold px-1.5 py-0.5 rounded border border-amber-300">
                           {product.category}
                         </span>
-                        <span className="text-[10px] text-slate-400 font-mono">HSN: {product.hsnCode}</span>
+                        <span className="text-[10px] text-stone-400 font-mono">HSN: {product.hsnCode}</span>
                       </div>
                     </td>
 
                     {/* Unit Type */}
-                    <td className="py-3.5 px-4">
-                      <div className="flex items-center space-x-1.5">
+                    <td className="py-3.5 px-4 whitespace-nowrap align-middle">
+                      <div className="flex items-center space-x-1.5 whitespace-nowrap">
                         <span
-                          className={`inline-block px-2 py-0.5 rounded-md text-[10px] font-bold ${
+                          className={`inline-block px-2 py-0.5 rounded-md text-[10px] font-bold border whitespace-nowrap ${
                             product.unitType === 'Bag'
-                              ? 'bg-amber-100 text-amber-900'
+                              ? 'bg-amber-100 text-amber-900 border-amber-300'
                               : product.unitType === 'Bucket'
-                              ? 'bg-blue-100 text-blue-900'
+                              ? 'bg-blue-100 text-blue-900 border-blue-300'
                               : product.unitType === 'Box'
-                              ? 'bg-emerald-100 text-emerald-900'
+                              ? 'bg-emerald-100 text-emerald-900 border-emerald-300'
                               : product.unitType === 'PCS'
-                              ? 'bg-purple-100 text-purple-900'
-                              : 'bg-rose-100 text-rose-900'
+                              ? 'bg-purple-100 text-purple-900 border-purple-300'
+                              : 'bg-rose-100 text-rose-900 border-rose-300'
                           }`}
                         >
                           {product.unitType === 'Manual'
@@ -368,35 +368,35 @@ export default function ProductCatalogue() {
                     </td>
 
                     {/* Weight */}
-                    <td className="py-3.5 px-4 text-center text-slate-700 font-medium">
+                    <td className="py-3.5 px-4 text-center text-stone-700 font-medium whitespace-nowrap align-middle font-mono">
                       {product.unitWeight} {product.weightUnit}
                     </td>
 
                     {/* Reference Base Price */}
-                    <td className="py-3.5 px-4 text-right">
-                      <span className="font-bold text-sm text-slate-900">
+                    <td className="py-3.5 px-4 text-right whitespace-nowrap align-middle font-mono">
+                      <span className="font-black text-xs text-stone-900 block whitespace-nowrap">
                         {formatCurrency(product.referencePrice)}
                       </span>
-                      <span className="text-[10px] text-slate-400 block">Base Catalogue Rate</span>
+                      <span className="text-[10px] text-stone-400 block whitespace-nowrap">Base Catalogue Rate</span>
                     </td>
 
                     {/* GST */}
-                    <td className="py-3.5 px-4 text-center font-semibold text-slate-600">
+                    <td className="py-3.5 px-4 text-center font-bold text-stone-700 whitespace-nowrap align-middle">
                       {product.gstRate}%
                     </td>
 
                     {/* Stock */}
-                    <td className="py-3.5 px-4 text-center font-bold text-slate-800">
+                    <td className="py-3.5 px-4 text-center font-bold text-stone-900 whitespace-nowrap align-middle font-mono">
                       {product.inStockQty} units
                     </td>
 
                     {/* Status */}
-                    <td className="py-3.5 px-4 text-center">
+                    <td className="py-3.5 px-4 text-center whitespace-nowrap align-middle">
                       <span
-                        className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                        className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold border whitespace-nowrap ${
                           product.status === 'Active'
-                            ? 'bg-emerald-100 text-emerald-800'
-                            : 'bg-slate-100 text-slate-600'
+                            ? 'bg-emerald-50 text-emerald-800 border-emerald-300'
+                            : 'bg-stone-100 text-stone-600 border-stone-200'
                         }`}
                       >
                         {product.status}
@@ -404,8 +404,8 @@ export default function ProductCatalogue() {
                     </td>
 
                     {/* Actions */}
-                    <td className="py-3.5 px-4 text-center">
-                      <div className="flex items-center justify-center space-x-1.5">
+                    <td className="py-3.5 px-4 text-center whitespace-nowrap align-middle">
+                      <div className="flex items-center justify-center space-x-1.5 whitespace-nowrap">
                         <button
                           onClick={() => handleOpenEdit(product)}
                           className="p-1.5 text-slate-600 hover:text-birla-blue hover:bg-blue-50 rounded-lg transition-colors"

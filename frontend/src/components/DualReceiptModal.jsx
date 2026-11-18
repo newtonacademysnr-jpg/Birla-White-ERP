@@ -291,48 +291,48 @@ export default function DualReceiptModal({ isOpen = true, onClose, order }) {
 
             {/* 5. Line Items Table with GST Inclusive Rate Breakdown */}
             <div className="overflow-x-auto mb-3">
-              <table className="w-full text-left text-xs border border-slate-200 min-w-[650px]">
-                <thead className="bg-[#1A0B0E] text-amber-100 font-semibold text-[10px]">
+              <table className="w-full text-left text-xs border border-slate-200 min-w-[720px] border-collapse">
+                <thead className="bg-[#1A0B0E] text-amber-100 font-bold uppercase tracking-wider text-[10px]">
                   <tr>
-                    <th className="py-2 px-2.5">#</th>
-                    <th className="py-2 px-2.5">Product Description</th>
-                    <th className="py-2 px-2 text-center">HSN</th>
-                    <th className="py-2 px-2 text-center">Packaging Size</th>
-                    <th className="py-2 px-2 text-center">Qty</th>
-                    {activeTab === 'stockist' && <th className="py-2 px-2 text-center text-emerald-300">Disp</th>}
-                    {activeTab === 'stockist' && <th className="py-2 px-2 text-center text-rose-300">Pend</th>}
-                    <th className="py-2 px-2.5 text-right">Rate (₹ Inc. GST)</th>
-                    <th className="py-2 px-2.5 text-right">Taxable (₹)</th>
-                    <th className="py-2 px-1 text-center">GST %</th>
-                    <th className="py-2 px-2.5 text-right">Total (₹)</th>
+                    <th className="py-2 px-2.5 whitespace-nowrap w-8">#</th>
+                    <th className="py-2 px-2.5 min-w-[180px]">Product Description</th>
+                    <th className="py-2 px-2 text-center whitespace-nowrap min-w-[70px]">HSN</th>
+                    <th className="py-2 px-2 text-center whitespace-nowrap min-w-[90px]">Packaging Size</th>
+                    <th className="py-2 px-2 text-center whitespace-nowrap min-w-[50px]">Qty</th>
+                    {activeTab === 'stockist' && <th className="py-2 px-2 text-center whitespace-nowrap min-w-[50px] text-emerald-300">Disp</th>}
+                    {activeTab === 'stockist' && <th className="py-2 px-2 text-center whitespace-nowrap min-w-[50px] text-rose-300">Pend</th>}
+                    <th className="py-2 px-2.5 text-right whitespace-nowrap min-w-[100px]">Rate (₹ Inc. GST)</th>
+                    <th className="py-2 px-2.5 text-right whitespace-nowrap min-w-[95px]">Taxable (₹)</th>
+                    <th className="py-2 px-1 text-center whitespace-nowrap min-w-[55px]">GST %</th>
+                    <th className="py-2 px-2.5 text-right whitespace-nowrap min-w-[105px]">Total (₹)</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200 text-[11px]">
                   {items.map((item, idx) => (
                     <tr key={idx} className={idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/50'}>
-                      <td className="py-1.5 px-2.5 text-slate-400 font-mono">{idx + 1}</td>
-                      <td className="py-1.5 px-2.5 font-bold text-slate-900">{item.productName}</td>
-                      <td className="py-1.5 px-2 text-center text-slate-500 font-mono text-[10px]">32141000</td>
-                      <td className="py-1.5 px-2 text-center text-slate-600 font-medium text-[10px]">
+                      <td className="py-1.5 px-2.5 text-slate-400 font-mono whitespace-nowrap">{idx + 1}</td>
+                      <td className="py-1.5 px-2.5 font-bold text-slate-900 leading-snug">{item.productName}</td>
+                      <td className="py-1.5 px-2 text-center text-slate-500 font-mono text-[10px] whitespace-nowrap">32141000</td>
+                      <td className="py-1.5 px-2 text-center text-slate-600 font-medium text-[10px] whitespace-nowrap">
                         {item.unitType} ({item.unitWeight} {item.weightUnit})
                       </td>
-                      <td className="py-1.5 px-2 text-center font-black text-slate-900">{item.orderedQty}</td>
+                      <td className="py-1.5 px-2 text-center font-black text-slate-900 font-mono whitespace-nowrap">{item.orderedQty}</td>
                       {activeTab === 'stockist' && (
-                        <td className="py-1.5 px-2 text-center text-emerald-700 font-bold">{item.dispatchedQty}</td>
+                        <td className="py-1.5 px-2 text-center text-emerald-700 font-bold font-mono whitespace-nowrap">{item.dispatchedQty}</td>
                       )}
                       {activeTab === 'stockist' && (
-                        <td className="py-1.5 px-2 text-center text-rose-700 font-bold">{item.pendingQty}</td>
+                        <td className="py-1.5 px-2 text-center text-rose-700 font-bold font-mono whitespace-nowrap">{item.pendingQty}</td>
                       )}
-                      <td className="py-1.5 px-2.5 text-right font-semibold text-slate-800">
+                      <td className="py-1.5 px-2.5 text-right font-semibold text-slate-800 font-mono whitespace-nowrap">
                         ₹{Number(item.manualUnitRate).toFixed(2)}
                       </td>
-                      <td className="py-1.5 px-2.5 text-right text-slate-600 font-mono">
+                      <td className="py-1.5 px-2.5 text-right text-slate-600 font-mono whitespace-nowrap">
                         {formatCurrency(item.lineSubtotal)}
                       </td>
-                      <td className="py-1.5 px-1 text-center text-slate-600 font-mono text-[10px]">
+                      <td className="py-1.5 px-1 text-center text-slate-600 font-mono text-[10px] whitespace-nowrap">
                         {item.gstRate}%
                       </td>
-                      <td className="py-1.5 px-2.5 text-right font-black text-slate-900 font-mono">
+                      <td className="py-1.5 px-2.5 text-right font-black text-slate-900 font-mono whitespace-nowrap">
                         {formatCurrency(item.lineTotal)}
                       </td>
                     </tr>

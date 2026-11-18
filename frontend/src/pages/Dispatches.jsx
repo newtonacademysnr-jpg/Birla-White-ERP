@@ -224,29 +224,29 @@ export default function Dispatches() {
 
         {/* Desktop / Tablet View: Full Table (Hidden on screens < md) */}
         <div className="hidden md:block overflow-x-auto">
-          <table className="w-full text-left text-xs min-w-[850px]">
-            <thead className="bg-[#1A0B0E] text-amber-100 font-semibold">
+          <table className="w-full text-left text-xs min-w-[1250px] border-collapse">
+            <thead className="bg-[#1A0B0E] text-amber-100 font-bold uppercase tracking-wider text-[11px]">
               <tr>
-                <th className="py-3 px-4">Order Ref</th>
-                <th className="py-3 px-4">Retailer & Site</th>
-                <th className="py-3 px-4">Fulfillment Mode</th>
-                <th className="py-3 px-4 text-right">Dispatched Value</th>
-                <th className="py-3 px-4 text-right">Pending Balance</th>
-                <th className="py-3 px-4">Partial Reason</th>
-                <th className="py-3 px-4 text-center">Split Receipts & Challan</th>
-                <th className="py-3 px-4 text-center">Action</th>
+                <th className="py-3.5 px-4 whitespace-nowrap min-w-[150px]">Order Ref</th>
+                <th className="py-3.5 px-4 min-w-[240px]">Retailer & Site</th>
+                <th className="py-3.5 px-4 text-center whitespace-nowrap min-w-[120px]">Fulfillment Mode</th>
+                <th className="py-3.5 px-4 text-right whitespace-nowrap min-w-[130px]">Dispatched Value</th>
+                <th className="py-3.5 px-4 text-right whitespace-nowrap min-w-[130px]">Pending Balance</th>
+                <th className="py-3.5 px-4 min-w-[200px]">Partial Reason</th>
+                <th className="py-3.5 px-4 text-center whitespace-nowrap min-w-[220px]">Split Receipts & Challan</th>
+                <th className="py-3.5 px-4 text-center whitespace-nowrap min-w-[140px]">Action</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#EEDFB8]/70">
+            <tbody className="divide-y divide-[#EEDFB8]/70 bg-white">
               {loading ? (
                 <tr>
-                  <td colSpan={8} className="py-8 text-center text-stone-400">
+                  <td colSpan={8} className="py-8 text-center text-stone-400 font-medium">
                     Loading dispatch records...
                   </td>
                 </tr>
               ) : orders.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="py-8 text-center text-stone-400">
+                  <td colSpan={8} className="py-8 text-center text-stone-400 font-medium">
                     No orders in dispatch queue.
                   </td>
                 </tr>
@@ -255,35 +255,35 @@ export default function Dispatches() {
                   return (
                     <tr key={order.id} className="hover:bg-[#FAF6E8]/70 transition-colors">
                       {/* Order Ref */}
-                      <td className="py-3.5 px-4">
+                      <td className="py-3.5 px-4 whitespace-nowrap align-middle">
                         <button
                           type="button"
                           onClick={() => setOrderDetailsModal({ isOpen: true, order })}
-                          className="font-mono font-bold text-birlaRed-950 hover:text-amber-700 hover:underline block text-left cursor-pointer transition-colors"
+                          className="font-mono font-black text-sm text-birlaRed-950 hover:text-amber-700 hover:underline block text-left cursor-pointer transition-colors whitespace-nowrap"
                           title="Click to view full Order Details"
                         >
                           {order.orderNumber}
                         </button>
-                        <span className="text-[11px] text-stone-500 font-mono">{formatDate(order.orderDate)}</span>
+                        <span className="text-[11px] text-stone-500 font-mono block mt-0.5 whitespace-nowrap">{formatDate(order.orderDate)}</span>
                       </td>
 
                       {/* Retailer & Site */}
-                      <td className="py-3.5 px-4">
+                      <td className="py-3.5 px-4 align-middle">
                         <button
                           type="button"
                           onClick={() => setOrderDetailsModal({ isOpen: true, order })}
                           className="text-left cursor-pointer group block"
                           title="Click to view full Order Details"
                         >
-                          <span className="font-bold text-stone-900 group-hover:text-birlaRed-800 group-hover:underline block">{order.retailer?.firmName}</span>
-                          <span className="text-[11px] text-stone-500 truncate block max-w-xs">{order.deliveryLocation || order.retailer?.locality}</span>
+                          <span className="font-bold text-xs text-stone-900 group-hover:text-birlaRed-800 group-hover:underline block leading-snug">{order.retailer?.firmName}</span>
+                          <span className="text-[11px] text-stone-500 truncate block max-w-xs mt-0.5">{order.deliveryLocation || order.retailer?.locality}</span>
                         </button>
                       </td>
 
                       {/* Fulfillment Status */}
-                      <td className="py-3.5 px-4">
+                      <td className="py-3.5 px-4 text-center whitespace-nowrap align-middle">
                         <span
-                          className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${
+                          className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold border whitespace-nowrap ${
                             order.fulfillmentStatus === 'Full'
                               ? 'bg-emerald-50 text-emerald-800 border-emerald-300'
                               : order.fulfillmentStatus === 'Partial'
@@ -298,25 +298,25 @@ export default function Dispatches() {
                       </td>
 
                       {/* Dispatched Bill Value */}
-                      <td className="py-3.5 px-4 text-right">
-                        <span className="font-mono font-bold text-emerald-700 block">
+                      <td className="py-3.5 px-4 text-right whitespace-nowrap align-middle font-mono">
+                        <span className="font-mono font-black text-sm text-emerald-700 block whitespace-nowrap">
                           {formatCurrency(order.dispatchedAmount)}
                         </span>
-                        <span className="text-[10px] text-stone-400">Billed: {formatCurrency(order.grandTotal)}</span>
+                        <span className="text-[10px] text-stone-500 font-mono block whitespace-nowrap mt-0.5">Billed: {formatCurrency(order.grandTotal)}</span>
                       </td>
 
                       {/* Pending Balance Value */}
-                      <td className="py-3.5 px-4 text-right">
-                        <span className="font-mono font-bold text-rose-700 block">
+                      <td className="py-3.5 px-4 text-right whitespace-nowrap align-middle font-mono">
+                        <span className="font-mono font-black text-sm text-rose-700 block whitespace-nowrap">
                           {formatCurrency(order.pendingAmount)}
                         </span>
-                        <span className="text-[10px] text-stone-400">Remaining</span>
+                        <span className="text-[10px] text-stone-500 font-mono block whitespace-nowrap mt-0.5">Remaining</span>
                       </td>
 
                       {/* Partial Reason */}
-                      <td className="py-3.5 px-4 max-w-xs">
+                      <td className="py-3.5 px-4 align-middle max-w-xs">
                         {order.partialReason ? (
-                          <div className="text-[11px] text-amber-900 bg-amber-50 p-2 rounded-lg border border-amber-300">
+                          <div className="text-[11px] text-amber-900 bg-amber-50 p-2 rounded-lg border border-amber-300 leading-snug">
                             <strong>Reason:</strong> {order.partialReason}
                           </div>
                         ) : (
@@ -325,41 +325,41 @@ export default function Dispatches() {
                       </td>
 
                       {/* Stage-Specific Split Receipts */}
-                      <td className="py-3.5 px-4 text-center">
-                        <div className="flex items-center justify-center space-x-1.5 flex-wrap gap-y-1">
+                      <td className="py-3.5 px-4 text-center whitespace-nowrap align-middle">
+                        <div className="flex items-center justify-center space-x-1.5 whitespace-nowrap">
                           {/* 1. Dispatched Goods Challan */}
                           <button
                             onClick={() => setChallanModal({ isOpen: true, order, mode: 'dispatched' })}
-                            className="px-2.5 py-1 bg-emerald-700 hover:bg-emerald-800 text-white text-[11px] font-bold rounded-lg transition-all flex items-center space-x-1 shadow-xs"
+                            className="px-2.5 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white text-[11px] font-bold rounded-lg transition-all flex items-center space-x-1 shadow-xs whitespace-nowrap cursor-pointer active:scale-95"
                             title="Open Dispatched Delivery Challan"
                           >
-                            <Truck className="w-3 h-3 text-amber-300" />
+                            <Truck className="w-3.5 h-3.5 text-amber-300" />
                             <span>1. Dispatch Challan</span>
                           </button>
 
                           {/* 2. Pending Backorder Slip */}
                           <button
                             onClick={() => setChallanModal({ isOpen: true, order, mode: 'pending' })}
-                            className={`px-2.5 py-1 text-[11px] font-bold rounded-lg transition-all flex items-center space-x-1 shadow-xs ${
+                            className={`px-2.5 py-1.5 text-[11px] font-bold rounded-lg transition-all flex items-center space-x-1 shadow-xs whitespace-nowrap cursor-pointer active:scale-95 ${
                               order.pendingAmount > 0 || order.fulfillmentStatus === 'Partial'
                                 ? 'bg-amber-600 hover:bg-amber-700 text-white'
                                 : 'bg-[#FAF6E8] text-stone-600 hover:bg-[#F5ECCB] border border-[#EEDFB8]'
                             }`}
                             title="Open Pending Backorder Slip"
                           >
-                            <Clock className="w-3 h-3" />
+                            <Clock className="w-3.5 h-3.5" />
                             <span>2. Pending Slip</span>
                           </button>
                         </div>
                       </td>
 
                       {/* Action */}
-                      <td className="py-3.5 px-4 text-center">
+                      <td className="py-3.5 px-4 text-center whitespace-nowrap align-middle">
                         <button
                           onClick={() => setDispatchModal({ isOpen: true, order })}
-                          className="px-3 py-1.5 bg-birlaRed-800 hover:bg-birlaRed-700 text-white text-[11px] font-bold rounded-lg shadow-xs transition-all flex items-center space-x-1 mx-auto"
+                          className="px-3.5 py-1.5 bg-birlaRed-800 hover:bg-birlaRed-900 text-white text-[11px] font-bold rounded-lg shadow-xs transition-all flex items-center space-x-1.5 mx-auto whitespace-nowrap cursor-pointer active:scale-95"
                         >
-                          <Truck className="w-3 h-3" />
+                          <Truck className="w-3.5 h-3.5 text-amber-300" />
                           <span>Fulfill Dispatch</span>
                         </button>
                       </td>

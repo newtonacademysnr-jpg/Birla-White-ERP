@@ -326,30 +326,30 @@ export default function LedgerPayments() {
 
           {/* Desktop / Tablet View: Full Table (Hidden on screens < md) */}
           <div className="hidden md:block overflow-x-auto">
-            <table className="w-full text-left text-xs min-w-[850px]">
-              <thead className="bg-slate-900 text-white font-semibold">
+            <table className="w-full text-left text-xs min-w-[1200px] border-collapse">
+              <thead className="bg-[#1A0B0E] text-amber-100 font-bold uppercase tracking-wider text-[11px]">
                 <tr>
-                  <th className="py-3 px-4 w-8"></th>
-                  <th className="py-3 px-4">Retailer Firm & Location</th>
-                  <th className="py-3 px-4 text-right">Invoiced (₹)</th>
-                  <th className="py-3 px-4 text-right">Paid (₹)</th>
-                  <th className="py-3 px-4 text-right">Outstanding (₹)</th>
-                  <th className="py-3 px-4 text-center">Credit Days</th>
-                  <th className="py-3 px-4 text-center">Live Ageing / Due Days</th>
-                  <th className="py-3 px-4 text-right">Overdue Amount (₹)</th>
-                  <th className="py-3 px-4 text-center">Actions</th>
+                  <th className="py-3.5 px-4 w-8"></th>
+                  <th className="py-3.5 px-4 min-w-[240px]">Retailer Firm & Location</th>
+                  <th className="py-3.5 px-4 text-right whitespace-nowrap min-w-[125px]">Invoiced (₹)</th>
+                  <th className="py-3.5 px-4 text-right whitespace-nowrap min-w-[125px]">Paid (₹)</th>
+                  <th className="py-3.5 px-4 text-right whitespace-nowrap min-w-[125px]">Outstanding (₹)</th>
+                  <th className="py-3.5 px-4 text-center whitespace-nowrap min-w-[100px]">Credit Days</th>
+                  <th className="py-3.5 px-4 text-center whitespace-nowrap min-w-[160px]">Live Ageing / Due Days</th>
+                  <th className="py-3.5 px-4 text-right whitespace-nowrap min-w-[125px]">Overdue Amount (₹)</th>
+                  <th className="py-3.5 px-4 text-center whitespace-nowrap min-w-[100px]">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-[#EEDFB8]/70 bg-white">
                 {loading ? (
                   <tr>
-                    <td colSpan={9} className="py-8 text-center text-slate-400">
+                    <td colSpan={9} className="py-8 text-center text-stone-400 font-medium">
                       Loading ledger accounts...
                     </td>
                   </tr>
                 ) : ledgerData.length === 0 ? (
                   <tr>
-                    <td colSpan={9} className="py-8 text-center text-slate-400">
+                    <td colSpan={9} className="py-8 text-center text-stone-400 font-medium">
                       No retailer accounts found.
                     </td>
                   </tr>
@@ -360,78 +360,78 @@ export default function LedgerPayments() {
                     return (
                       <React.Fragment key={item.id}>
                         <tr
-                          className={`hover:bg-slate-50/80 transition-colors cursor-pointer ${
+                          className={`hover:bg-[#FAF6E8]/70 transition-colors cursor-pointer ${
                             item.hasOverdue ? 'bg-rose-50/20' : ''
                           }`}
                           onClick={() => setExpandedRetailerId(isExpanded ? null : item.id)}
                         >
                           {/* Expand chevron */}
-                          <td className="py-3.5 px-4 text-slate-400">
-                            {isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+                          <td className="py-3.5 px-4 text-stone-400 align-middle">
+                            {isExpanded ? <ChevronDown className="w-4 h-4 text-amber-700" /> : <ChevronRight className="w-4 h-4" />}
                           </td>
 
                           {/* Retailer Info */}
-                          <td className="py-3.5 px-4">
-                            <span className="font-bold text-slate-900 text-sm block">{item.firmName}</span>
-                            <span className="text-[11px] text-slate-500">
+                          <td className="py-3.5 px-4 align-middle">
+                            <span className="font-bold text-stone-900 text-xs block leading-snug">{item.firmName}</span>
+                            <span className="text-[11px] text-stone-500 truncate block mt-0.5">
                               {item.ownerName} • {item.mobileNumber} • {item.locality}, {item.tehsil}
                             </span>
                           </td>
 
                           {/* Total Invoiced */}
-                          <td className="py-3.5 px-4 text-right font-medium text-slate-900">
+                          <td className="py-3.5 px-4 text-right font-medium text-stone-900 whitespace-nowrap align-middle font-mono">
                             {formatCurrency(item.totalInvoiced)}
                           </td>
 
                           {/* Total Paid */}
-                          <td className="py-3.5 px-4 text-right font-bold text-emerald-600">
+                          <td className="py-3.5 px-4 text-right font-bold text-emerald-700 whitespace-nowrap align-middle font-mono">
                             {formatCurrency(item.totalPaid)}
                           </td>
 
                           {/* Outstanding Balance */}
-                          <td className="py-3.5 px-4 text-right font-extrabold text-slate-900">
+                          <td className="py-3.5 px-4 text-right font-black text-stone-900 whitespace-nowrap align-middle font-mono">
                             {formatCurrency(item.outstandingBalance)}
                           </td>
 
                           {/* Credit Terms */}
-                          <td className="py-3.5 px-4 text-center font-medium text-slate-600">
+                          <td className="py-3.5 px-4 text-center font-medium text-stone-600 whitespace-nowrap align-middle">
                             {item.creditDays} Days
                           </td>
 
                           {/* Live Ageing / Due Days Counter */}
-                          <td className="py-3.5 px-4 text-center">
+                          <td className="py-3.5 px-4 text-center whitespace-nowrap align-middle">
                             {item.maxOverdueDays > 0 ? (
-                              <span className="inline-flex items-center space-x-1 px-2.5 py-1 rounded-full text-[11px] font-black bg-rose-100 text-rose-800 border border-rose-300 animate-pulse">
+                              <span className="inline-flex items-center space-x-1 px-2.5 py-1 rounded-full text-[10px] font-black bg-rose-100 text-rose-800 border border-rose-300 animate-pulse whitespace-nowrap">
                                 <Clock className="w-3 h-3 text-rose-600" />
                                 <span>{item.maxOverdueDays} DAYS OVERDUE</span>
                               </span>
                             ) : item.outstandingBalance > 0 ? (
-                              <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800">
+                              <span className="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-900 border border-amber-300 whitespace-nowrap">
                                 Current (Within Limit)
                               </span>
                             ) : (
-                              <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
+                              <span className="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 whitespace-nowrap">
                                 Zero Balance
                               </span>
                             )}
                           </td>
 
                           {/* Overdue Amount */}
-                          <td className="py-3.5 px-4 text-right">
+                          <td className="py-3.5 px-4 text-right whitespace-nowrap align-middle font-mono">
                             {item.overdueAmount > 0 ? (
-                              <span className="font-black text-rose-600">
+                              <span className="font-black text-rose-700 whitespace-nowrap">
                                 {formatCurrency(item.overdueAmount)}
                               </span>
                             ) : (
-                              <span className="text-slate-400 font-mono">₹ 0.00</span>
+                              <span className="text-stone-400 font-mono whitespace-nowrap">₹ 0.00</span>
                             )}
                           </td>
 
                           {/* Action */}
-                          <td className="py-3.5 px-4 text-center" onClick={(e) => e.stopPropagation()}>
+                          <td className="py-3.5 px-4 text-center whitespace-nowrap align-middle" onClick={(e) => e.stopPropagation()}>
                             <button
                               onClick={() => handleOpenPayment(item.id)}
-                              className="px-3 py-1 bg-birla-crimson hover:bg-birla-darkRed text-white text-[11px] font-bold rounded-lg transition-all shadow-xs"
+                              className="px-3.5 py-1.5 bg-birlaRed-800 hover:bg-birlaRed-900 text-white text-[11px] font-bold rounded-lg transition-all shadow-xs whitespace-nowrap cursor-pointer active:scale-95"
                             >
                               Pay Now
                             </button>
@@ -594,63 +594,63 @@ export default function LedgerPayments() {
 
           {/* Desktop / Tablet View: Full Table (Hidden on screens < md) */}
           <div className="hidden md:block overflow-x-auto">
-            <table className="w-full text-left text-xs min-w-[750px]">
-              <thead className="bg-slate-900 text-white font-semibold">
+            <table className="w-full text-left text-xs min-w-[1180px] border-collapse">
+              <thead className="bg-[#1A0B0E] text-amber-100 font-bold uppercase tracking-wider text-[11px]">
                 <tr>
-                  <th className="py-3 px-4">Receipt No & Date</th>
-                  <th className="py-3 px-4">Retailer (Payer)</th>
-                  <th className="py-3 px-4">Linked Order</th>
-                  <th className="py-3 px-4 text-right">Amount Paid (₹)</th>
-                  <th className="py-3 px-4 text-center">Payment Mode</th>
-                  <th className="py-3 px-4">Cheque Date / UTR Ref</th>
-                  <th className="py-3 px-4">Recorded By</th>
-                  <th className="py-3 px-4 text-center">Receipt PDF</th>
-                  <th className="py-3 px-4 text-center">Action</th>
+                  <th className="py-3.5 px-4 whitespace-nowrap min-w-[150px]">Receipt No & Date</th>
+                  <th className="py-3.5 px-4 min-w-[200px]">Retailer (Payer)</th>
+                  <th className="py-3.5 px-4 whitespace-nowrap min-w-[160px]">Linked Order</th>
+                  <th className="py-3.5 px-4 text-right whitespace-nowrap min-w-[130px]">Amount Paid (₹)</th>
+                  <th className="py-3.5 px-4 text-center whitespace-nowrap min-w-[110px]">Payment Mode</th>
+                  <th className="py-3.5 px-4 whitespace-nowrap min-w-[150px]">Cheque Date / UTR Ref</th>
+                  <th className="py-3.5 px-4 whitespace-nowrap min-w-[130px]">Recorded By</th>
+                  <th className="py-3.5 px-4 text-center whitespace-nowrap min-w-[110px]">Receipt PDF</th>
+                  <th className="py-3.5 px-4 text-center whitespace-nowrap min-w-[90px]">Action</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-[#EEDFB8]/70 bg-white">
                 {payments.length === 0 ? (
                   <tr>
-                    <td colSpan={9} className="py-8 text-center text-slate-400">
+                    <td colSpan={9} className="py-8 text-center text-stone-400 font-medium">
                       No payment receipts generated yet.
                     </td>
                   </tr>
                 ) : (
                   payments.map((p) => (
-                    <tr key={p.id} className="hover:bg-slate-50/80 transition-colors">
+                    <tr key={p.id} className="hover:bg-[#FAF6E8]/70 transition-colors">
                       {/* Receipt No */}
-                      <td className="py-3.5 px-4 font-mono font-bold text-slate-900">
-                        {p.receiptNumber}
-                        <span className="text-[10px] text-slate-500 font-normal block">{formatDate(p.transactionDate)}</span>
+                      <td className="py-3.5 px-4 font-mono font-bold text-stone-900 whitespace-nowrap align-middle">
+                        <span className="block font-black text-xs text-birlaRed-950">{p.receiptNumber}</span>
+                        <span className="text-[10px] text-stone-500 font-normal block font-mono">{formatDate(p.transactionDate)}</span>
                       </td>
 
                       {/* Retailer */}
-                      <td className="py-3.5 px-4 font-semibold text-slate-900">
-                        {p.retailer?.firmName}
-                        <span className="text-[10px] text-slate-500 font-normal block">{p.retailer?.locality}</span>
+                      <td className="py-3.5 px-4 align-middle">
+                        <span className="font-bold text-stone-900 block text-xs leading-snug">{p.retailer?.firmName}</span>
+                        <span className="text-[10px] text-stone-500 font-normal block truncate">{p.retailer?.locality}</span>
                       </td>
 
                       {/* Order */}
-                      <td className="py-3.5 px-4 font-mono text-slate-600">
+                      <td className="py-3.5 px-4 font-mono text-stone-600 whitespace-nowrap align-middle">
                         {p.order ? p.order.orderNumber : 'Running Account Ledger'}
                       </td>
 
                       {/* Amount Paid */}
-                      <td className="py-3.5 px-4 text-right font-black text-sm text-emerald-600">
+                      <td className="py-3.5 px-4 text-right font-black text-sm text-emerald-700 whitespace-nowrap align-middle font-mono">
                         {formatCurrency(p.amountPaid)}
                       </td>
 
                       {/* Mode */}
-                      <td className="py-3.5 px-4 text-center">
+                      <td className="py-3.5 px-4 text-center whitespace-nowrap align-middle">
                         <span
-                          className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
+                          className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold border whitespace-nowrap ${
                             p.paymentMode === 'UPI'
-                              ? 'bg-blue-100 text-blue-800'
+                              ? 'bg-blue-50 text-blue-800 border-blue-300'
                               : p.paymentMode === 'Cheque'
-                              ? 'bg-amber-100 text-amber-800'
+                              ? 'bg-amber-100 text-amber-900 border-amber-300'
                               : p.paymentMode === 'Cash'
-                              ? 'bg-emerald-100 text-emerald-800'
-                              : 'bg-purple-100 text-purple-800'
+                              ? 'bg-emerald-50 text-emerald-800 border-emerald-300'
+                              : 'bg-purple-50 text-purple-800 border-purple-300'
                           }`}
                         >
                           {p.paymentMode}
@@ -658,22 +658,22 @@ export default function LedgerPayments() {
                       </td>
 
                       {/* Cheque Date / UTR */}
-                      <td className="py-3.5 px-4 text-slate-600">
+                      <td className="py-3.5 px-4 text-stone-600 whitespace-nowrap align-middle">
                         {p.paymentMode === 'Cheque' && p.chequeDate ? (
-                          <span className="text-amber-800 font-semibold block">
+                          <span className="text-amber-800 font-semibold block text-[11px]">
                             Chq Date: {formatDate(p.chequeDate)}
                           </span>
                         ) : null}
-                        <span className="text-[11px] font-mono text-slate-500">{p.referenceNo || 'Direct Entry'}</span>
+                        <span className="text-[11px] font-mono text-stone-500">{p.referenceNo || 'Direct Entry'}</span>
                       </td>
 
                       {/* Recorded By */}
-                      <td className="py-3.5 px-4 text-slate-600 font-medium">
+                      <td className="py-3.5 px-4 text-stone-600 font-medium whitespace-nowrap align-middle">
                         {p.recordedBy || 'Suraj (PZ7550)'}
                       </td>
 
                       {/* Download Receipt PDF */}
-                      <td className="py-3.5 px-4 text-center">
+                      <td className="py-3.5 px-4 text-center whitespace-nowrap align-middle">
                         <button
                           onClick={() => {
                             if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {

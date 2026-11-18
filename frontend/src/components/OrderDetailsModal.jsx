@@ -107,30 +107,30 @@ export default function OrderDetailsModal({ isOpen = true, onClose, order, onOpe
               Ordered Products & Quantities
             </div>
             <div className="overflow-x-auto">
-              <table className="w-full text-left min-w-[550px]">
-                <thead className="bg-[#1A0B0E] text-amber-100 font-semibold text-[11px]">
+              <table className="w-full text-left min-w-[620px] border-collapse">
+                <thead className="bg-[#1A0B0E] text-amber-100 font-bold uppercase tracking-wider text-[11px]">
                   <tr>
-                    <th className="py-2 px-3">Product</th>
-                    <th className="py-2 px-2 text-center">Unit</th>
-                    <th className="py-2 px-2 text-center">Ordered</th>
-                    <th className="py-2 px-2 text-center">Dispatched</th>
-                    <th className="py-2 px-2 text-center">Pending</th>
-                    <th className="py-2 px-3 text-right">Rate</th>
-                    <th className="py-2 px-3 text-right">Total</th>
+                    <th className="py-2.5 px-3 min-w-[200px]">Product Description</th>
+                    <th className="py-2.5 px-2 text-center whitespace-nowrap min-w-[80px]">Unit</th>
+                    <th className="py-2.5 px-2 text-center whitespace-nowrap min-w-[70px]">Ordered</th>
+                    <th className="py-2.5 px-2 text-center whitespace-nowrap min-w-[80px]">Dispatched</th>
+                    <th className="py-2.5 px-2 text-center whitespace-nowrap min-w-[70px]">Pending</th>
+                    <th className="py-2.5 px-3 text-right whitespace-nowrap min-w-[90px]">Rate</th>
+                    <th className="py-2.5 px-3 text-right whitespace-nowrap min-w-[110px]">Total</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[#EEDFB8]/70">
+                <tbody className="divide-y divide-[#EEDFB8]/70 bg-white">
                   {items.map((it, idx) => (
                     <tr key={idx} className="hover:bg-[#FAF6E8]/60">
-                      <td className="py-2 px-3 font-bold text-stone-900">{it.productName}</td>
-                      <td className="py-2 px-2 text-center text-stone-600 text-[11px] font-mono">
+                      <td className="py-2.5 px-3 font-bold text-stone-900 leading-snug">{it.productName}</td>
+                      <td className="py-2.5 px-2 text-center text-stone-600 text-[11px] font-mono whitespace-nowrap">
                         {it.unitWeight} {it.weightUnit}
                       </td>
-                      <td className="py-2 px-2 text-center font-bold text-stone-900 font-mono">{it.orderedQty}</td>
-                      <td className="py-2 px-2 text-center font-bold text-emerald-700 font-mono">{it.dispatchedQty}</td>
-                      <td className="py-2 px-2 text-center font-bold text-rose-700 font-mono">{it.pendingQty}</td>
-                      <td className="py-2 px-3 text-right font-mono text-stone-700">₹{it.unitPrice}</td>
-                      <td className="py-2 px-3 text-right font-black font-mono text-stone-900">{formatCurrency(it.totalAmount)}</td>
+                      <td className="py-2.5 px-2 text-center font-bold text-stone-900 font-mono whitespace-nowrap">{it.orderedQty}</td>
+                      <td className="py-2.5 px-2 text-center font-bold text-emerald-700 font-mono whitespace-nowrap">{it.dispatchedQty}</td>
+                      <td className="py-2.5 px-2 text-center font-bold text-rose-700 font-mono whitespace-nowrap">{it.pendingQty}</td>
+                      <td className="py-2.5 px-3 text-right font-mono text-stone-700 whitespace-nowrap">₹{it.unitPrice}</td>
+                      <td className="py-2.5 px-3 text-right font-black font-mono text-stone-900 whitespace-nowrap">{formatCurrency(it.totalAmount)}</td>
                     </tr>
                   ))}
                 </tbody>

@@ -752,20 +752,20 @@ export default function Dashboard({ onOpenNewOrder }) {
 
         {/* Desktop / Tablet View: Full Table (Hidden on screens < md) */}
         <div className="hidden md:block overflow-x-auto">
-          <table className="w-full text-left text-xs min-w-[700px] lg:min-w-full">
-            <thead className="bg-[#1A0B0E] text-amber-100 font-semibold">
+          <table className="w-full text-left text-xs min-w-[1050px] border-collapse">
+            <thead className="bg-[#1A0B0E] text-amber-100 font-bold uppercase tracking-wider text-[11px]">
               <tr>
-                <th className="py-3 px-4">Order #</th>
-                <th className="py-3 px-4">Date</th>
-                <th className="py-3 px-4">Retailer / Dealer</th>
-                <th className="py-3 px-4">Tehsil</th>
-                <th className="py-3 px-4 text-right">Grand Total (₹)</th>
-                <th className="py-3 px-4 text-center">Fulfillment</th>
-                <th className="py-3 px-4 text-center">Delivery</th>
-                <th className="py-3 px-4 text-right">Actions</th>
+                <th className="py-3.5 px-4 whitespace-nowrap min-w-[140px]">Order #</th>
+                <th className="py-3.5 px-4 whitespace-nowrap min-w-[110px]">Date</th>
+                <th className="py-3.5 px-4 min-w-[200px]">Retailer / Dealer</th>
+                <th className="py-3.5 px-4 whitespace-nowrap min-w-[110px]">Tehsil</th>
+                <th className="py-3.5 px-4 text-right whitespace-nowrap min-w-[125px]">Grand Total (₹)</th>
+                <th className="py-3.5 px-4 text-center whitespace-nowrap min-w-[100px]">Fulfillment</th>
+                <th className="py-3.5 px-4 text-center whitespace-nowrap min-w-[100px]">Delivery</th>
+                <th className="py-3.5 px-4 text-right whitespace-nowrap min-w-[170px]">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#EEDFB8]/70">
+            <tbody className="divide-y divide-[#EEDFB8]/70 bg-white">
               {filteredOrders.length === 0 ? (
                 <tr>
                   <td colSpan={8} className="py-8 text-center text-stone-400 font-medium">
@@ -775,42 +775,42 @@ export default function Dashboard({ onOpenNewOrder }) {
               ) : (
                 filteredOrders.map((o) => (
                   <tr key={o.id} className="hover:bg-[#FAF6E8]/70 transition-colors">
-                    <td className="py-3 px-4 font-mono font-bold text-birlaRed-900">
+                    <td className="py-3.5 px-4 font-mono font-bold text-birlaRed-900 whitespace-nowrap align-middle">
                       <button
                         type="button"
                         onClick={() => setOrderDetailsModal({ isOpen: true, order: o })}
-                        className="hover:underline text-left font-mono font-black text-birlaRed-900 hover:text-amber-700 flex items-center space-x-1 cursor-pointer transition-colors group"
+                        className="hover:underline text-left font-mono font-black text-birlaRed-900 hover:text-amber-700 flex items-center space-x-1 cursor-pointer transition-colors group whitespace-nowrap"
                         title="Click to view full Order Details"
                       >
                         <span>{o.orderNumber}</span>
                         <ArrowUpRight className="w-3 h-3 text-amber-700 opacity-60 group-hover:opacity-100" />
                       </button>
                     </td>
-                    <td className="py-3 px-4 text-stone-500 font-mono">
+                    <td className="py-3.5 px-4 text-stone-500 font-mono whitespace-nowrap align-middle">
                       {formatDate(o.orderDate)}
                     </td>
-                    <td className="py-3 px-4">
+                    <td className="py-3.5 px-4 align-middle">
                       <button
                         type="button"
                         onClick={() => setOrderDetailsModal({ isOpen: true, order: o })}
                         className="text-left cursor-pointer group block"
                         title="Click to view full Order Details"
                       >
-                        <div className="font-bold text-stone-900 group-hover:text-birlaRed-900 group-hover:underline">
+                        <div className="font-bold text-stone-900 group-hover:text-birlaRed-900 group-hover:underline leading-snug">
                           {o.retailer?.firmName}
                         </div>
-                        <div className="text-[10px] text-stone-400">{o.retailer?.locality}</div>
+                        <div className="text-[10px] text-stone-400 truncate">{o.retailer?.locality}</div>
                       </button>
                     </td>
-                    <td className="py-3 px-4 text-stone-600">
+                    <td className="py-3.5 px-4 text-stone-600 whitespace-nowrap align-middle">
                       {o.retailer?.tehsil || 'Mandi Sadar'}
                     </td>
-                    <td className="py-3 px-4 text-right font-mono font-black text-stone-900">
+                    <td className="py-3.5 px-4 text-right font-mono font-black text-stone-900 whitespace-nowrap align-middle">
                       {formatCurrency(o.grandTotal)}
                     </td>
-                    <td className="py-3 px-4 text-center">
+                    <td className="py-3.5 px-4 text-center whitespace-nowrap align-middle">
                       <span
-                        className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${
+                        className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold border whitespace-nowrap ${
                           o.fulfillmentStatus === 'Full'
                             ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
                             : o.fulfillmentStatus === 'Partial'
@@ -821,9 +821,9 @@ export default function Dashboard({ onOpenNewOrder }) {
                         {o.fulfillmentStatus}
                       </span>
                     </td>
-                    <td className="py-3 px-4 text-center">
+                    <td className="py-3.5 px-4 text-center whitespace-nowrap align-middle">
                       <span
-                        className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${
+                        className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold border whitespace-nowrap ${
                           o.deliveryStatus === 'Delivered'
                             ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
                             : 'bg-stone-100 text-stone-600 border-stone-200'
@@ -832,12 +832,12 @@ export default function Dashboard({ onOpenNewOrder }) {
                         {o.deliveryStatus}
                       </span>
                     </td>
-                    <td className="py-3 px-4 text-right">
-                      <div className="flex items-center justify-end space-x-1.5 flex-wrap gap-y-1">
+                    <td className="py-3.5 px-4 text-right whitespace-nowrap align-middle">
+                      <div className="flex items-center justify-end space-x-1.5 whitespace-nowrap">
                         <button
                           type="button"
                           onClick={() => setReceiptModal({ isOpen: true, order: o })}
-                          className="px-2.5 py-1 bg-white hover:bg-birlaRed-800 hover:text-white text-stone-800 border border-[#EEDFB8] rounded-lg text-[11px] font-bold shadow-xs transition-all flex items-center space-x-1 cursor-pointer"
+                          className="px-2.5 py-1 bg-white hover:bg-birlaRed-800 hover:text-white text-stone-800 border border-[#EEDFB8] rounded-lg text-[11px] font-bold shadow-xs transition-all flex items-center space-x-1 cursor-pointer whitespace-nowrap"
                           title="View Dual Drop-Shipping Tax Invoice & Delivery Receipt"
                         >
                           <Receipt className="w-3.5 h-3.5 text-birlaRed-800" />
@@ -847,7 +847,7 @@ export default function Dashboard({ onOpenNewOrder }) {
                         <button
                           type="button"
                           onClick={() => setChallanModal({ isOpen: true, order: o, mode: 'dispatched' })}
-                          className="px-2 py-1 bg-[#FAF6E8] hover:bg-emerald-700 hover:text-white text-emerald-900 border border-[#EEDFB8] rounded-lg text-[11px] font-bold shadow-xs transition-all flex items-center space-x-1 cursor-pointer"
+                          className="px-2 py-1 bg-[#FAF6E8] hover:bg-emerald-700 hover:text-white text-emerald-900 border border-[#EEDFB8] rounded-lg text-[11px] font-bold shadow-xs transition-all flex items-center space-x-1 cursor-pointer whitespace-nowrap"
                           title="View Dispatched Material Delivery Challan"
                         >
                           <Truck className="w-3.5 h-3.5" />

@@ -242,18 +242,18 @@ export default function DispatchChallanModal({ isOpen = true, onClose, order, in
 
             {/* Items Table */}
             <div className="overflow-x-auto mb-3">
-              <table className="w-full text-left text-xs border border-slate-200 min-w-[650px]">
-                <thead className="bg-[#1A0B0E] text-amber-100 font-semibold text-[10px]">
+              <table className="w-full text-left text-xs border border-slate-200 min-w-[700px] border-collapse">
+                <thead className="bg-[#1A0B0E] text-amber-100 font-bold uppercase tracking-wider text-[10px]">
                   <tr>
-                    <th className="py-2 px-2.5">#</th>
-                    <th className="py-2 px-2.5">Product Description</th>
-                    <th className="py-2 px-2 text-center">Packaging</th>
-                    <th className="py-2 px-2 text-center">Ordered</th>
-                    <th className="py-2 px-2 text-center">
+                    <th className="py-2 px-2.5 whitespace-nowrap w-8">#</th>
+                    <th className="py-2 px-2.5 min-w-[200px]">Product Description</th>
+                    <th className="py-2 px-2 text-center whitespace-nowrap min-w-[100px]">Packaging</th>
+                    <th className="py-2 px-2 text-center whitespace-nowrap min-w-[65px]">Ordered</th>
+                    <th className="py-2 px-2 text-center whitespace-nowrap min-w-[95px]">
                       {activeTab === 'dispatched' ? 'Dispatched Qty' : 'Pending Qty'}
                     </th>
-                    <th className="py-2 px-2.5 text-right">Rate (₹ Inc. GST)</th>
-                    <th className="py-2 px-2.5 text-right">Value (₹)</th>
+                    <th className="py-2 px-2.5 text-right whitespace-nowrap min-w-[110px]">Rate (₹ Inc. GST)</th>
+                    <th className="py-2 px-2.5 text-right whitespace-nowrap min-w-[110px]">Value (₹)</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200 text-[11px]">
@@ -270,19 +270,19 @@ export default function DispatchChallanModal({ isOpen = true, onClose, order, in
 
                       return (
                         <tr key={idx} className={idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/50'}>
-                          <td className="py-1.5 px-2.5 text-slate-400 font-mono">{idx + 1}</td>
-                          <td className="py-1.5 px-2.5 font-bold text-slate-900">{item.productName}</td>
-                          <td className="py-1.5 px-2 text-center text-slate-600 font-mono text-[10px]">
+                          <td className="py-1.5 px-2.5 text-slate-400 font-mono whitespace-nowrap">{idx + 1}</td>
+                          <td className="py-1.5 px-2.5 font-bold text-slate-900 leading-snug">{item.productName}</td>
+                          <td className="py-1.5 px-2 text-center text-slate-600 font-mono text-[10px] whitespace-nowrap">
                             {item.unitWeight} {item.weightUnit} {item.unitType}
                           </td>
-                          <td className="py-1.5 px-2 text-center text-slate-500 font-mono">{item.orderedQty}</td>
-                          <td className="py-1.5 px-2 text-center font-black text-emerald-700 font-mono">
+                          <td className="py-1.5 px-2 text-center text-slate-500 font-mono whitespace-nowrap">{item.orderedQty}</td>
+                          <td className="py-1.5 px-2 text-center font-black text-emerald-700 font-mono whitespace-nowrap">
                             {qty} units
                           </td>
-                          <td className="py-1.5 px-2.5 text-right text-slate-800 font-mono font-semibold">
+                          <td className="py-1.5 px-2.5 text-right text-slate-800 font-mono font-semibold whitespace-nowrap">
                             ₹{Number(item.manualUnitRate).toFixed(2)}
                           </td>
-                          <td className="py-1.5 px-2.5 text-right font-black text-slate-900 font-mono">
+                          <td className="py-1.5 px-2.5 text-right font-black text-slate-900 font-mono whitespace-nowrap">
                             {formatCurrency(lineVal)}
                           </td>
                         </tr>

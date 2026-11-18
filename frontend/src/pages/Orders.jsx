@@ -418,16 +418,16 @@ export default function Orders({ openCreateModalProp, onCloseCreateModalProp }) 
       </div>
 
       {/* Filters & Search */}
-      <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs flex flex-wrap items-center justify-between gap-4 text-xs">
+      <div className="bg-[#FFFDF7] p-4 rounded-2xl border border-[#EEDFB8] shadow-card flex flex-wrap items-center justify-between gap-4 text-xs">
         <div className="flex items-center space-x-3 flex-1 min-w-[260px]">
           <div className="relative flex-1">
-            <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-400" />
+            <Search className="w-4 h-4 absolute left-3 top-2.5 text-stone-400" />
             <input
               type="text"
               placeholder="Search by Order #, Retailer, Stockist, Site location..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-birla-blue focus:outline-none"
+              className="w-full pl-9 pr-4 py-2 bg-white border border-[#EEDFB8] rounded-xl focus:ring-2 focus:ring-birlaRed-800/20 focus:outline-none"
             />
           </div>
         </div>
@@ -435,11 +435,11 @@ export default function Orders({ openCreateModalProp, onCloseCreateModalProp }) 
         <div className="flex flex-wrap items-center gap-3">
           {/* State Filter */}
           <div className="flex items-center space-x-1.5">
-            <span className="text-slate-500 font-semibold">State:</span>
+            <span className="text-stone-500 font-semibold">State:</span>
             <select
               value={stateFilter}
               onChange={(e) => setStateFilter(e.target.value)}
-              className="px-3 py-1.5 bg-slate-50 border border-slate-300 rounded-xl font-medium focus:outline-none"
+              className="px-3 py-1.5 bg-white border border-[#EEDFB8] rounded-xl font-medium focus:outline-none"
             >
               <option value="All">All States</option>
               <option value="Active">Active</option>
@@ -449,11 +449,11 @@ export default function Orders({ openCreateModalProp, onCloseCreateModalProp }) 
 
           {/* Fulfillment Status Filter */}
           <div className="flex items-center space-x-1.5">
-            <span className="text-slate-500 font-semibold">Fulfillment:</span>
+            <span className="text-stone-500 font-semibold">Fulfillment:</span>
             <select
               value={fulfillmentFilter}
               onChange={(e) => setFulfillmentFilter(e.target.value)}
-              className="px-3 py-1.5 bg-slate-50 border border-slate-300 rounded-xl font-medium focus:outline-none"
+              className="px-3 py-1.5 bg-white border border-[#EEDFB8] rounded-xl font-medium focus:outline-none"
             >
               <option value="All">All Fulfillment</option>
               <option value="Pending">Pending</option>
@@ -465,11 +465,11 @@ export default function Orders({ openCreateModalProp, onCloseCreateModalProp }) 
 
           {/* Retailer Filter */}
           <div className="flex items-center space-x-1.5">
-            <span className="text-slate-500 font-semibold">Retailer:</span>
+            <span className="text-stone-500 font-semibold">Retailer:</span>
             <select
               value={retailerFilter}
               onChange={(e) => setRetailerFilter(e.target.value)}
-              className="px-3 py-1.5 bg-slate-50 border border-slate-300 rounded-xl font-medium focus:outline-none max-w-[150px]"
+              className="px-3 py-1.5 bg-white border border-[#EEDFB8] rounded-xl font-medium focus:outline-none max-w-[150px]"
             >
               <option value="All">All Retailers</option>
               {retailers.map((r) => (
@@ -481,7 +481,23 @@ export default function Orders({ openCreateModalProp, onCloseCreateModalProp }) 
       </div>
 
       {/* Orders Container */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+      <div className="bg-[#FFFDF7] rounded-2xl border border-[#EEDFB8] shadow-card overflow-hidden">
+        {/* Card Header Banner */}
+        <div className="px-4 sm:px-6 py-4 bg-[#FAF6E8] border-b border-[#EEDFB8] flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h3 className="font-display font-black text-sm text-birlaRed-950 flex items-center space-x-2">
+              <ShoppingCart className="w-4 h-4 text-birlaRed-800" />
+              <span>Live Sales Orders & Fulfillment Register</span>
+            </h3>
+            <p className="text-[11px] text-stone-500 font-medium mt-0.5">
+              Real-time booking status, stockist-retailer mapping, dual drop-shipping invoices, and delivery fulfillment.
+            </p>
+          </div>
+          <span className="text-xs font-bold font-mono text-birlaRed-900 bg-amber-100/80 border border-amber-300 px-3 py-1 rounded-xl">
+            {orders.length} Orders Listed
+          </span>
+        </div>
+
         {/* Mobile View: High-Touch Order Cards (Visible on screens < md) */}
         <div className="block md:hidden divide-y divide-slate-100">
           {loading ? (
@@ -591,104 +607,104 @@ export default function Orders({ openCreateModalProp, onCloseCreateModalProp }) 
 
         {/* Desktop / Tablet View: Full Table (Hidden on screens < md) */}
         <div className="hidden md:block overflow-x-auto">
-          <table className="w-full text-left text-xs min-w-[850px]">
-            <thead className="bg-slate-900 text-white font-semibold">
+          <table className="w-full text-left text-xs min-w-[1250px] border-collapse">
+            <thead className="bg-[#1A0B0E] text-amber-100 font-bold uppercase tracking-wider text-[11px]">
               <tr>
-                <th className="py-3 px-4">Order No & Date</th>
-                <th className="py-3 px-4">Stockist & Retailer Mapping</th>
-                <th className="py-3 px-4">Delivery Site & Contact</th>
-                <th className="py-3 px-4 text-right">Grand Total (₹)</th>
-                <th className="py-3 px-4 text-center">State</th>
-                <th className="py-3 px-4 text-center">Fulfillment</th>
-                <th className="py-3 px-4 text-center">Delivery Date</th>
-                <th className="py-3 px-4 text-center">Dual Receipts</th>
-                <th className="py-3 px-4 text-center">Actions</th>
+                <th className="py-3.5 px-4 whitespace-nowrap min-w-[150px]">Order # & Date</th>
+                <th className="py-3.5 px-4 min-w-[240px]">Stockist & Retailer Mapping</th>
+                <th className="py-3.5 px-4 min-w-[230px]">Delivery Site & Contact</th>
+                <th className="py-3.5 px-4 text-right whitespace-nowrap min-w-[130px]">Grand Total (₹)</th>
+                <th className="py-3.5 px-4 text-center whitespace-nowrap min-w-[90px]">State</th>
+                <th className="py-3.5 px-4 text-center whitespace-nowrap min-w-[110px]">Fulfillment</th>
+                <th className="py-3.5 px-4 text-center whitespace-nowrap min-w-[120px]">Delivery Date</th>
+                <th className="py-3.5 px-4 text-center whitespace-nowrap min-w-[170px]">Dual Receipts</th>
+                <th className="py-3.5 px-4 text-center whitespace-nowrap min-w-[110px]">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-[#EEDFB8]/70 bg-white">
               {loading ? (
                 <tr>
-                  <td colSpan={9} className="py-8 text-center text-slate-400">
+                  <td colSpan={9} className="py-8 text-center text-stone-400 font-medium">
                     Loading orders...
                   </td>
                 </tr>
               ) : orders.length === 0 ? (
                 <tr>
-                  <td colSpan={9} className="py-8 text-center text-slate-400">
+                  <td colSpan={9} className="py-8 text-center text-stone-400 font-medium">
                     No orders found matching filters.
                   </td>
                 </tr>
               ) : (
                 orders.map((order) => (
-                  <tr key={order.id} className="hover:bg-slate-50/80 transition-colors">
+                  <tr key={order.id} className="hover:bg-[#FAF6E8]/70 transition-colors">
                     {/* Order No & Date */}
-                    <td className="py-3.5 px-4">
+                    <td className="py-3.5 px-4 whitespace-nowrap align-middle">
                       <button
                         type="button"
                         onClick={() => setOrderDetailsModal({ isOpen: true, order })}
-                        className="font-mono font-bold text-slate-900 text-sm block hover:text-birlaRed-800 hover:underline text-left cursor-pointer transition-colors"
+                        className="font-mono font-black text-sm text-birlaRed-950 block hover:text-amber-700 hover:underline text-left cursor-pointer transition-colors whitespace-nowrap"
                         title="Click to view full Order Details"
                       >
                         {order.orderNumber}
                       </button>
-                      <span className="text-[11px] text-slate-500 flex items-center space-x-1 mt-0.5">
-                        <Calendar className="w-3 h-3 text-slate-400" />
+                      <div className="text-[11px] text-stone-500 flex items-center space-x-1 mt-0.5 whitespace-nowrap font-mono">
+                        <Calendar className="w-3 h-3 text-stone-400 flex-shrink-0" />
                         <span>{formatDate(order.orderDate)}</span>
-                      </span>
-                      <span className="text-[10px] text-slate-400 block mt-0.5">
+                      </div>
+                      <div className="text-[10px] text-stone-400 block mt-0.5 whitespace-nowrap">
                         By: {order.createdBy || 'Suraj (PZ7550)'}
-                      </span>
+                      </div>
                     </td>
 
                     {/* Stockist & Retailer Mapping */}
-                    <td className="py-3.5 px-4">
-                      <div className="space-y-1">
+                    <td className="py-3.5 px-4 align-middle">
+                      <div className="space-y-0.5">
                         <button
                           type="button"
                           onClick={() => setOrderDetailsModal({ isOpen: true, order })}
-                          className="flex items-center space-x-1 text-slate-900 hover:text-birlaRed-800 text-left cursor-pointer group"
+                          className="flex items-start space-x-1.5 text-stone-900 hover:text-birlaRed-800 text-left cursor-pointer group"
                           title="Click to view full Order Details"
                         >
-                          <Store className="w-3.5 h-3.5 text-birla-blue flex-shrink-0" />
-                          <span className="font-bold group-hover:underline">{order.retailer?.firmName}</span>
+                          <Store className="w-3.5 h-3.5 text-birla-blue flex-shrink-0 mt-0.5" />
+                          <span className="font-bold text-xs group-hover:underline leading-snug">{order.retailer?.firmName}</span>
                         </button>
-                        <div className="flex items-center space-x-1 text-slate-500 text-[11px]">
-                          <Building2 className="w-3.5 h-3.5 text-amber-600 flex-shrink-0" />
-                          <span>Fulfill via: {order.stockist?.firmName}</span>
+                        <div className="flex items-center space-x-1 text-stone-500 text-[11px]">
+                          <Building2 className="w-3.5 h-3.5 text-amber-700 flex-shrink-0" />
+                          <span className="truncate">Via: {order.stockist?.firmName}</span>
                         </div>
                       </div>
                     </td>
 
                     {/* Delivery Site */}
-                    <td className="py-3.5 px-4 text-slate-600 max-w-xs">
-                      <p className="font-medium text-slate-900 truncate" title={order.deliveryLocation}>
+                    <td className="py-3.5 px-4 text-stone-600 align-middle max-w-[240px]">
+                      <p className="font-medium text-stone-900 text-xs leading-snug truncate" title={order.deliveryLocation}>
                         {order.deliveryLocation}
                       </p>
-                      <p className="text-[11px] text-slate-500">
+                      <p className="text-[11px] text-stone-500 mt-0.5 whitespace-nowrap">
                         {order.deliveryContactPerson} • {order.deliveryContactMobile}
                       </p>
                     </td>
 
                     {/* Grand Total */}
-                    <td className="py-3.5 px-4 text-right">
-                      <span className="font-black text-sm text-slate-900 block">
+                    <td className="py-3.5 px-4 text-right whitespace-nowrap align-middle font-mono">
+                      <span className="font-mono font-black text-sm text-stone-900 block whitespace-nowrap">
                         {formatCurrency(order.grandTotal)}
                       </span>
                       {order.fulfillmentStatus === 'Partial' && (
-                        <div className="text-[10px] space-y-0.5 mt-0.5">
-                          <span className="text-emerald-700 block">Disp: {formatCurrency(order.dispatchedAmount)}</span>
-                          <span className="text-rose-600 block">Pend: {formatCurrency(order.pendingAmount)}</span>
+                        <div className="text-[10px] space-y-0.5 mt-0.5 whitespace-nowrap font-mono">
+                          <span className="text-emerald-700 block font-semibold">Disp: {formatCurrency(order.dispatchedAmount)}</span>
+                          <span className="text-rose-600 block font-semibold">Pend: {formatCurrency(order.pendingAmount)}</span>
                         </div>
                       )}
                     </td>
 
                     {/* State: Active / Inactive */}
-                    <td className="py-3.5 px-4 text-center">
+                    <td className="py-3.5 px-4 text-center whitespace-nowrap align-middle">
                       <span
-                        className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                        className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold whitespace-nowrap border ${
                           order.state === 'Active'
-                            ? 'bg-emerald-100 text-emerald-800'
-                            : 'bg-slate-100 text-slate-600'
+                            ? 'bg-emerald-50 text-emerald-800 border-emerald-300'
+                            : 'bg-stone-100 text-stone-600 border-stone-200'
                         }`}
                       >
                         {order.state}
@@ -696,16 +712,16 @@ export default function Orders({ openCreateModalProp, onCloseCreateModalProp }) 
                     </td>
 
                     {/* Fulfillment Status: Full / Partial / Out of Stock */}
-                    <td className="py-3.5 px-4 text-center">
+                    <td className="py-3.5 px-4 text-center whitespace-nowrap align-middle">
                       <span
-                        className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
+                        className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold whitespace-nowrap border ${
                           order.fulfillmentStatus === 'Full'
-                            ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                            ? 'bg-emerald-50 text-emerald-800 border-emerald-300'
                             : order.fulfillmentStatus === 'Partial'
-                            ? 'bg-amber-100 text-amber-900 border border-amber-300'
+                            ? 'bg-amber-100 text-amber-900 border-amber-300'
                             : order.fulfillmentStatus === 'Out of Stock'
-                            ? 'bg-rose-100 text-rose-800 border border-rose-300'
-                            : 'bg-blue-100 text-blue-800 border border-blue-300'
+                            ? 'bg-rose-50 text-rose-800 border-rose-300'
+                            : 'bg-blue-50 text-blue-800 border-blue-300'
                         }`}
                       >
                         {order.fulfillmentStatus}
@@ -713,22 +729,22 @@ export default function Orders({ openCreateModalProp, onCloseCreateModalProp }) 
                     </td>
 
                     {/* Delivery Date & Mark Delivered */}
-                    <td className="py-3.5 px-4 text-center">
+                    <td className="py-3.5 px-4 text-center whitespace-nowrap align-middle">
                       <div className="flex flex-col items-center space-y-1">
-                        <span className="text-[11px] font-medium text-slate-700">
+                        <span className="text-[11px] font-medium text-stone-700 whitespace-nowrap font-mono">
                           {formatDate(order.deliveryDate)}
                         </span>
                         {order.deliveryStatus !== 'Delivered' ? (
                           <button
                             onClick={() => handleMarkDelivered(order.id)}
-                            className="px-2 py-0.5 bg-blue-50 hover:bg-blue-100 text-birla-blue text-[10px] font-bold rounded border border-blue-200 transition-all"
+                            className="px-2 py-0.5 bg-blue-50 hover:bg-blue-100 text-birla-blue text-[10px] font-bold rounded border border-blue-200 transition-all whitespace-nowrap cursor-pointer"
                             title="Click to Mark Delivered"
                           >
                             Mark Delivered
                           </button>
                         ) : (
-                          <span className="text-[10px] text-emerald-600 font-bold flex items-center space-x-0.5">
-                            <CheckCircle2 className="w-3 h-3" />
+                          <span className="text-[10px] text-emerald-700 font-bold flex items-center space-x-0.5 whitespace-nowrap">
+                            <CheckCircle2 className="w-3 h-3 text-emerald-600" />
                             <span>Delivered</span>
                           </span>
                         )}
@@ -736,12 +752,12 @@ export default function Orders({ openCreateModalProp, onCloseCreateModalProp }) 
                     </td>
 
                     {/* Dual-Receipt & Challan Triggers */}
-                    <td className="py-3.5 px-4 text-center">
-                      <div className="flex items-center justify-center space-x-1">
+                    <td className="py-3.5 px-4 text-center whitespace-nowrap align-middle">
+                      <div className="flex items-center justify-center space-x-1.5 whitespace-nowrap">
                         <button
                           type="button"
                           onClick={() => setReceiptModal({ isOpen: true, order })}
-                          className="px-2.5 py-1.5 bg-birlaRed-800 hover:bg-birlaRed-900 text-white text-[11px] font-bold rounded-lg shadow-xs transition-all flex items-center space-x-1 cursor-pointer"
+                          className="px-2.5 py-1.5 bg-birlaRed-800 hover:bg-birlaRed-900 text-white text-[11px] font-bold rounded-lg shadow-xs transition-all flex items-center space-x-1 cursor-pointer whitespace-nowrap active:scale-95"
                           title="View Tax Invoice & Official Receipt"
                         >
                           <FileText className="w-3.5 h-3.5" />
@@ -750,18 +766,18 @@ export default function Orders({ openCreateModalProp, onCloseCreateModalProp }) 
                         <button
                           type="button"
                           onClick={() => setChallanModal({ isOpen: true, order, mode: 'dispatched' })}
-                          className="px-2.5 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white text-[11px] font-bold rounded-lg shadow-xs transition-all flex items-center space-x-1 cursor-pointer"
+                          className="px-2.5 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white text-[11px] font-bold rounded-lg shadow-xs transition-all flex items-center space-x-1 cursor-pointer whitespace-nowrap active:scale-95"
                           title="View Delivery Challan / Pending Slip"
                         >
-                          <Truck className="w-3.5 h-3.5" />
+                          <Truck className="w-3.5 h-3.5 text-amber-300" />
                           <span>Challan</span>
                         </button>
                       </div>
                     </td>
 
                     {/* Actions: Dispatch, Edit, Delete */}
-                    <td className="py-3.5 px-4 text-center">
-                      <div className="flex items-center justify-center space-x-1.5">
+                    <td className="py-3.5 px-4 text-center whitespace-nowrap align-middle">
+                      <div className="flex items-center justify-center space-x-1.5 whitespace-nowrap">
                         <button
                           onClick={() => handleOpenEdit(order)}
                           className="p-1.5 text-blue-700 hover:text-blue-900 hover:bg-blue-50 rounded-lg transition-colors cursor-pointer"
@@ -771,14 +787,14 @@ export default function Orders({ openCreateModalProp, onCloseCreateModalProp }) 
                         </button>
                         <button
                           onClick={() => setDispatchModal({ isOpen: true, order })}
-                          className="p-1.5 text-slate-600 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-colors cursor-pointer"
+                          className="p-1.5 text-amber-700 hover:text-amber-900 hover:bg-amber-50 rounded-lg transition-colors cursor-pointer"
                           title="Fulfill / Partial Dispatch Engine"
                         >
                           <Truck className="w-4 h-4" />
                         </button>
                         <button
                           onClick={() => setDeleteModal({ isOpen: true, order })}
-                          className="p-1.5 text-slate-600 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
+                          className="p-1.5 text-rose-600 hover:text-rose-800 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
                           title="Delete Order"
                         >
                           <Trash2 className="w-4 h-4" />
@@ -976,16 +992,16 @@ export default function Orders({ openCreateModalProp, onCloseCreateModalProp }) 
                   </button>
                 </div>
 
-                <div className="border border-slate-200 rounded-xl overflow-x-auto">
-                  <table className="w-full text-left text-xs min-w-[580px]">
-                    <thead className="bg-slate-100 text-slate-700 font-semibold">
+                <div className="border border-slate-200 rounded-xl overflow-x-auto shadow-xs">
+                  <table className="w-full text-left text-xs min-w-[720px] border-collapse">
+                    <thead className="bg-[#1A0B0E] text-amber-100 font-bold uppercase tracking-wider text-[11px]">
                       <tr>
-                        <th className="py-2.5 px-3">Product</th>
-                        <th className="py-2.5 px-3 text-center">Catalogue Base (Ref)</th>
-                        <th className="py-2.5 px-3 text-center w-40">Rate (Inc. 18% GST ₹) *</th>
-                        <th className="py-2.5 px-3 text-center w-28">Quantity *</th>
-                        <th className="py-2.5 px-3 text-center">GST %</th>
-                        <th className="py-2.5 px-3 text-right">Line Total (₹)</th>
+                        <th className="py-2.5 px-3 min-w-[220px]">Product Description</th>
+                        <th className="py-2.5 px-3 text-center whitespace-nowrap min-w-[90px]">Catalogue Base</th>
+                        <th className="py-2.5 px-3 text-center whitespace-nowrap min-w-[130px]">Rate (Inc. 18% GST ₹) *</th>
+                        <th className="py-2.5 px-3 text-center whitespace-nowrap min-w-[85px]">Quantity *</th>
+                        <th className="py-2.5 px-3 text-center whitespace-nowrap min-w-[65px]">GST %</th>
+                        <th className="py-2.5 px-3 text-right whitespace-nowrap min-w-[130px]">Line Total (₹)</th>
                         <th className="py-2.5 px-2 text-center w-10"></th>
                       </tr>
                     </thead>
@@ -1018,11 +1034,11 @@ export default function Orders({ openCreateModalProp, onCloseCreateModalProp }) 
                               </select>
                             </td>
 
-                            <td className="py-2.5 px-3 text-center text-slate-500 font-mono">
+                            <td className="py-2.5 px-3 text-center text-slate-500 font-mono whitespace-nowrap">
                               {selectedPrd ? `₹${selectedPrd.referencePrice?.toFixed(2)}` : '-'}
                             </td>
 
-                            <td className="py-2.5 px-3 text-center">
+                            <td className="py-2.5 px-3 text-center whitespace-nowrap">
                               <input
                                 type="number"
                                 step="0.01"
@@ -1031,11 +1047,11 @@ export default function Orders({ openCreateModalProp, onCloseCreateModalProp }) 
                                 placeholder="Inc. GST Rate"
                                 value={item.manualUnitRate}
                                 onChange={(e) => handleItemChange(index, 'manualUnitRate', e.target.value)}
-                                className="w-full px-2.5 py-1.5 text-xs font-bold text-slate-900 border border-slate-300 rounded-lg text-center focus:ring-2 focus:ring-blue-600 focus:outline-none"
+                                className="w-full max-w-[120px] px-2.5 py-1.5 text-xs font-bold text-slate-900 border border-slate-300 rounded-lg text-center focus:ring-2 focus:ring-blue-600 focus:outline-none"
                               />
                             </td>
 
-                            <td className="py-2.5 px-3 text-center">
+                            <td className="py-2.5 px-3 text-center whitespace-nowrap">
                               <input
                                 type="number"
                                 min="1"
@@ -1043,15 +1059,15 @@ export default function Orders({ openCreateModalProp, onCloseCreateModalProp }) 
                                 placeholder="Qty"
                                 value={item.orderedQty}
                                 onChange={(e) => handleItemChange(index, 'orderedQty', e.target.value)}
-                                className="w-full px-2.5 py-1.5 text-xs font-bold text-slate-900 border border-slate-300 rounded-lg text-center focus:ring-2 focus:ring-blue-600 focus:outline-none"
+                                className="w-full max-w-[80px] px-2.5 py-1.5 text-xs font-bold text-slate-900 border border-slate-300 rounded-lg text-center focus:ring-2 focus:ring-blue-600 focus:outline-none"
                               />
                             </td>
 
-                            <td className="py-2.5 px-3 text-center font-medium text-slate-600">
+                            <td className="py-2.5 px-3 text-center font-medium text-slate-600 whitespace-nowrap">
                               {gstRate}%
                             </td>
 
-                            <td className="py-2.5 px-3 text-right font-bold text-slate-900 font-mono">
+                            <td className="py-2.5 px-3 text-right font-black text-slate-900 font-mono whitespace-nowrap">
                               {formatCurrency(lineTotal)}
                             </td>
 
@@ -1310,16 +1326,16 @@ export default function Orders({ openCreateModalProp, onCloseCreateModalProp }) 
                   </button>
                 </div>
 
-                <div className="border border-slate-200 rounded-xl overflow-x-auto">
-                  <table className="w-full text-left text-xs min-w-[580px]">
-                    <thead className="bg-slate-100 text-slate-700 font-semibold">
+                <div className="border border-slate-200 rounded-xl overflow-x-auto shadow-xs">
+                  <table className="w-full text-left text-xs min-w-[720px] border-collapse">
+                    <thead className="bg-[#1A0B0E] text-amber-100 font-bold uppercase tracking-wider text-[11px]">
                       <tr>
-                        <th className="py-2.5 px-3">Product</th>
-                        <th className="py-2.5 px-3 text-center">Catalogue Base (Ref)</th>
-                        <th className="py-2.5 px-3 text-center w-40">Rate (Inc. 18% GST ₹) *</th>
-                        <th className="py-2.5 px-3 text-center w-28">Quantity *</th>
-                        <th className="py-2.5 px-3 text-center">GST %</th>
-                        <th className="py-2.5 px-3 text-right">Line Total (₹)</th>
+                        <th className="py-2.5 px-3 min-w-[220px]">Product Description</th>
+                        <th className="py-2.5 px-3 text-center whitespace-nowrap min-w-[90px]">Catalogue Base</th>
+                        <th className="py-2.5 px-3 text-center whitespace-nowrap min-w-[130px]">Rate (Inc. 18% GST ₹) *</th>
+                        <th className="py-2.5 px-3 text-center whitespace-nowrap min-w-[85px]">Quantity *</th>
+                        <th className="py-2.5 px-3 text-center whitespace-nowrap min-w-[65px]">GST %</th>
+                        <th className="py-2.5 px-3 text-right whitespace-nowrap min-w-[130px]">Line Total (₹)</th>
                         <th className="py-2.5 px-2 text-center w-10"></th>
                       </tr>
                     </thead>
@@ -1349,11 +1365,11 @@ export default function Orders({ openCreateModalProp, onCloseCreateModalProp }) 
                               </select>
                             </td>
 
-                            <td className="py-2.5 px-3 text-center text-slate-500 font-mono">
+                            <td className="py-2.5 px-3 text-center text-slate-500 font-mono whitespace-nowrap">
                               {selectedPrd ? `₹${selectedPrd.referencePrice?.toFixed(2)}` : '-'}
                             </td>
 
-                            <td className="py-2.5 px-3 text-center">
+                            <td className="py-2.5 px-3 text-center whitespace-nowrap">
                               <input
                                 type="number"
                                 step="0.01"
@@ -1362,11 +1378,11 @@ export default function Orders({ openCreateModalProp, onCloseCreateModalProp }) 
                                 placeholder="Inc. GST Rate"
                                 value={item.manualUnitRate}
                                 onChange={(e) => handleEditItemChange(index, 'manualUnitRate', e.target.value)}
-                                className="w-full px-2.5 py-1.5 text-xs font-bold text-slate-900 border border-slate-300 rounded-lg text-center focus:ring-2 focus:ring-blue-600 focus:outline-none"
+                                className="w-full max-w-[120px] px-2.5 py-1.5 text-xs font-bold text-slate-900 border border-slate-300 rounded-lg text-center focus:ring-2 focus:ring-blue-600 focus:outline-none"
                               />
                             </td>
 
-                            <td className="py-2.5 px-3 text-center">
+                            <td className="py-2.5 px-3 text-center whitespace-nowrap">
                               <input
                                 type="number"
                                 min="1"
@@ -1374,15 +1390,15 @@ export default function Orders({ openCreateModalProp, onCloseCreateModalProp }) 
                                 placeholder="Qty"
                                 value={item.orderedQty}
                                 onChange={(e) => handleEditItemChange(index, 'orderedQty', e.target.value)}
-                                className="w-full px-2.5 py-1.5 text-xs font-bold text-slate-900 border border-slate-300 rounded-lg text-center focus:ring-2 focus:ring-blue-600 focus:outline-none"
+                                className="w-full max-w-[80px] px-2.5 py-1.5 text-xs font-bold text-slate-900 border border-slate-300 rounded-lg text-center focus:ring-2 focus:ring-blue-600 focus:outline-none"
                               />
                             </td>
 
-                            <td className="py-2.5 px-3 text-center font-medium text-slate-600">
+                            <td className="py-2.5 px-3 text-center font-medium text-slate-600 whitespace-nowrap">
                               {gstRate}%
                             </td>
 
-                            <td className="py-2.5 px-3 text-right font-bold text-slate-900 font-mono">
+                            <td className="py-2.5 px-3 text-right font-black text-slate-900 font-mono whitespace-nowrap">
                               {formatCurrency(lineTotal)}
                             </td>
 
