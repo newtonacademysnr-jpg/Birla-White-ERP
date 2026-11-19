@@ -21,6 +21,7 @@ export default function DispatchChallanModal({ isOpen = true, onClose, order, in
       await downloadElementAsPdf('printable-challan-slip', `${title}.pdf`);
     } catch (err) {
       console.error('PDF export error:', err);
+      alert('Could not download PDF directly. Opening print dialog as fallback.');
       handlePrint();
     } finally {
       setIsDownloading(false);

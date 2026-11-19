@@ -21,7 +21,7 @@ export default function DualReceiptModal({ isOpen = true, onClose, order }) {
       await downloadElementAsPdf('printable-tax-invoice', fileName);
     } catch (err) {
       console.error('PDF download error:', err);
-      // Fallback to native print dialog
+      alert('Could not download PDF directly. Opening print dialog as fallback.');
       handlePrint();
     } finally {
       setIsDownloading(false);

@@ -22,6 +22,7 @@ import { api } from '../api';
 import { exportLedgerToExcel } from '../utils/excelExporter';
 import PaymentModal from '../components/PaymentModal';
 import ConfirmDeleteModal from '../components/ConfirmDeleteModal';
+import PaymentReceiptModal from '../components/PaymentReceiptModal';
 
 export default function LedgerPayments() {
   const [ledgerData, setLedgerData] = useState([]);
@@ -35,6 +36,7 @@ export default function LedgerPayments() {
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [paymentPreselect, setPaymentPreselect] = useState({ retailerId: '', orderId: '' });
   const [deleteModal, setDeleteModal] = useState({ isOpen: false, payment: null });
+  const [paymentReceiptModal, setPaymentReceiptModal] = useState({ isOpen: false, payment: null });
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
@@ -573,11 +575,12 @@ export default function LedgerPayments() {
 
                   <div className="flex items-center justify-end space-x-2 pt-1">
                     <button
-                      onClick={() => window.print()}
-                      className="px-3 py-1 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-lg transition-all flex items-center space-x-1"
+                      onClick={() => setPaymentReceiptModal({ isOpen: true, payment: p })}
+                      className="px-3 py-1 bg-birla-blue hover:bg-blue-600 text-white text-xs font-bold rounded-lg transition-all flex items-center space-x-1 shadow-xs cursor-pointer"
+                      title="View & Download Payment Receipt PDF"
                     >
                       <Receipt className="w-3 h-3" />
-                      <span>Print PDF</span>
+                      <span>Receipt PDF</span>
                     </button>
                     <button
                       onClick={() => setDeleteModal({ isOpen: true, payment: p })}
@@ -675,15 +678,9 @@ export default function LedgerPayments() {
                       {/* Download Receipt PDF */}
                       <td className="py-3.5 px-4 text-center whitespace-nowrap align-middle">
                         <button
-                          onClick={() => {
-                            if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-                              window.open(`/api/payments/${p.id}/receipt`, '_blank');
-                            } else {
-                              window.print();
-                            }
-                          }}
-                          className="px-2.5 py-1 bg-birla-blue hover:bg-blue-600 text-white rounded-lg text-[11px] font-bold transition-all inline-flex items-center space-x-1 shadow-xs"
-                          title="Print or Save Official Receipt PDF"
+                          onClick={() => setPaymentReceiptModal({ isOpen: true, payment: p })}
+                          className="px-2.5 py-1 bg-birla-blue hover:bg-blue-600 text-white rounded-lg text-[11px] font-bold transition-all inline-flex items-center space-x-1 shadow-xs cursor-pointer"
+                          title="View & Download Official Payment Receipt PDF"
                         >
                           <Download className="w-3 h-3" />
                           <span>Receipt PDF</span>
@@ -715,9 +712,12 @@ export default function LedgerPayments() {
         onClose={() => setIsPaymentModalOpen(false)}
         defaultRetailerId={paymentPreselect.retailerId}
         defaultOrderId={paymentPreselect.orderId}
-        onPaymentSuccess={() => {
+        onPaymentSuccess={(newPayment) => {
           loadLedger();
           loadPayments();
+          if (newPayment) {
+            setPaymentReceiptModal({ isOpen: true, payment: newPayment });
+          }
         }}
       />
 
@@ -729,6 +729,13 @@ export default function LedgerPayments() {
         onConfirm={handleDeletePayment}
         onCancel={() => setDeleteModal({ isOpen: false, payment: null })}
         isDeleting={submitting}
+      />
+
+      {/* Official Payment Receipt Modal */}
+      <PaymentReceiptModal
+        isOpen={paymentReceiptModal.isOpen}
+        payment={paymentReceiptModal.payment}
+        onClose={() => setPaymentReceiptModal({ isOpen: false, payment: null })}
       />
     </div>
   );
