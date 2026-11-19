@@ -35,16 +35,19 @@ export function AuthProvider({ children }) {
   const envAdminPass = (import.meta.env.VITE_ADMIN_PASS || 'birla@2026').trim();
 
   const login = async (username, password, rememberMe = true) => {
+    // Normalization for mobile keyboards (trim whitespace, lowercase)
     const cleanUser = String(username || '').trim().toLowerCase();
     const cleanPass = String(password || '').trim();
+    const cleanPassLower = cleanPass.toLowerCase();
 
     const expectedUser = String(envAdminUser).trim().toLowerCase();
     const expectedPass = String(envAdminPass).trim();
+    const expectedPassLower = expectedPass.toLowerCase();
 
     // Custom locally saved passkey if user set one
     const localCustomPass = (localStorage.getItem('bw_erp_custom_pass') || '').trim();
 
-    // Accepted usernames
+    // Accepted usernames (case-insensitive)
     const validUsers = [
       expectedUser,
       'suraj',
@@ -56,7 +59,7 @@ export function AuthProvider({ children }) {
       'sales'
     ];
 
-    // Accepted passwords: supports GitHub Secret, corporate defaults, officer code, and phone
+    // Accepted passwords (matches exact and lowercase for mobile keyboards)
     const validPasswords = [
       expectedPass,
       'birla@2026',
@@ -74,7 +77,12 @@ export function AuthProvider({ children }) {
 
     // Any matching username or any non-empty name with valid password
     const isUserValid = validUsers.includes(cleanUser) || cleanUser.length > 0;
-    const isPassValid = validPasswords.includes(cleanPass) || cleanPass === expectedPass;
+    
+    // Case-insensitive & exact verification so mobile auto-capitalization (e.g. Birla@2026) never fails
+    const isPassValid =
+      cleanPass === expectedPass ||
+      cleanPassLower === expectedPassLower ||
+      validPasswords.some((p) => p === cleanPass || p.toLowerCase() === cleanPassLower);
 
     if (isUserValid && isPassValid) {
       const userInfo = {

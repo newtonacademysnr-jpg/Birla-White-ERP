@@ -65,6 +65,32 @@ export default function LoginPage() {
     setErrorMessage('');
   };
 
+  const handleInstantLogin = async () => {
+    setLoading(true);
+    setErrorMessage('');
+    try {
+      const res = await login('suraj', 'birla@2026', true);
+      if (!res.success) {
+        setErrorMessage(res.error || 'Instant access error.');
+      }
+    } catch (err) {
+      setErrorMessage('Login failed. Please verify credentials.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleClearCache = () => {
+    try {
+      sessionStorage.clear();
+      localStorage.removeItem('bw_erp_admin_auth');
+      localStorage.removeItem('bw_erp_admin_user');
+      window.location.reload(true);
+    } catch (e) {
+      window.location.reload();
+    }
+  };
+
   const handleSaveCustomPass = () => {
     if (!customPassInput.trim()) return;
     saveCustomSecret(customPassInput.trim());
@@ -154,6 +180,10 @@ export default function LoginPage() {
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   placeholder="e.g. suraj or PZ7550"
+                  autoCapitalize="none"
+                  autoCorrect="off"
+                  spellCheck="false"
+                  autoComplete="off"
                   className="w-full pl-10 pr-4 py-2.5 bg-[#FAF6E8]/50 border border-stone-300 rounded-xl text-sm font-semibold text-stone-900 focus:outline-none focus:ring-2 focus:ring-birlaRed-800 focus:border-transparent transition-all"
                   required
                 />
@@ -185,6 +215,10 @@ export default function LoginPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Enter administrator passcode"
+                  autoCapitalize="none"
+                  autoCorrect="off"
+                  spellCheck="false"
+                  autoComplete="off"
                   className="w-full pl-10 pr-11 py-2.5 bg-[#FAF6E8]/50 border border-stone-300 rounded-xl text-sm font-semibold text-stone-900 focus:outline-none focus:ring-2 focus:ring-birlaRed-800 focus:border-transparent transition-all"
                   required
                 />
@@ -199,8 +233,8 @@ export default function LoginPage() {
               </div>
 
               <div className="mt-1.5 flex items-center justify-between text-[11px] text-stone-500">
-                <span>Default Passcode: <code className="bg-stone-100 font-mono text-birlaRed-900 px-1 py-0.5 rounded font-bold">birla@2026</code></span>
-                <span>or GitHub Secret</span>
+                <span>Default: <code className="bg-stone-100 font-mono text-birlaRed-900 px-1 py-0.5 rounded font-bold">birla@2026</code></span>
+                <span>or your GitHub Secret</span>
               </div>
             </div>
 
@@ -226,11 +260,22 @@ export default function LoginPage() {
               </button>
             </div>
 
+            {/* 1-Tap Quick Access for Mobile */}
+            <button
+              type="button"
+              onClick={handleInstantLogin}
+              disabled={loading}
+              className="w-full py-2.5 px-4 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-birlaRed-950 font-black text-xs sm:text-sm rounded-xl shadow-xs border border-amber-300 flex items-center justify-center space-x-2 active:scale-[0.98] transition-all cursor-pointer mt-1"
+            >
+              <Sparkles className="w-4 h-4 text-birlaRed-950" />
+              <span>⚡ 1-Tap Instant Login (Officer Suraj)</span>
+            </button>
+
             {/* Submit Action */}
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 px-4 bg-gradient-to-r from-birlaRed-800 to-birlaRed-900 hover:from-birlaRed-700 hover:to-birlaRed-800 text-white font-bold rounded-xl shadow-md hover:shadow-lg transition-all flex items-center justify-center space-x-2 active:scale-[0.99] disabled:opacity-70 cursor-pointer mt-2"
+              className="w-full py-3 px-4 bg-gradient-to-r from-birlaRed-800 to-birlaRed-900 hover:from-birlaRed-700 hover:to-birlaRed-800 text-white font-bold rounded-xl shadow-md hover:shadow-lg transition-all flex items-center justify-center space-x-2 active:scale-[0.99] disabled:opacity-70 cursor-pointer"
             >
               {loading ? (
                 <span>Authenticating...</span>
@@ -281,6 +326,17 @@ export default function LoginPage() {
                       ✓ Saved! You can now log in with this passcode.
                     </span>
                   )}
+                </div>
+
+                <div className="pt-2 border-t border-amber-200/60 flex items-center justify-between">
+                  <span className="text-[10px] text-stone-500">Stale page on mobile?</span>
+                  <button
+                    type="button"
+                    onClick={handleClearCache}
+                    className="text-[10px] text-birlaRed-800 font-bold hover:underline"
+                  >
+                    🔄 Clear Cache & Reload Page
+                  </button>
                 </div>
               </div>
             )}

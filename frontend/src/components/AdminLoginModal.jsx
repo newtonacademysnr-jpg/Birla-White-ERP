@@ -90,6 +90,10 @@ export default function AdminLoginModal() {
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               placeholder="e.g. suraj or admin"
+              autoCapitalize="none"
+              autoCorrect="off"
+              spellCheck="false"
+              autoComplete="off"
               required
               className="w-full px-3.5 py-2.5 bg-white border border-[#D9C496] rounded-xl text-xs text-stone-900 focus:outline-none focus:ring-2 focus:ring-birlaRed-800 shadow-2xs font-medium"
             />
@@ -118,6 +122,10 @@ export default function AdminLoginModal() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Enter password..."
+                autoCapitalize="none"
+                autoCorrect="off"
+                spellCheck="false"
+                autoComplete="off"
                 required
                 className="w-full px-3.5 py-2.5 bg-white border border-[#D9C496] rounded-xl text-xs text-stone-900 focus:outline-none focus:ring-2 focus:ring-birlaRed-800 shadow-2xs pr-10 font-mono"
               />
