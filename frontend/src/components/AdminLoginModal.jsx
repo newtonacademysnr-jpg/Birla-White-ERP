@@ -100,28 +100,15 @@ export default function AdminLoginModal() {
           </div>
 
           <div>
-            <div className="flex items-center justify-between mb-1">
-              <label className="block text-xs font-bold text-stone-700 uppercase tracking-wider">
-                Admin Password
-              </label>
-              <button
-                type="button"
-                onClick={() => {
-                  setUsername('suraj');
-                  setPassword('birla@2026');
-                  setErrorMessage('');
-                }}
-                className="text-[10px] text-birlaRed-800 font-bold hover:underline"
-              >
-                Auto-fill Default
-              </button>
-            </div>
+            <label className="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-1">
+              Admin Password
+            </label>
             <div className="relative">
               <input
                 type={showPassword ? 'text' : 'password'}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="Enter password..."
+                placeholder="Enter administrator passcode..."
                 autoCapitalize="none"
                 autoCorrect="off"
                 spellCheck="false"
@@ -138,7 +125,7 @@ export default function AdminLoginModal() {
               </button>
             </div>
             <p className="text-[10px] text-stone-500 mt-1">
-              Default passcode: <code className="text-birlaRed-900 font-semibold font-mono">birla@2026</code> (or your configured GitHub Secret / SE ID / Phone).
+              Enter your authorized Administrator passcode to proceed.
             </p>
           </div>
 

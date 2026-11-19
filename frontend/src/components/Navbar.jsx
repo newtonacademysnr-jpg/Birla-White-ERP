@@ -6,7 +6,7 @@ import { useAuth } from '../context/AuthContext';
 
 export default function Navbar({ onOpenNewOrder, onToggleMobileMenu, mobileMenuOpen }) {
   const [currentTime, setCurrentTime] = useState(new Date());
-  const { isAuthenticated, currentUser, logout, openAuthModal, requireAuth } = useAuth();
+  const { isAuthenticated, currentUser, isGuestMode, logout, openAuthModal, requireAuth } = useAuth();
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
@@ -107,36 +107,47 @@ export default function Navbar({ onOpenNewOrder, onToggleMobileMenu, mobileMenuO
             </button>
           )}
 
-          {/* User Profile Badge: Suraj (PZ7550) */}
+          {/* User Profile Badge: Suraj (PZ7550) or Guest Sandbox */}
           <div className="flex items-center space-x-2 sm:space-x-2.5 pl-2 sm:pl-3 border-l border-[#EEDFB8]">
             <div className="relative">
-              <div className="w-8 sm:w-9 h-8 sm:h-9 rounded-xl bg-gradient-to-br from-birlaRed-950 to-stone-900 text-amber-300 font-display font-black text-xs flex items-center justify-center shadow-xs border border-amber-500/40">
-                S
+              <div className={`w-8 sm:w-9 h-8 sm:h-9 rounded-xl font-display font-black text-xs flex items-center justify-center shadow-xs border ${
+                isGuestMode
+                  ? 'bg-stone-800 text-stone-200 border-stone-600'
+                  : 'bg-gradient-to-br from-birlaRed-950 to-stone-900 text-amber-300 border-amber-500/40'
+              }`}>
+                {isGuestMode ? 'G' : 'S'}
               </div>
               <span
                 className={`absolute -bottom-0.5 -right-0.5 w-2.5 sm:w-3 h-2.5 sm:h-3 border-2 border-white rounded-full ${
-                  isAuthenticated ? 'bg-emerald-500' : 'bg-amber-400'
+                  isAuthenticated ? (isGuestMode ? 'bg-amber-400' : 'bg-emerald-500') : 'bg-stone-400'
                 }`}
-                title={isAuthenticated ? 'Admin Authenticated' : 'Guest Read-Only'}
+                title={isGuestMode ? 'Guest Sandbox Session' : 'Official Officer Authenticated'}
               ></span>
             </div>
             <div className="text-left text-xs leading-tight">
               <div className="flex items-center space-x-1">
-                <span className="font-display font-bold text-stone-900 text-xs sm:text-sm">Suraj</span>
-                <span className="text-[9px] bg-birlaRed-900 text-amber-300 font-extrabold px-1.5 py-0.2 rounded tracking-wider">
-                  SE
+                <span className="font-display font-bold text-stone-900 text-xs sm:text-sm">
+                  {isGuestMode ? 'Guest Mode' : 'Suraj'}
                 </span>
-                {!isAuthenticated && (
-                  <span className="text-[8px] bg-amber-100 text-amber-900 border border-amber-300 font-bold px-1 rounded hidden md:inline">
-                    Read-Only
-                  </span>
-                )}
+                <span className={`text-[9px] font-extrabold px-1.5 py-0.2 rounded tracking-wider ${
+                  isGuestMode
+                    ? 'bg-amber-200 text-amber-950 border border-amber-300'
+                    : 'bg-birlaRed-900 text-amber-300'
+                }`}>
+                  {isGuestMode ? 'SANDBOX' : 'SE'}
+                </span>
               </div>
               <div className="text-[10px] text-stone-500 flex items-center space-x-1 mt-0.5 font-medium">
-                <Phone className="w-2.5 h-2.5 text-stone-400 hidden sm:inline" />
-                <span className="hidden sm:inline">8219796922</span>
-                <span className="hidden sm:inline text-stone-300">•</span>
-                <span className="text-birlaRed-800 font-bold">Mandi HQ</span>
+                {isGuestMode ? (
+                  <span className="text-amber-800 font-semibold">Blank Data Mode</span>
+                ) : (
+                  <>
+                    <Phone className="w-2.5 h-2.5 text-stone-400 hidden sm:inline" />
+                    <span className="hidden sm:inline">8219796922</span>
+                    <span className="hidden sm:inline text-stone-300">•</span>
+                    <span className="text-birlaRed-800 font-bold">Mandi HQ</span>
+                  </>
+                )}
               </div>
             </div>
           </div>

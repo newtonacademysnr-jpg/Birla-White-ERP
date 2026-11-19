@@ -618,18 +618,37 @@ const initialPjpVisits = [
   }
 ];
 
-// LocalStorage Helper
+// LocalStorage Helper with Guest/Admin Isolation
+function isGuestSession() {
+  try {
+    return (
+      sessionStorage.getItem('bw_erp_is_guest') === 'true' ||
+      localStorage.getItem('bw_erp_is_guest') === 'true'
+    );
+  } catch {
+    return false;
+  }
+}
+
 function getLocal(key, initial) {
   try {
-    const stored = localStorage.getItem(`bw_erp_${key}`);
+    const isGuest = isGuestSession();
+    const prefix = isGuest ? 'bw_guest_' : 'bw_erp_';
+    const stored = localStorage.getItem(`${prefix}${key}`);
     if (stored) return JSON.parse(stored);
+    // If guest sandbox, all proprietary operational business data is empty by default
+    if (isGuest && key !== 'products') {
+      return [];
+    }
   } catch (e) {}
   return initial;
 }
 
 function setLocal(key, value) {
   try {
-    localStorage.setItem(`bw_erp_${key}`, JSON.stringify(value));
+    const isGuest = isGuestSession();
+    const prefix = isGuest ? 'bw_guest_' : 'bw_erp_';
+    localStorage.setItem(`${prefix}${key}`, JSON.stringify(value));
   } catch (e) {}
 }
 
@@ -640,6 +659,15 @@ let dbProducts = getLocal('products', initialProducts);
 let dbOrders = getLocal('orders', initialOrders);
 let dbPayments = getLocal('payments', initialPayments);
 let dbPjpVisits = getLocal('pjp', initialPjpVisits);
+
+function syncDb() {
+  dbStockists = getLocal('stockists', initialStockists);
+  dbRetailers = getLocal('retailers', initialRetailers);
+  dbProducts = getLocal('products', initialProducts);
+  dbOrders = getLocal('orders', initialOrders);
+  dbPayments = getLocal('payments', initialPayments);
+  dbPjpVisits = getLocal('pjp', initialPjpVisits);
+}
 
 // Hydrate orders with retailer & stockist object relations
 function hydrateOrder(o) {
@@ -654,6 +682,7 @@ function hydrateOrder(o) {
 export const api = {
   // Stockists
   getStockists: async (params = {}) => {
+    syncDb();
     try {
       const query = new URLSearchParams(params).toString();
       const res = await fetch(`${BASE_URL}/stockists${query ? `?${query}` : ''}`);
@@ -730,6 +759,7 @@ export const api = {
 
   // Retailers
   getRetailers: async (params = {}) => {
+    syncDb();
     try {
       const query = new URLSearchParams(params).toString();
       const res = await fetch(`${BASE_URL}/retailers${query ? `?${query}` : ''}`);
@@ -886,6 +916,7 @@ export const api = {
 
   // Orders
   getOrders: async (params = {}) => {
+    syncDb();
     try {
       const query = new URLSearchParams(params).toString();
       const res = await fetch(`${BASE_URL}/orders${query ? `?${query}` : ''}`);
@@ -1195,6 +1226,7 @@ export const api = {
 
   // Payments & Ledger
   getPayments: async (params = {}) => {
+    syncDb();
     try {
       const query = new URLSearchParams(params).toString();
       const res = await fetch(`${BASE_URL}/payments${query ? `?${query}` : ''}`);
@@ -1341,10 +1373,40 @@ export const api = {
 
   // Analytics
   getDashboardSummary: async () => {
+    syncDb();
     try {
       const res = await fetch(`${BASE_URL}/analytics/dashboard`);
       if (res.ok) return await res.json();
     } catch (e) {}
+
+    // If guest sandbox and no orders created yet, return 100% blank slate
+    if (isGuestSession() && dbOrders.length === 0) {
+      return {
+        kpis: {
+          totalSales: 0,
+          totalDispatchedValue: 0,
+          totalPendingValue: 0,
+          totalCollected: 0,
+          totalOutstanding: 0,
+          totalOverdueAmount: 0,
+          totalOverdueInvoices: 0,
+          monthlyTarget: 0,
+          targetAchievementPct: 0,
+          activePjpToday: 0
+        },
+        counts: {
+          ordersCount: 0,
+          retailersCount: 0,
+          stockistsCount: 0,
+          dispatchesCount: 0
+        },
+        recentOrders: [],
+        recentDispatches: [],
+        topSellingProducts: [],
+        salesVsCollectionTrend: [],
+        overdueRetailers: []
+      };
+    }
 
     const totalSales = dbOrders.reduce((sum, o) => sum + o.grandTotal, 0);
     const totalDispatchedValue = dbOrders.reduce((sum, o) => sum + o.dispatchedAmount, 0);
@@ -1436,10 +1498,29 @@ export const api = {
   },
 
   getBiAnalytics: async (timeframe = 'monthly') => {
+    syncDb();
     try {
       const res = await fetch(`${BASE_URL}/analytics/bi?timeframe=${timeframe}`);
       if (res.ok) return await res.json();
     } catch (e) {}
+
+    // If guest sandbox and no orders, return blank charts and metrics
+    if (isGuestSession() && dbOrders.length === 0) {
+      return {
+        timeframe,
+        periodMetrics: {
+          totalInvoiced: 0,
+          totalCollected: 0,
+          totalDue: 0,
+          orderCount: 0,
+          paymentCount: 0
+        },
+        paymentModesBreakdown: [],
+        topSellingProducts: [],
+        volumeByUnitType: [],
+        salesVsCollectionTrend: []
+      };
+    }
 
     const totalInvoiced = dbOrders.reduce((s, o) => s + o.grandTotal, 0);
     const totalCollected = dbPayments.reduce((s, p) => s + p.amountPaid, 0);
@@ -1489,6 +1570,7 @@ export const api = {
 
   // PJP
   getPjpVisits: async (params = {}) => {
+    syncDb();
     try {
       const query = new URLSearchParams(params).toString();
       const res = await fetch(`${BASE_URL}/pjp${query ? `?${query}` : ''}`);

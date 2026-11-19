@@ -26,6 +26,18 @@ export function AuthProvider({ children }) {
     }
   });
 
+  // Determines whether the current session is an isolated Guest / Blank Data session
+  const [isGuestMode, setIsGuestMode] = useState(() => {
+    try {
+      return (
+        sessionStorage.getItem('bw_erp_is_guest') === 'true' ||
+        localStorage.getItem('bw_erp_is_guest') === 'true'
+      );
+    } catch {
+      return false;
+    }
+  });
+
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [pendingAction, setPendingAction] = useState(null);
   const [authPromptMessage, setAuthPromptMessage] = useState('');
@@ -35,7 +47,7 @@ export function AuthProvider({ children }) {
   const envAdminPass = (import.meta.env.VITE_ADMIN_PASS || 'birla@2026').trim();
 
   const login = async (username, password, rememberMe = true) => {
-    // Normalization for mobile keyboards (trim whitespace, lowercase)
+    // Normalization for mobile & desktop keyboards (trim whitespace, lowercase)
     const cleanUser = String(username || '').trim().toLowerCase();
     const cleanPass = String(password || '').trim();
     const cleanPassLower = cleanPass.toLowerCase();
@@ -44,79 +56,107 @@ export function AuthProvider({ children }) {
     const expectedPass = String(envAdminPass).trim();
     const expectedPassLower = expectedPass.toLowerCase();
 
-    // Custom locally saved passkey if user set one
+    // Custom locally saved passkey if someone created one in Help section
     const localCustomPass = (localStorage.getItem('bw_erp_custom_pass') || '').trim();
+    const localCustomPassLower = localCustomPass.toLowerCase();
 
-    // Accepted usernames (case-insensitive)
-    const validUsers = [
-      expectedUser,
-      'suraj',
-      'pz7550',
-      'suraj (pz7550)',
-      'admin',
-      'administrator',
-      'se',
-      'sales'
-    ];
-
-    // Accepted passwords (matches exact and lowercase for mobile keyboards)
-    const validPasswords = [
+    // Official Real Officer Passwords (full access to real production business data)
+    const officialAdminPasswords = [
       expectedPass,
       'birla@2026',
       'birla2026',
-      'admin',
-      'admin123',
-      'suraj',
-      'suraj@2026',
-      'suraj123',
       'pz7550',
       'PZ7550',
       '8219796922',
-      localCustomPass
+      'suraj',
+      'suraj@2026',
+      'suraj123',
+      'admin',
+      'admin123'
     ].filter(Boolean);
 
-    // Any matching username or any non-empty name with valid password
-    const isUserValid = validUsers.includes(cleanUser) || cleanUser.length > 0;
-    
-    // Case-insensitive & exact verification so mobile auto-capitalization (e.g. Birla@2026) never fails
-    const isPassValid =
+    const isOfficialPassValid =
       cleanPass === expectedPass ||
       cleanPassLower === expectedPassLower ||
-      validPasswords.some((p) => p === cleanPass || p.toLowerCase() === cleanPassLower);
+      officialAdminPasswords.some(
+        (p) => p === cleanPass || p.toLowerCase() === cleanPassLower
+      );
 
-    if (isUserValid && isPassValid) {
+    // Custom / Guest Passcode (set via Help section by external reviewer)
+    const isCustomPassValid =
+      localCustomPass &&
+      (cleanPass === localCustomPass || cleanPassLower === localCustomPassLower);
+
+    if (isOfficialPassValid) {
+      // 1. OFFICIAL ADMINISTRATOR / OFFICER (Suraj) -> Real Data Mode
       const userInfo = {
         username: cleanUser || 'suraj',
         role: 'Sales Executive (SE) • Admin',
         name: 'Suraj (PZ7550)',
         email: 'suraj-v@adityabirla.com',
-        loginTime: new Date().toISOString()
+        loginTime: new Date().toISOString(),
+        isGuest: false
       };
 
       setIsAuthenticated(true);
       setCurrentUser(userInfo);
+      setIsGuestMode(false);
 
       sessionStorage.setItem('bw_erp_admin_auth', 'true');
       sessionStorage.setItem('bw_erp_admin_user', JSON.stringify(userInfo));
+      sessionStorage.setItem('bw_erp_is_guest', 'false');
 
       if (rememberMe) {
         localStorage.setItem('bw_erp_admin_auth', 'true');
         localStorage.setItem('bw_erp_admin_user', JSON.stringify(userInfo));
+        localStorage.setItem('bw_erp_is_guest', 'false');
       }
 
       setIsAuthModalOpen(false);
 
-      // Execute pending action if any was queued
       if (pendingAction && typeof pendingAction === 'function') {
         const actionToRun = pendingAction;
         setPendingAction(null);
         setTimeout(() => actionToRun(), 100);
       }
-      return { success: true };
+      return { success: true, isGuest: false };
+    } else if (isCustomPassValid) {
+      // 2. GUEST / DEMO SESSION (Set via Help) -> Blank Data Mode for privacy & security
+      const guestInfo = {
+        username: cleanUser || 'guest',
+        role: 'Guest / Demo Sandbox',
+        name: cleanUser ? cleanUser.toUpperCase() : 'Guest User',
+        email: 'guest@internal-demo.erp',
+        loginTime: new Date().toISOString(),
+        isGuest: true
+      };
+
+      setIsAuthenticated(true);
+      setCurrentUser(guestInfo);
+      setIsGuestMode(true);
+
+      sessionStorage.setItem('bw_erp_admin_auth', 'true');
+      sessionStorage.setItem('bw_erp_admin_user', JSON.stringify(guestInfo));
+      sessionStorage.setItem('bw_erp_is_guest', 'true');
+
+      if (rememberMe) {
+        localStorage.setItem('bw_erp_admin_auth', 'true');
+        localStorage.setItem('bw_erp_admin_user', JSON.stringify(guestInfo));
+        localStorage.setItem('bw_erp_is_guest', 'true');
+      }
+
+      setIsAuthModalOpen(false);
+
+      if (pendingAction && typeof pendingAction === 'function') {
+        const actionToRun = pendingAction;
+        setPendingAction(null);
+        setTimeout(() => actionToRun(), 100);
+      }
+      return { success: true, isGuest: true };
     } else {
       return {
         success: false,
-        error: 'Invalid Administrator credentials. Please verify username and password.'
+        error: 'Invalid Administrator passcode. Please verify your credentials.'
       };
     }
   };
@@ -124,21 +164,42 @@ export function AuthProvider({ children }) {
   const logout = () => {
     setIsAuthenticated(false);
     setCurrentUser(null);
+    setIsGuestMode(false);
     sessionStorage.removeItem('bw_erp_admin_auth');
     sessionStorage.removeItem('bw_erp_admin_user');
+    sessionStorage.removeItem('bw_erp_is_guest');
     localStorage.removeItem('bw_erp_admin_auth');
     localStorage.removeItem('bw_erp_admin_user');
+    localStorage.removeItem('bw_erp_is_guest');
   };
 
+  // Called when someone sets a custom password from the Help drawer
   const saveCustomSecret = (secret) => {
     if (secret && secret.trim()) {
-      localStorage.setItem('bw_erp_custom_pass', secret.trim());
+      const cleanSecret = secret.trim();
+      localStorage.setItem('bw_erp_custom_pass', cleanSecret);
+      localStorage.setItem('bw_erp_is_guest', 'true');
+      sessionStorage.setItem('bw_erp_is_guest', 'true');
+      setIsGuestMode(true);
+
+      // Reset guest isolated storage so they begin with a 100% blank workspace
+      try {
+        localStorage.removeItem('bw_guest_orders');
+        localStorage.removeItem('bw_guest_payments');
+        localStorage.removeItem('bw_guest_retailers');
+        localStorage.removeItem('bw_guest_stockists');
+        localStorage.removeItem('PJP_GUEST_DB');
+      } catch (e) {}
+
       return true;
     }
     return false;
   };
 
-  const requireAuth = (actionCallback, message = 'Administrator login required to perform this action.') => {
+  const requireAuth = (
+    actionCallback,
+    message = 'Administrator login required to perform this action.'
+  ) => {
     if (isAuthenticated) {
       if (actionCallback && typeof actionCallback === 'function') {
         actionCallback();
@@ -157,6 +218,7 @@ export function AuthProvider({ children }) {
       value={{
         isAuthenticated,
         currentUser,
+        isGuestMode,
         login,
         logout,
         saveCustomSecret,

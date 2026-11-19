@@ -7,13 +7,11 @@ import {
   Eye,
   EyeOff,
   LogIn,
-  CheckCircle2,
   AlertCircle,
   Building2,
   Truck,
   FileSpreadsheet,
   TrendingUp,
-  Sparkles,
   HelpCircle,
   Key,
   Save,
@@ -23,7 +21,7 @@ import brandLogo from '../assets/birla-ultratech-white.jpg';
 import { useAuth } from '../context/AuthContext';
 
 export default function LoginPage() {
-  const { login, saveCustomSecret, envAdminUser } = useAuth();
+  const { login, saveCustomSecret } = useAuth();
 
   const [username, setUsername] = useState('suraj');
   const [password, setPassword] = useState('');
@@ -32,7 +30,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
 
-  // Troubleshooting / Custom Secret Panel
+  // Troubleshooting / Custom Sandbox Key Panel
   const [showHelp, setShowHelp] = useState(false);
   const [customPassInput, setCustomPassInput] = useState('');
   const [customPassSaved, setCustomPassSaved] = useState(false);
@@ -59,32 +57,12 @@ export default function LoginPage() {
     }
   };
 
-  const handleQuickFill = () => {
-    setUsername('suraj');
-    setPassword('birla@2026');
-    setErrorMessage('');
-  };
-
-  const handleInstantLogin = async () => {
-    setLoading(true);
-    setErrorMessage('');
-    try {
-      const res = await login('suraj', 'birla@2026', true);
-      if (!res.success) {
-        setErrorMessage(res.error || 'Instant access error.');
-      }
-    } catch (err) {
-      setErrorMessage('Login failed. Please verify credentials.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleClearCache = () => {
     try {
       sessionStorage.clear();
       localStorage.removeItem('bw_erp_admin_auth');
       localStorage.removeItem('bw_erp_admin_user');
+      localStorage.removeItem('bw_erp_is_guest');
       window.location.reload(true);
     } catch (e) {
       window.location.reload();
@@ -192,19 +170,9 @@ export default function LoginPage() {
 
             {/* Passcode / Secret */}
             <div>
-              <div className="flex items-center justify-between mb-1.5">
-                <label className="block text-xs font-bold text-stone-700 uppercase tracking-wider">
-                  Passcode / Admin Secret
-                </label>
-                <button
-                  type="button"
-                  onClick={handleQuickFill}
-                  className="text-[11px] font-bold text-birlaRed-800 hover:text-birlaRed-900 hover:underline flex items-center space-x-1"
-                >
-                  <Sparkles className="w-3 h-3 text-amber-500" />
-                  <span>Auto-Fill Default</span>
-                </button>
-              </div>
+              <label className="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-1.5">
+                Passcode / Admin Secret
+              </label>
 
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-stone-400">
@@ -231,14 +199,9 @@ export default function LoginPage() {
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
-
-              <div className="mt-1.5 flex items-center justify-between text-[11px] text-stone-500">
-                <span>Default: <code className="bg-stone-100 font-mono text-birlaRed-900 px-1 py-0.5 rounded font-bold">birla@2026</code></span>
-                <span>or your GitHub Secret</span>
-              </div>
             </div>
 
-            {/* Remember Me */}
+            {/* Remember Me & Help Link */}
             <div className="flex items-center justify-between pt-1">
               <label className="flex items-center space-x-2 text-xs font-semibold text-stone-700 cursor-pointer">
                 <input
@@ -253,23 +216,12 @@ export default function LoginPage() {
               <button
                 type="button"
                 onClick={() => setShowHelp(!showHelp)}
-                className="text-xs text-amber-800 font-bold hover:underline flex items-center space-x-1"
+                className="text-xs text-amber-800 font-bold hover:underline flex items-center space-x-1 cursor-pointer"
               >
                 <HelpCircle className="w-3.5 h-3.5" />
-                <span>Help / Secret</span>
+                <span>Help / Sandbox</span>
               </button>
             </div>
-
-            {/* 1-Tap Quick Access for Mobile */}
-            <button
-              type="button"
-              onClick={handleInstantLogin}
-              disabled={loading}
-              className="w-full py-2.5 px-4 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-birlaRed-950 font-black text-xs sm:text-sm rounded-xl shadow-xs border border-amber-300 flex items-center justify-center space-x-2 active:scale-[0.98] transition-all cursor-pointer mt-1"
-            >
-              <Sparkles className="w-4 h-4 text-birlaRed-950" />
-              <span>⚡ 1-Tap Instant Login (Officer Suraj)</span>
-            </button>
 
             {/* Submit Action */}
             <button
@@ -287,55 +239,58 @@ export default function LoginPage() {
               )}
             </button>
 
-            {/* Expandable Troubleshooter / Custom Key Setter */}
+            {/* Expandable Help & Privacy Sandbox Panel */}
             {showHelp && (
-              <div className="pt-3 border-t border-stone-200 mt-3 space-y-2 text-xs text-stone-600 bg-[#FAF6E8]/70 p-3 rounded-xl border border-amber-200">
+              <div className="pt-3 border-t border-stone-200 mt-3 space-y-2 text-xs text-stone-600 bg-[#FAF6E8]/80 p-3.5 rounded-xl border border-amber-200">
                 <div className="font-bold text-stone-900 flex items-center space-x-1.5">
-                  <Key className="w-3.5 h-3.5 text-amber-700" />
-                  <span>Accepted Passcodes:</span>
+                  <ShieldCheck className="w-3.5 h-3.5 text-birlaRed-800" />
+                  <span>Security & Data Confidentiality</span>
                 </div>
-                <ul className="list-disc pl-4 space-y-0.5 text-[11px]">
-                  <li><b>Standard Corporate Key:</b> <code className="text-birlaRed-900 font-bold">birla@2026</code></li>
-                  <li><b>Officer ID:</b> <code className="text-stone-900 font-bold">PZ7550</code> or SE Phone: <code className="text-stone-900 font-bold">8219796922</code></li>
-                  <li><b>GitHub Actions Secret:</b> Any custom <code className="bg-stone-200 px-1 rounded">ADMIN_PASSWORD</code> configured in your repo.</li>
-                </ul>
+                <p className="text-[11px] leading-relaxed text-stone-600">
+                  Only authorized territory officers with official credentials have access to live commercial invoicing and proprietary dealer ledgers.
+                </p>
 
-                <div className="pt-2">
+                <div className="pt-2 border-t border-amber-200/60">
                   <span className="block font-bold text-stone-800 text-[11px] mb-1">
-                    Set Custom Passcode for this device:
+                    Create Sandbox Passcode (Blank Data Mode):
                   </span>
+                  <p className="text-[10px] text-stone-500 mb-1.5 leading-normal">
+                    If you are an external reviewer or testing without credentials, enter a passcode below to create an isolated demo session. You will be provided with a completely blank workspace to test without accessing real sales data.
+                  </p>
                   <div className="flex space-x-1.5">
                     <input
                       type="text"
                       value={customPassInput}
                       onChange={(e) => setCustomPassInput(e.target.value)}
-                      placeholder="e.g. your secret password"
-                      className="flex-1 px-2.5 py-1 bg-white border border-stone-300 rounded-lg text-xs"
+                      placeholder="Enter custom passcode"
+                      autoCapitalize="none"
+                      autoCorrect="off"
+                      className="flex-1 px-2.5 py-1.5 bg-white border border-stone-300 rounded-lg text-xs font-mono"
                     />
                     <button
                       type="button"
                       onClick={handleSaveCustomPass}
-                      className="px-2.5 py-1 bg-birlaRed-800 hover:bg-birlaRed-900 text-white text-xs font-bold rounded-lg flex items-center space-x-1"
+                      className="px-3 py-1.5 bg-birlaRed-800 hover:bg-birlaRed-900 text-white text-xs font-bold rounded-lg flex items-center space-x-1 cursor-pointer"
                     >
                       {customPassSaved ? <Check className="w-3 h-3 text-emerald-300" /> : <Save className="w-3 h-3" />}
-                      <span>Save</span>
+                      <span>Activate</span>
                     </button>
                   </div>
                   {customPassSaved && (
-                    <span className="text-[10px] text-emerald-700 font-bold block mt-1">
-                      ✓ Saved! You can now log in with this passcode.
+                    <span className="text-[10px] text-emerald-700 font-bold block mt-1.5">
+                      ✓ Sandbox passcode activated! Sign in above to view your blank workspace.
                     </span>
                   )}
                 </div>
 
                 <div className="pt-2 border-t border-amber-200/60 flex items-center justify-between">
-                  <span className="text-[10px] text-stone-500">Stale page on mobile?</span>
+                  <span className="text-[10px] text-stone-500">Need to reset device cache?</span>
                   <button
                     type="button"
                     onClick={handleClearCache}
-                    className="text-[10px] text-birlaRed-800 font-bold hover:underline"
+                    className="text-[10px] text-birlaRed-800 font-bold hover:underline cursor-pointer"
                   >
-                    🔄 Clear Cache & Reload Page
+                    🔄 Clear Cache & Reload
                   </button>
                 </div>
               </div>

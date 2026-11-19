@@ -77,13 +77,38 @@ export default function PjpModule() {
     }
   };
 
+  const isGuest = () => {
+    try {
+      return (
+        sessionStorage.getItem('bw_erp_is_guest') === 'true' ||
+        localStorage.getItem('bw_erp_is_guest') === 'true'
+      );
+    } catch {
+      return false;
+    }
+  };
+
+  const getDbKey = () => (isGuest() ? 'PJP_GUEST_DB_V1' : DB_KEY);
+
   const loadLocalDb = () => {
     try {
-      const raw = localStorage.getItem(DB_KEY);
+      const activeKey = getDbKey();
+      const raw = localStorage.getItem(activeKey);
       if (raw) {
         const parsed = JSON.parse(raw);
         setDb(parsed);
         if (parsed.profile) setProfile(parsed.profile);
+      } else if (isGuest()) {
+        // Blank PJP sandbox for guest sessions
+        const blankDb = {
+          profile: { name: 'GUEST / DEMO', employeeId: 'DEMO' },
+          visits: {},
+          holidays: {},
+          counters: {}
+        };
+        localStorage.setItem(activeKey, JSON.stringify(blankDb));
+        setDb(blankDb);
+        setProfile(blankDb.profile);
       } else {
         // Pre-seed Himachal Pradesh November 2026 Journey Plan for Suraj
         const seededDb = {
@@ -124,7 +149,7 @@ export default function PjpModule() {
             }
           }
         };
-        localStorage.setItem(DB_KEY, JSON.stringify(seededDb));
+        localStorage.setItem(activeKey, JSON.stringify(seededDb));
         setDb(seededDb);
       }
     } catch (e) {
@@ -134,7 +159,7 @@ export default function PjpModule() {
 
   const saveDbToStorage = (updatedDb) => {
     try {
-      localStorage.setItem(DB_KEY, JSON.stringify(updatedDb));
+      localStorage.setItem(getDbKey(), JSON.stringify(updatedDb));
       setDb({ ...updatedDb });
     } catch (e) {
       alert('Could not save PJP data (storage error).');
