@@ -29,8 +29,10 @@ import PartialDispatchModal from '../components/PartialDispatchModal';
 import ConfirmDeleteModal from '../components/ConfirmDeleteModal';
 import OrderDetailsModal from '../components/OrderDetailsModal';
 import DispatchChallanModal from '../components/DispatchChallanModal';
+import { useAuth } from '../context/AuthContext';
 
 export default function Orders({ openCreateModalProp, onCloseCreateModalProp }) {
+  const { requireAuth } = useAuth();
   const [orders, setOrders] = useState([]);
   const [stockists, setStockists] = useState([]);
   const [retailers, setRetailers] = useState([]);
@@ -399,8 +401,8 @@ export default function Orders({ openCreateModalProp, onCloseCreateModalProp }) 
 
         <div className="flex items-center space-x-2.5">
           <button
-            onClick={() => exportOrdersToExcel(orders)}
-            className="px-3.5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-xs transition-all flex items-center space-x-1.5"
+            onClick={() => requireAuth(() => exportOrdersToExcel(orders), 'Admin login required to export Orders Excel report.')}
+            className="px-3.5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-xs transition-all flex items-center space-x-1.5 cursor-pointer"
             title="Download full Orders & Line Items breakdown in styled Excel (.xlsx)"
           >
             <FileSpreadsheet className="w-4 h-4" />
@@ -408,8 +410,8 @@ export default function Orders({ openCreateModalProp, onCloseCreateModalProp }) 
           </button>
 
           <button
-            onClick={handleOpenCreate}
-            className="px-4 py-2.5 bg-birla-crimson hover:bg-birla-darkRed text-white text-xs font-bold rounded-xl shadow-sm transition-all flex items-center space-x-2"
+            onClick={() => requireAuth(handleOpenCreate, 'Admin login required to book new sales orders.')}
+            className="px-4 py-2.5 bg-birla-crimson hover:bg-birla-darkRed text-white text-xs font-bold rounded-xl shadow-sm transition-all flex items-center space-x-2 cursor-pointer"
           >
             <Plus className="w-4 h-4" />
             <span>Book New Sales Order</span>
@@ -559,7 +561,7 @@ export default function Orders({ openCreateModalProp, onCloseCreateModalProp }) 
                   <div className="flex items-center space-x-1.5">
                     <button
                       type="button"
-                      onClick={() => handleOpenEdit(order)}
+                      onClick={() => requireAuth(() => handleOpenEdit(order), 'Admin login required to edit orders.')}
                       className="px-2 py-1 bg-blue-700 hover:bg-blue-800 text-white text-[10px] font-bold rounded-lg shadow-xs transition-all flex items-center space-x-1 cursor-pointer"
                       title="Edit & Modify Order"
                     >
@@ -584,16 +586,16 @@ export default function Orders({ openCreateModalProp, onCloseCreateModalProp }) 
                     </button>
                     <button
                       type="button"
-                      onClick={() => setDispatchModal({ isOpen: true, order })}
-                      className="p-1 text-slate-600 hover:text-amber-600 bg-slate-100 rounded-lg"
+                      onClick={() => requireAuth(() => setDispatchModal({ isOpen: true, order }), 'Admin login required to process dispatches.')}
+                      className="p-1 text-slate-600 hover:text-amber-600 bg-slate-100 rounded-lg cursor-pointer"
                       title="Dispatch"
                     >
                       <Truck className="w-3.5 h-3.5" />
                     </button>
                     <button
                       type="button"
-                      onClick={() => setDeleteModal({ isOpen: true, order })}
-                      className="p-1 text-slate-500 hover:text-rose-600 bg-slate-100 rounded-lg"
+                      onClick={() => requireAuth(() => setDeleteModal({ isOpen: true, order }), 'Admin login required to delete orders.')}
+                      className="p-1 text-slate-500 hover:text-rose-600 bg-slate-100 rounded-lg cursor-pointer"
                       title="Delete"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
@@ -779,21 +781,21 @@ export default function Orders({ openCreateModalProp, onCloseCreateModalProp }) 
                     <td className="py-3.5 px-4 text-center whitespace-nowrap align-middle">
                       <div className="flex items-center justify-center space-x-1.5 whitespace-nowrap">
                         <button
-                          onClick={() => handleOpenEdit(order)}
+                          onClick={() => requireAuth(() => handleOpenEdit(order), 'Admin login required to edit orders.')}
                           className="p-1.5 text-blue-700 hover:text-blue-900 hover:bg-blue-50 rounded-lg transition-colors cursor-pointer"
                           title="Edit & Modify Order"
                         >
                           <Edit2 className="w-4 h-4" />
                         </button>
                         <button
-                          onClick={() => setDispatchModal({ isOpen: true, order })}
+                          onClick={() => requireAuth(() => setDispatchModal({ isOpen: true, order }), 'Admin login required to fulfill dispatches.')}
                           className="p-1.5 text-amber-700 hover:text-amber-900 hover:bg-amber-50 rounded-lg transition-colors cursor-pointer"
                           title="Fulfill / Partial Dispatch Engine"
                         >
                           <Truck className="w-4 h-4" />
                         </button>
                         <button
-                          onClick={() => setDeleteModal({ isOpen: true, order })}
+                          onClick={() => requireAuth(() => setDeleteModal({ isOpen: true, order }), 'Admin login required to delete orders.')}
                           className="p-1.5 text-rose-600 hover:text-rose-800 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
                           title="Delete Order"
                         >

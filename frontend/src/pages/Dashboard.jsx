@@ -249,7 +249,7 @@ export default function Dashboard({ onOpenNewOrder }) {
             <div className="flex flex-wrap items-center gap-x-2 text-xs text-stone-600 mt-1 font-medium">
               <span className="text-birlaRed-900 font-bold">Suraj (PZ7550)</span>
               <span>•</span>
-              <span>Territory Sales Officer</span>
+              <span>Sales Executive (SE)</span>
               <span className="hidden sm:inline">•</span>
               <span className="text-stone-700 font-semibold hidden sm:inline">UltraTech Cement Ltd. (Unit: Birla White)</span>
               <span>•</span>
@@ -1011,7 +1011,7 @@ export default function Dashboard({ onOpenNewOrder }) {
         <div className="bg-[#1A0B0E] p-4 sm:p-5 rounded-2xl text-white shadow-md border border-amber-900/50">
           <div className="flex items-center space-x-2 text-xs font-bold uppercase tracking-widest text-amber-400 mb-3">
             <Sparkles className="w-4 h-4" />
-            <span>Executive Field Intelligence (TSO Suraj - Mandi Division)</span>
+            <span>Executive Field Intelligence (SE Suraj - Mandi Division)</span>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
             <div className="bg-white/5 border border-amber-500/20 rounded-xl p-3">

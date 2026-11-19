@@ -23,8 +23,10 @@ import { exportLedgerToExcel } from '../utils/excelExporter';
 import PaymentModal from '../components/PaymentModal';
 import ConfirmDeleteModal from '../components/ConfirmDeleteModal';
 import PaymentReceiptModal from '../components/PaymentReceiptModal';
+import { useAuth } from '../context/AuthContext';
 
 export default function LedgerPayments() {
+  const { requireAuth } = useAuth();
   const [ledgerData, setLedgerData] = useState([]);
   const [creatorSummary, setCreatorSummary] = useState([]);
   const [payments, setPayments] = useState([]);
@@ -118,8 +120,8 @@ export default function LedgerPayments() {
 
         <div className="flex items-center space-x-2.5">
           <button
-            onClick={() => exportLedgerToExcel(ledgerData, payments)}
-            className="px-3.5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-xs transition-all flex items-center space-x-1.5"
+            onClick={() => requireAuth(() => exportLedgerToExcel(ledgerData, payments), 'Admin login required to export Ledger Excel report.')}
+            className="px-3.5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-xs transition-all flex items-center space-x-1.5 cursor-pointer"
             title="Download Retailer Ageing & Payment History in styled Excel (.xlsx)"
           >
             <FileSpreadsheet className="w-4 h-4" />
@@ -127,8 +129,8 @@ export default function LedgerPayments() {
           </button>
 
           <button
-            onClick={() => handleOpenPayment()}
-            className="px-4 py-2.5 bg-birla-crimson hover:bg-birla-darkRed text-white text-xs font-bold rounded-xl shadow-sm transition-all flex items-center space-x-2"
+            onClick={() => requireAuth(() => handleOpenPayment(), 'Admin login required to record payments.')}
+            className="px-4 py-2.5 bg-birla-crimson hover:bg-birla-darkRed text-white text-xs font-bold rounded-xl shadow-sm transition-all flex items-center space-x-2 cursor-pointer"
           >
             <Plus className="w-4 h-4" />
             <span>Record New Payment</span>
@@ -171,7 +173,7 @@ export default function LedgerPayments() {
       <div className="bg-gradient-to-r from-slate-900 to-slate-800 text-white p-5 rounded-2xl shadow-sm">
         <div className="flex items-center space-x-2 text-xs font-bold uppercase tracking-wider text-birla-gold mb-3">
           <User className="w-4 h-4" />
-          <span>Total Order Portfolio Grouped by Territory Sales Officer (Created By):</span>
+          <span>Total Order Portfolio Grouped by Sales Executive (SE) (Created By):</span>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {creatorSummary.map((creator, i) => (
@@ -583,8 +585,8 @@ export default function LedgerPayments() {
                       <span>Receipt PDF</span>
                     </button>
                     <button
-                      onClick={() => setDeleteModal({ isOpen: true, payment: p })}
-                      className="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-bold rounded-lg transition-all flex items-center space-x-1"
+                      onClick={() => requireAuth(() => setDeleteModal({ isOpen: true, payment: p }), 'Admin login required to delete payment records.')}
+                      className="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-bold rounded-lg transition-all flex items-center space-x-1 cursor-pointer"
                     >
                       <Trash2 className="w-3 h-3 text-rose-600" />
                       <span>Delete</span>
@@ -690,8 +692,8 @@ export default function LedgerPayments() {
                       {/* Delete */}
                       <td className="py-3.5 px-4 text-center">
                         <button
-                          onClick={() => setDeleteModal({ isOpen: true, payment: p })}
-                          className="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 transition-colors"
+                          onClick={() => requireAuth(() => setDeleteModal({ isOpen: true, payment: p }), 'Admin login required to delete payment records.')}
+                          className="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 transition-colors cursor-pointer"
                           title="Delete Payment"
                         >
                           <Trash2 className="w-4 h-4" />

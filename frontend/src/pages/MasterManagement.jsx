@@ -19,8 +19,10 @@ import { useSearchParams } from 'react-router-dom';
 import { api } from '../api';
 import { exportMastersToExcel } from '../utils/excelExporter';
 import ConfirmDeleteModal from '../components/ConfirmDeleteModal';
+import { useAuth } from '../context/AuthContext';
 
 export default function MasterManagement() {
+  const { requireAuth } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const activeTab = searchParams.get('tab') === 'retailers' ? 'retailers' : 'stockists';
 
@@ -223,8 +225,8 @@ export default function MasterManagement() {
 
           <div className="flex items-center space-x-2 w-full sm:w-auto">
             <button
-              onClick={() => exportMastersToExcel(stockists, retailers)}
-              className="flex-1 sm:flex-initial px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-xs transition-all flex items-center justify-center space-x-1.5 active:scale-95"
+              onClick={() => requireAuth(() => exportMastersToExcel(stockists, retailers), 'Admin login required to export Stockists & Retailers directory.')}
+              className="flex-1 sm:flex-initial px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-xs transition-all flex items-center justify-center space-x-1.5 active:scale-95 cursor-pointer"
               title="Download Stockists & Retailers directory in styled Excel (.xlsx)"
             >
               <FileSpreadsheet className="w-4 h-4" />
@@ -232,8 +234,8 @@ export default function MasterManagement() {
             </button>
 
             <button
-              onClick={handleOpenAdd}
-              className="flex-1 sm:flex-initial px-3.5 py-2 bg-birla-crimson hover:bg-birla-darkRed text-white text-xs font-bold rounded-xl shadow-sm transition-all flex items-center justify-center space-x-1.5 active:scale-95 whitespace-nowrap"
+              onClick={() => requireAuth(handleOpenAdd, `Admin login required to add ${activeTab === 'stockists' ? 'Stockist' : 'Retailer'}.`)}
+              className="flex-1 sm:flex-initial px-3.5 py-2 bg-birla-crimson hover:bg-birla-darkRed text-white text-xs font-bold rounded-xl shadow-sm transition-all flex items-center justify-center space-x-1.5 active:scale-95 whitespace-nowrap cursor-pointer"
             >
               <Plus className="w-4 h-4" />
               <span>+ Add {activeTab === 'stockists' ? 'Stockist' : 'Retailer'}</span>
@@ -345,21 +347,25 @@ export default function MasterManagement() {
 
                 <div className="flex items-center justify-end space-x-2 pt-1">
                   <button
-                    onClick={() => handleOpenEdit(item)}
-                    className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-lg transition-all flex items-center space-x-1"
+                    onClick={() => requireAuth(() => handleOpenEdit(item), `Admin login required to edit ${activeTab === 'stockists' ? 'Stockist' : 'Retailer'}.`)}
+                    className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-lg transition-all flex items-center space-x-1 cursor-pointer"
                   >
                     <Edit2 className="w-3 h-3 text-slate-500" />
                     <span>Edit</span>
                   </button>
                   <button
                     onClick={() =>
-                      setDeleteModal({
-                        isOpen: true,
-                        item,
-                        type: activeTab === 'stockists' ? 'stockist' : 'retailer'
-                      })
+                      requireAuth(
+                        () =>
+                          setDeleteModal({
+                            isOpen: true,
+                            item,
+                            type: activeTab === 'stockists' ? 'stockist' : 'retailer'
+                          }),
+                        `Admin login required to delete ${activeTab === 'stockists' ? 'Stockist' : 'Retailer'}.`
+                      )
                     }
-                    className="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-bold rounded-lg transition-all flex items-center space-x-1"
+                    className="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-bold rounded-lg transition-all flex items-center space-x-1 cursor-pointer"
                   >
                     <Trash2 className="w-3 h-3 text-rose-600" />
                     <span>Delete</span>
@@ -477,21 +483,25 @@ export default function MasterManagement() {
                     <td className="py-3.5 px-4 text-center whitespace-nowrap align-middle">
                       <div className="flex items-center justify-center space-x-1.5 whitespace-nowrap">
                         <button
-                          onClick={() => handleOpenEdit(item)}
-                          className="p-1.5 text-slate-600 hover:text-birla-blue hover:bg-blue-50 rounded-lg transition-colors"
+                          onClick={() => requireAuth(() => handleOpenEdit(item), `Admin login required to edit ${activeTab === 'stockists' ? 'Stockist' : 'Retailer'}.`)}
+                          className="p-1.5 text-slate-600 hover:text-birla-blue hover:bg-blue-50 rounded-lg transition-colors cursor-pointer"
                           title="Edit Details"
                         >
                           <Edit2 className="w-4 h-4" />
                         </button>
                         <button
                           onClick={() =>
-                            setDeleteModal({
-                              isOpen: true,
-                              item,
-                              type: activeTab === 'stockists' ? 'stockist' : 'retailer'
-                            })
+                            requireAuth(
+                              () =>
+                                setDeleteModal({
+                                  isOpen: true,
+                                  item,
+                                  type: activeTab === 'stockists' ? 'stockist' : 'retailer'
+                                }),
+                              `Admin login required to delete ${activeTab === 'stockists' ? 'Stockist' : 'Retailer'}.`
+                            )
                           }
-                          className="p-1.5 text-slate-600 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
+                          className="p-1.5 text-slate-600 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
                           title="Delete"
                         >
                           <Trash2 className="w-4 h-4" />

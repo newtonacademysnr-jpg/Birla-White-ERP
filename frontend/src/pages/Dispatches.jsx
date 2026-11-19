@@ -19,8 +19,10 @@ import PartialDispatchModal from '../components/PartialDispatchModal';
 import DispatchChallanModal from '../components/DispatchChallanModal';
 import OrderDetailsModal from '../components/OrderDetailsModal';
 import DualReceiptModal from '../components/DualReceiptModal';
+import { useAuth } from '../context/AuthContext';
 
 export default function Dispatches() {
+  const { requireAuth } = useAuth();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -210,8 +212,8 @@ export default function Dispatches() {
 
                   <button
                     type="button"
-                    onClick={() => setDispatchModal({ isOpen: true, order })}
-                    className="py-1.5 px-3 bg-birlaRed-800 hover:bg-birlaRed-700 text-white text-[11px] font-bold rounded-lg shadow-xs active:scale-95"
+                    onClick={() => requireAuth(() => setDispatchModal({ isOpen: true, order }), 'Admin login required to fulfill and process dispatches.')}
+                    className="py-1.5 px-3 bg-birlaRed-800 hover:bg-birlaRed-700 text-white text-[11px] font-bold rounded-lg shadow-xs active:scale-95 cursor-pointer"
                     title="Fulfill"
                   >
                     Fulfill
@@ -356,7 +358,7 @@ export default function Dispatches() {
                       {/* Action */}
                       <td className="py-3.5 px-4 text-center whitespace-nowrap align-middle">
                         <button
-                          onClick={() => setDispatchModal({ isOpen: true, order })}
+                          onClick={() => requireAuth(() => setDispatchModal({ isOpen: true, order }), 'Admin login required to fulfill and process dispatches.')}
                           className="px-3.5 py-1.5 bg-birlaRed-800 hover:bg-birlaRed-900 text-white text-[11px] font-bold rounded-lg shadow-xs transition-all flex items-center space-x-1.5 mx-auto whitespace-nowrap cursor-pointer active:scale-95"
                         >
                           <Truck className="w-3.5 h-3.5 text-amber-300" />

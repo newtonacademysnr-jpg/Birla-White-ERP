@@ -391,17 +391,17 @@ export default function DualReceiptModal({ isOpen = true, onClose, order }) {
               </div>
             </div>
 
-            {/* 7. MANDATORY STATUTORY PAYMENT NOTICE (PENALTY & LEGAL ACTION CLAUSE) */}
-            <div className="my-2.5 p-2.5 bg-red-50 border-2 border-red-500 rounded-xl text-left shadow-2xs">
-              <div className="flex items-center space-x-1.5 text-red-950 font-black text-[11px] uppercase tracking-wider mb-0.5">
-                <AlertTriangle className="w-3.5 h-3.5 text-red-600 flex-shrink-0" />
-                <span>महत्वपूर्ण वैधानिक सूचना / STATUTORY PAYMENT TERMS & PENALTY NOTICE</span>
+            {/* 7. COURTEOUS PAYMENT ADVISORY & TERMS */}
+            <div className="my-2.5 p-2.5 bg-amber-50/70 border border-amber-300 rounded-xl text-left shadow-2xs">
+              <div className="flex items-center space-x-1.5 text-amber-950 font-bold text-[11px] uppercase tracking-wider mb-0.5">
+                <ShieldCheck className="w-3.5 h-3.5 text-amber-700 flex-shrink-0" />
+                <span>व्यापारिक सहयोग एवं भुगतान अनुरोध / PAYMENT ADVISORY & TERMS</span>
               </div>
-              <p className="text-[10px] font-black text-red-900 leading-snug">
-                माल डिलीवरी प्राप्ति के 7 दिनों (1 सप्ताह) के भीतर पूर्ण भुगतान अनिवार्य है। यदि डिलीवरी के 7 दिनों में भुगतान प्राप्त नहीं होता है तो 24% वार्षिक दर से विलंब दंड (Penalty Interest) देय होगा एवं बिना किसी पूर्व सूचना के विधिक कार्यवाही (Legal Action under Commercial & Negotiable Instruments Act) प्रारंभ की जाएगी।
+              <p className="text-[10px] font-semibold text-stone-800 leading-snug">
+                कृपया माल प्राप्ति के 7 दिनों के भीतर भुगतान सुनिश्चित करें ताकि सुचारू सप्लाई एवं व्यापारिक संबंध निरंतर बने रहें। आपके सहयोग एवं विश्वास के लिए हार्दिक धन्यवाद।
               </p>
-              <p className="text-[9px] text-red-700 mt-0.5 font-semibold">
-                (Full payment is strictly mandatory within 7 calendar days of delivery receipt. Default beyond 7 days will attract 24% p.a. penal interest and initiate strict statutory legal recovery proceedings).
+              <p className="text-[9px] text-stone-600 mt-0.5 font-medium">
+                (Kindly arrange payment within 7 calendar days of delivery receipt to ensure uninterrupted supply and seamless service. Thank you for your continued partnership and valued association).
               </p>
             </div>
 
@@ -419,7 +419,7 @@ export default function DualReceiptModal({ isOpen = true, onClose, order }) {
                 <div className="w-32 h-12 border-2 border-dashed border-birlaRed-800 rounded-lg flex flex-col items-center justify-center text-birlaRed-900 bg-red-50/50">
                   <span className="text-[8px] font-black tracking-widest uppercase">OFFICIAL SEAL</span>
                   <span className="text-[9px] font-bold">Suraj (PZ7550)</span>
-                  <span className="text-[7px] opacity-75">Territory Sales Officer</span>
+                  <span className="text-[7px] opacity-75">Sales Executive (SE)</span>
                 </div>
                 <p className="text-[9px] text-slate-400 mt-0.5">Authorized Officer Signature Stamp</p>
               </div>

@@ -10,6 +10,7 @@ import Dispatches from './pages/Dispatches';
 import LedgerPayments from './pages/LedgerPayments';
 import Analytics from './pages/Analytics';
 import PjpModule from './pages/PjpModule';
+import AdminLoginModal from './components/AdminLoginModal';
 import { LayoutDashboard, ShoppingCart, CalendarCheck2, CreditCard, Menu } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 
@@ -119,6 +120,9 @@ export default function App() {
           <span className="text-[10px] mt-0.5 tracking-tight">Menu</span>
         </button>
       </div>
+
+      {/* Global Administrator Login Modal */}
+      <AdminLoginModal />
     </div>
   );
 }

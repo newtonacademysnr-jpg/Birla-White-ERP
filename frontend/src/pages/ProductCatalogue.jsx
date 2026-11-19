@@ -16,8 +16,10 @@ import {
 import { api } from '../api';
 import { exportProductsToExcel } from '../utils/excelExporter';
 import ConfirmDeleteModal from '../components/ConfirmDeleteModal';
+import { useAuth } from '../context/AuthContext';
 
 export default function ProductCatalogue() {
+  const { requireAuth } = useAuth();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -165,8 +167,8 @@ export default function ProductCatalogue() {
 
         <div className="flex items-center space-x-2">
           <button
-            onClick={() => exportProductsToExcel(products)}
-            className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-xs transition-all flex items-center space-x-1.5"
+            onClick={() => requireAuth(() => exportProductsToExcel(products), 'Admin login required to export Product Catalogue.')}
+            className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-xs transition-all flex items-center space-x-1.5 cursor-pointer"
             title="Download product catalogue in styled Excel (.xlsx)"
           >
             <FileSpreadsheet className="w-4 h-4" />
@@ -174,8 +176,8 @@ export default function ProductCatalogue() {
           </button>
 
           <button
-            onClick={handleOpenAdd}
-            className="px-4 py-2 bg-birla-crimson hover:bg-birla-darkRed text-white text-xs font-bold rounded-xl shadow-sm transition-all flex items-center space-x-2"
+            onClick={() => requireAuth(handleOpenAdd, 'Admin login required to add new products.')}
+            className="px-4 py-2 bg-birla-crimson hover:bg-birla-darkRed text-white text-xs font-bold rounded-xl shadow-sm transition-all flex items-center space-x-2 cursor-pointer"
           >
             <Plus className="w-4 h-4" />
             <span>Add New Product</span>
@@ -282,15 +284,15 @@ export default function ProductCatalogue() {
                   </span>
                   <div className="flex items-center space-x-2">
                     <button
-                      onClick={() => handleOpenEdit(product)}
-                      className="px-3 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-lg transition-all flex items-center space-x-1"
+                      onClick={() => requireAuth(() => handleOpenEdit(product), 'Admin login required to edit products.')}
+                      className="px-3 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-lg transition-all flex items-center space-x-1 cursor-pointer"
                     >
                       <Edit2 className="w-3 h-3 text-slate-500" />
                       <span>Edit</span>
                     </button>
                     <button
-                      onClick={() => setDeleteModal({ isOpen: true, product })}
-                      className="px-3 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-bold rounded-lg transition-all flex items-center space-x-1"
+                      onClick={() => requireAuth(() => setDeleteModal({ isOpen: true, product }), 'Admin login required to delete products.')}
+                      className="px-3 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-bold rounded-lg transition-all flex items-center space-x-1 cursor-pointer"
                     >
                       <Trash2 className="w-3 h-3 text-rose-600" />
                       <span>Delete</span>
@@ -407,15 +409,15 @@ export default function ProductCatalogue() {
                     <td className="py-3.5 px-4 text-center whitespace-nowrap align-middle">
                       <div className="flex items-center justify-center space-x-1.5 whitespace-nowrap">
                         <button
-                          onClick={() => handleOpenEdit(product)}
-                          className="p-1.5 text-slate-600 hover:text-birla-blue hover:bg-blue-50 rounded-lg transition-colors"
+                          onClick={() => requireAuth(() => handleOpenEdit(product), 'Admin login required to edit products.')}
+                          className="p-1.5 text-slate-600 hover:text-birla-blue hover:bg-blue-50 rounded-lg transition-colors cursor-pointer"
                           title="Edit Product"
                         >
                           <Edit2 className="w-4 h-4" />
                         </button>
                         <button
-                          onClick={() => setDeleteModal({ isOpen: true, product })}
-                          className="p-1.5 text-slate-600 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
+                          onClick={() => requireAuth(() => setDeleteModal({ isOpen: true, product }), 'Admin login required to delete products.')}
+                          className="p-1.5 text-slate-600 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
                           title="Delete Product"
                         >
                           <Trash2 className="w-4 h-4" />

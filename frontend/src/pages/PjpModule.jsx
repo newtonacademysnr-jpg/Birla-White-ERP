@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import { exportPjpToExcel } from '../utils/excelExporter';
 import { api } from '../api';
+import { useAuth } from '../context/AuthContext';
 
 const DB_KEY = 'PJP_SURAJ_DB_V1';
 const DEFAULT_NAME = 'SURAJ (PZ7550)';
@@ -35,6 +36,7 @@ const MONTH_NAMES = [
 ];
 
 export default function PjpModule() {
+  const { requireAuth } = useAuth();
   const currentDate = new Date();
   const [selectedYear, setSelectedYear] = useState(currentDate.getFullYear());
   const [selectedMonth, setSelectedMonth] = useState(currentDate.getMonth() + 1); // 1-12
@@ -227,122 +229,141 @@ export default function PjpModule() {
 
   // Save Single Visit
   const handleSaveVisit = () => {
-    if (!fillModal.place.trim()) {
-      alert('Please enter or select a place of visit.');
-      return;
-    }
-    const updatedDb = { ...db };
-    updatedDb.visits[fillModal.date] = {
-      place: fillModal.place.trim(),
-      remarks: fillModal.remarks.trim()
-    };
-    delete updatedDb.holidays[fillModal.date];
-    saveDbToStorage(updatedDb);
-    setFillModal({ isOpen: false, date: '', place: '', remarks: '' });
-    showToast('Visit saved successfully!');
+    requireAuth(() => {
+      if (!fillModal.place.trim()) {
+        alert('Please enter or select a place of visit.');
+        return;
+      }
+      const updatedDb = { ...db };
+      updatedDb.visits[fillModal.date] = {
+        place: fillModal.place.trim(),
+        remarks: fillModal.remarks.trim()
+      };
+      delete updatedDb.holidays[fillModal.date];
+      saveDbToStorage(updatedDb);
+      setFillModal({ isOpen: false, date: '', place: '', remarks: '' });
+      showToast('Visit saved successfully!');
+    }, 'Admin login required to schedule or modify visits.');
   };
 
   // Mark Holiday
   const handleMarkHoliday = () => {
-    const updatedDb = { ...db };
-    updatedDb.holidays[holidayModal.date] = holidayModal.reason.trim() || 'Holiday';
-    delete updatedDb.visits[holidayModal.date];
-    saveDbToStorage(updatedDb);
-    setHolidayModal({ isOpen: false, date: '', reason: '' });
-    showToast('Marked as Holiday!');
+    requireAuth(() => {
+      const updatedDb = { ...db };
+      updatedDb.holidays[holidayModal.date] = holidayModal.reason.trim() || 'Holiday';
+      delete updatedDb.visits[holidayModal.date];
+      saveDbToStorage(updatedDb);
+      setHolidayModal({ isOpen: false, date: '', reason: '' });
+      showToast('Marked as Holiday!');
+    }, 'Admin login required to modify holiday status.');
   };
 
   // Unmark Holiday
   const handleUnmarkHoliday = (dateKey) => {
-    const updatedDb = { ...db };
-    delete updatedDb.holidays[dateKey];
-    saveDbToStorage(updatedDb);
-    showToast('Holiday removed.');
+    requireAuth(() => {
+      const updatedDb = { ...db };
+      delete updatedDb.holidays[dateKey];
+      saveDbToStorage(updatedDb);
+      showToast('Holiday removed.');
+    }, 'Admin login required to remove holiday.');
   };
 
   // Clear Visit
   const handleClearVisit = (dateKey) => {
-    const updatedDb = { ...db };
-    delete updatedDb.visits[dateKey];
-    saveDbToStorage(updatedDb);
-    showToast('Visit cleared.');
+    requireAuth(() => {
+      const updatedDb = { ...db };
+      delete updatedDb.visits[dateKey];
+      saveDbToStorage(updatedDb);
+      showToast('Visit cleared.');
+    }, 'Admin login required to clear visit.');
   };
 
   // Multi-Date Bulk Visit
   const handleSaveBulkVisit = () => {
-    if (!bulkModal.place.trim()) {
-      alert('Please specify a place of visit.');
-      return;
-    }
-    if (!bulkModal.selectedDates || bulkModal.selectedDates.length === 0) {
-      alert('Please select at least one calendar date.');
-      return;
-    }
+    requireAuth(() => {
+      if (!bulkModal.place.trim()) {
+        alert('Please specify a place of visit.');
+        return;
+      }
+      if (!bulkModal.selectedDates || bulkModal.selectedDates.length === 0) {
+        alert('Please select at least one calendar date.');
+        return;
+      }
 
-    const updatedDb = { ...db };
-    bulkModal.selectedDates.forEach((dateKey) => {
-      const dt = new Date(dateKey + 'T00:00:00');
-      if (dt.getDay() === 0 || updatedDb.holidays[dateKey]) return; // Skip holidays
-      updatedDb.visits[dateKey] = {
-        place: bulkModal.place.trim(),
-        remarks: bulkModal.remarks.trim()
-      };
-    });
-    saveDbToStorage(updatedDb);
-    setBulkModal({ isOpen: false, place: '', remarks: '', selectedDates: [] });
-    showToast(`${bulkModal.selectedDates.length} visits scheduled in batch!`);
+      const updatedDb = { ...db };
+      bulkModal.selectedDates.forEach((dateKey) => {
+        const dt = new Date(dateKey + 'T00:00:00');
+        if (dt.getDay() === 0 || updatedDb.holidays[dateKey]) return; // Skip holidays
+        updatedDb.visits[dateKey] = {
+          place: bulkModal.place.trim(),
+          remarks: bulkModal.remarks.trim()
+        };
+      });
+      saveDbToStorage(updatedDb);
+      setBulkModal({ isOpen: false, place: '', remarks: '', selectedDates: [] });
+      showToast(`${bulkModal.selectedDates.length} visits scheduled in batch!`);
+    }, 'Admin login required to schedule bulk visits.');
   };
 
   // Save Counter for Place
   const handleSaveCounter = () => {
-    const updatedDb = { ...db };
-    const counterKey = `${selectedYear}-${selectedMonth}`;
-    updatedDb.counters[counterKey] = updatedDb.counters[counterKey] || {};
-    updatedDb.counters[counterKey][counterModal.place.toLowerCase()] = Math.max(0, Number(counterModal.counter || 0));
-    saveDbToStorage(updatedDb);
-    setCounterModal({ isOpen: false, place: '', counter: 0 });
-    showToast('Counter updated successfully!');
+    requireAuth(() => {
+      const updatedDb = { ...db };
+      const counterKey = `${selectedYear}-${selectedMonth}`;
+      updatedDb.counters[counterKey] = updatedDb.counters[counterKey] || {};
+      updatedDb.counters[counterKey][counterModal.place.toLowerCase()] = Math.max(0, Number(counterModal.counter || 0));
+      saveDbToStorage(updatedDb);
+      setCounterModal({ isOpen: false, place: '', counter: 0 });
+      showToast('Counter updated successfully!');
+    }, 'Admin login required to update retailer counters.');
   };
 
   // Export to Styled Excel (.xlsx)
   const handleExportXlsx = () => {
-    try {
-      exportPjpToExcel(monthData, selectedYear, selectedMonth);
-      showToast('PJP Excel spreadsheet generated successfully!');
-    } catch (e) {
-      alert('Excel export error: ' + e.message);
-    }
+    requireAuth(() => {
+      try {
+        exportPjpToExcel(monthData, selectedYear, selectedMonth);
+        showToast('PJP Excel spreadsheet generated successfully!');
+      } catch (e) {
+        alert('Excel export error: ' + e.message);
+      }
+    }, 'Admin login required to export PJP Excel report.');
   };
 
   // Backup JSON
   const handleExportBackup = () => {
-    const jsonStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(db, null, 2));
-    const dlAnchor = document.createElement('a');
-    dlAnchor.setAttribute('href', jsonStr);
-    dlAnchor.setAttribute('download', `PJP_Backup_Suraj_${selectedYear}_${pad(selectedMonth)}.json`);
-    dlAnchor.click();
-    showToast('PJP backup downloaded!');
+    requireAuth(() => {
+      const jsonStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(db, null, 2));
+      const dlAnchor = document.createElement('a');
+      dlAnchor.setAttribute('href', jsonStr);
+      dlAnchor.setAttribute('download', `PJP_Backup_Suraj_${selectedYear}_${pad(selectedMonth)}.json`);
+      dlAnchor.click();
+      showToast('PJP backup downloaded!');
+    }, 'Admin login required to export PJP backup.');
   };
 
   // Restore JSON
   const handleRestoreBackup = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      try {
-        const parsed = JSON.parse(event.target.result);
-        if (parsed.visits) {
-          saveDbToStorage(parsed);
-          showToast('PJP backup restored successfully!');
-        } else {
-          alert('Invalid PJP backup file.');
+    requireAuth(() => {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        try {
+          const parsed = JSON.parse(event.target.result);
+          if (parsed.visits) {
+            saveDbToStorage(parsed);
+            showToast('PJP backup restored successfully!');
+          } else {
+            alert('Invalid PJP backup file.');
+          }
+        } catch (err) {
+          alert('Error parsing JSON backup file.');
         }
-      } catch (err) {
-        alert('Error parsing JSON backup file.');
-      }
-    };
-    reader.readAsText(file);
+      };
+      reader.readAsText(file);
+    }, 'Admin login required to restore PJP data.');
+    e.target.value = '';
   };
 
   // Navigation handlers

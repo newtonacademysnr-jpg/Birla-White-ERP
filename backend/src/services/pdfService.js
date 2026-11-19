@@ -214,7 +214,7 @@ function generateStockistReceipt(order) {
   doc.text(`Delivery Date: ${formatDate(order.deliveryDate)}`, 60, y + 65);
 
   // Right: Territory Officer (Suraj PZ7550)
-  doc.fillColor('#A02225').font('Helvetica-Bold').fontSize(9).text('TERRITORY SALES OFFICER', 310, y + 8);
+  doc.fillColor('#A02225').font('Helvetica-Bold').fontSize(9).text('SALES EXECUTIVE (SE)', 310, y + 8);
   doc.fillColor('#333333').font('Helvetica').fontSize(8.5);
   doc.text(`Officer: ${order.createdBy || 'Suraj (PZ7550)'}`, 310, y + 23);
   doc.text(`Mobile: ${order.createdMobile || '8219796922'}`, 310, y + 37);
