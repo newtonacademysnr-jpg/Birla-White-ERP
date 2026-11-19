@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Routes, Route, useNavigate } from 'react-router-dom';
+import { Routes, Route, useNavigate, NavLink } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Sidebar from './components/Sidebar';
 import Dashboard from './pages/Dashboard';
@@ -10,11 +10,13 @@ import Dispatches from './pages/Dispatches';
 import LedgerPayments from './pages/LedgerPayments';
 import Analytics from './pages/Analytics';
 import PjpModule from './pages/PjpModule';
+import LoginPage from './pages/LoginPage';
 import AdminLoginModal from './components/AdminLoginModal';
+import { useAuth } from './context/AuthContext';
 import { LayoutDashboard, ShoppingCart, CalendarCheck2, CreditCard, Menu } from 'lucide-react';
-import { NavLink } from 'react-router-dom';
 
 export default function App() {
+  const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const [openOrderModal, setOpenOrderModal] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -23,6 +25,11 @@ export default function App() {
     navigate('/orders');
     setOpenOrderModal(true);
   };
+
+  // If user is not authenticated, display full-screen Login Homepage
+  if (!isAuthenticated) {
+    return <LoginPage />;
+  }
 
   return (
     <div className="min-h-screen bg-[#FAF6E8] flex flex-col text-stone-900 selection:bg-birlaRed-800 selection:text-white">

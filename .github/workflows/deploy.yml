@@ -33,8 +33,8 @@ jobs:
 
       - name: Install dependencies & Build with GitHub Secrets
         env:
-          VITE_ADMIN_USER: ${{ secrets.ADMIN_USERNAME || secrets.VITE_ADMIN_USER || 'suraj' }}
-          VITE_ADMIN_PASS: ${{ secrets.ADMIN_PASSWORD || secrets.VITE_ADMIN_PASS || 'birla@2026' }}
+          VITE_ADMIN_USER: ${{ secrets.ADMIN_USERNAME || secrets.VITE_ADMIN_USER || secrets.ADMIN_USER || secrets.USERNAME || 'suraj' }}
+          VITE_ADMIN_PASS: ${{ secrets.ADMIN_PASSWORD || secrets.VITE_ADMIN_PASS || secrets.ADMIN_PASS || secrets.PASSWORD || secrets.ADMIN_SECRET || secrets.SECRET || 'birla@2026' }}
         run: |
           cd frontend
           npm ci

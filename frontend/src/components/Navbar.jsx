@@ -73,8 +73,18 @@ export default function Navbar({ onOpenNewOrder, onToggleMobileMenu, mobileMenuO
 
         {/* Right: Quick Action, Admin Auth & Officer Badge */}
         <div className="flex items-center space-x-2 sm:space-x-3">
-          {/* Admin Auth Toggle Button */}
-          {!isAuthenticated ? (
+          {/* Admin Auth / Logout Button */}
+          {isAuthenticated ? (
+            <button
+              onClick={logout}
+              className="px-2.5 sm:px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-800 border border-rose-300 rounded-xl text-xs font-bold flex items-center space-x-1.5 transition-all shadow-xs active:scale-95 cursor-pointer"
+              title="Logout from ERP Portal"
+            >
+              <LogOut className="w-3.5 h-3.5 text-rose-700" />
+              <span className="hidden sm:inline">Logout</span>
+              <span className="sm:hidden">Exit</span>
+            </button>
+          ) : (
             <button
               onClick={() => openAuthModal('Enter Administrator credentials to unlock order booking, Excel exports, and edit privileges.')}
               className="px-2.5 sm:px-3 py-1.5 bg-amber-500/15 hover:bg-amber-500/25 text-amber-900 border border-amber-400/50 rounded-xl text-xs font-bold flex items-center space-x-1.5 transition-all shadow-2xs cursor-pointer"
@@ -83,15 +93,6 @@ export default function Navbar({ onOpenNewOrder, onToggleMobileMenu, mobileMenuO
               <Lock className="w-3.5 h-3.5 text-amber-800" />
               <span className="hidden sm:inline">Admin Login</span>
               <span className="sm:hidden">Login</span>
-            </button>
-          ) : (
-            <button
-              onClick={logout}
-              className="px-2.5 py-1.5 bg-stone-100 hover:bg-rose-50 text-stone-700 hover:text-rose-700 border border-stone-300 hover:border-rose-300 rounded-xl text-xs font-bold flex items-center space-x-1 transition-all shadow-2xs cursor-pointer"
-              title="Logout from Administrator Session"
-            >
-              <LogOut className="w-3.5 h-3.5 text-stone-500 hover:text-rose-600" />
-              <span className="hidden sm:inline">Logout</span>
             </button>
           )}
 
