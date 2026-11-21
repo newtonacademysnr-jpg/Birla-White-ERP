@@ -1,6 +1,11 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import bcrypt from 'bcryptjs';
 
 const AuthContext = createContext(null);
+
+// Static fallback admin configuration for GitHub Pages deployment
+const DEFAULT_ADMIN_HASH = '$2b$10$1dfBSNXeQK5hyYyotKrZT.XAAlEByp0iwQ/N1uJNqc5Zd9ik/DyV.';
+const DEFAULT_ADMIN_USER = 'suraj-pz7550';
 
 export function AuthProvider({ children }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -38,9 +43,24 @@ export function AuthProvider({ children }) {
         // API server offline or running in standalone static GitHub Pages mode
       }
 
-      // Check if user has an active guest sandbox session
+      // Check if user has an active admin or guest sandbox session
       if (mounted) {
         try {
+          const isAdmin =
+            sessionStorage.getItem('bw_erp_admin_auth') === 'true' ||
+            localStorage.getItem('bw_erp_admin_auth') === 'true';
+          const storedAdminUser =
+            sessionStorage.getItem('bw_erp_admin_user') ||
+            localStorage.getItem('bw_erp_admin_user');
+
+          if (isAdmin && storedAdminUser) {
+            setIsAuthenticated(true);
+            setCurrentUser(JSON.parse(storedAdminUser));
+            setIsGuestMode(false);
+            setIsCheckingSession(false);
+            return;
+          }
+
           const isGuest =
             sessionStorage.getItem('bw_erp_is_guest') === 'true' ||
             localStorage.getItem('bw_erp_is_guest') === 'true';
@@ -97,6 +117,18 @@ export function AuthProvider({ children }) {
           setIsGuestMode(false);
           setIsAuthModalOpen(false);
 
+          sessionStorage.setItem('bw_erp_admin_auth', 'true');
+          sessionStorage.setItem('bw_erp_admin_user', JSON.stringify(data.user));
+          sessionStorage.removeItem('bw_erp_is_guest');
+          sessionStorage.removeItem('bw_erp_guest_user');
+
+          if (rememberMe) {
+            localStorage.setItem('bw_erp_admin_auth', 'true');
+            localStorage.setItem('bw_erp_admin_user', JSON.stringify(data.user));
+            localStorage.removeItem('bw_erp_is_guest');
+            localStorage.removeItem('bw_erp_guest_user');
+          }
+
           if (pendingAction && typeof pendingAction === 'function') {
             const actionToRun = pendingAction;
             setPendingAction(null);
@@ -115,7 +147,70 @@ export function AuthProvider({ children }) {
       // Backend is unreachable (e.g. static GitHub Pages demo environment)
     }
 
-    // 2. Fallback for Static Host / Reviewer Sandbox Mode
+    // 2. Static Host (GitHub Pages) Admin Authentication via Bcrypt Hash
+    const ADMIN_HASH =
+      import.meta.env.VITE_ADMIN_PASSWORD_HASH || DEFAULT_ADMIN_HASH;
+    const ADMIN_USER = (
+      import.meta.env.VITE_ADMIN_USERNAME || DEFAULT_ADMIN_USER
+    ).toLowerCase().trim();
+
+    const allowedAdminUsers = [
+      ADMIN_USER,
+      'suraj',
+      'pz7550',
+      'suraj-pz7550',
+      'suraj (pz7550)',
+      'admin',
+      'administrator',
+      'se',
+      'sales'
+    ];
+
+    let isMatch = false;
+    try {
+      isMatch = bcrypt.compareSync(cleanPass, ADMIN_HASH);
+    } catch (err) {
+      console.warn('Bcrypt static verification error:', err);
+    }
+
+    // If password matches admin hash, authenticate as Administrator with full data access
+    if (isMatch && (allowedAdminUsers.includes(cleanUser) || cleanUser.length > 0)) {
+      const adminInfo = {
+        username: cleanUser || ADMIN_USER,
+        role: 'ADMIN',
+        name: 'Suraj (PZ7550)',
+        email: 'suraj-v@adityabirla.com',
+        company: 'UltraTech Cement Ltd. - Unit Birla White',
+        loginTime: new Date().toISOString()
+      };
+
+      setIsAuthenticated(true);
+      setCurrentUser(adminInfo);
+      setIsGuestMode(false);
+
+      sessionStorage.setItem('bw_erp_admin_auth', 'true');
+      sessionStorage.setItem('bw_erp_admin_user', JSON.stringify(adminInfo));
+      sessionStorage.removeItem('bw_erp_is_guest');
+      sessionStorage.removeItem('bw_erp_guest_user');
+
+      if (rememberMe) {
+        localStorage.setItem('bw_erp_admin_auth', 'true');
+        localStorage.setItem('bw_erp_admin_user', JSON.stringify(adminInfo));
+        localStorage.removeItem('bw_erp_is_guest');
+        localStorage.removeItem('bw_erp_guest_user');
+      }
+
+      setIsAuthModalOpen(false);
+
+      if (pendingAction && typeof pendingAction === 'function') {
+        const actionToRun = pendingAction;
+        setPendingAction(null);
+        setTimeout(() => actionToRun(), 100);
+      }
+      return { success: true, isGuest: false };
+    }
+
+    // 3. Fallback for Static Host / Reviewer Sandbox Mode
     // Reviewer can activate their own custom passcode in the Help drawer
     const localCustomPass = (localStorage.getItem('bw_erp_custom_pass') || '').trim();
     if (localCustomPass && cleanPass === localCustomPass) {
@@ -174,8 +269,12 @@ export function AuthProvider({ children }) {
 
     sessionStorage.removeItem('bw_erp_is_guest');
     sessionStorage.removeItem('bw_erp_guest_user');
+    sessionStorage.removeItem('bw_erp_admin_auth');
+    sessionStorage.removeItem('bw_erp_admin_user');
     localStorage.removeItem('bw_erp_is_guest');
     localStorage.removeItem('bw_erp_guest_user');
+    localStorage.removeItem('bw_erp_admin_auth');
+    localStorage.removeItem('bw_erp_admin_user');
   };
 
   /**
