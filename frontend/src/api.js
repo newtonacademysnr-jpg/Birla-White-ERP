@@ -2,7 +2,20 @@
 // When deployed on static GitHub Pages, it smoothly handles all ERP data, full CRUD,
 // live GST calculations, and dual-receipt previews right in the browser!
 
-const BASE_URL = '/api';
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
+
+// Secure fetch wrapper enforcing credentials and anti-CSRF request header
+async function secureFetch(url, options = {}) {
+  const headers = {
+    'X-Requested-With': 'BirlaWhiteERP',
+    ...(options.headers || {})
+  };
+  return fetch(url, {
+    credentials: 'include',
+    ...options,
+    headers
+  });
+}
 
 // Initial Seed Data for Himachal Pradesh (Mandi, Sundernagar, Joginder Nagar)
 const initialStockists = [
@@ -685,7 +698,7 @@ export const api = {
     syncDb();
     try {
       const query = new URLSearchParams(params).toString();
-      const res = await fetch(`${BASE_URL}/stockists${query ? `?${query}` : ''}`);
+      const res = await secureFetch(`${BASE_URL}/stockists${query ? `?${query}` : ''}`);
       if (res.ok) return await res.json();
     } catch (e) {}
 
@@ -712,7 +725,7 @@ export const api = {
 
   createStockist: async (data) => {
     try {
-      const res = await fetch(`${BASE_URL}/stockists`, {
+      const res = await secureFetch(`${BASE_URL}/stockists`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
@@ -733,7 +746,7 @@ export const api = {
 
   updateStockist: async (id, data) => {
     try {
-      const res = await fetch(`${BASE_URL}/stockists/${id}`, {
+      const res = await secureFetch(`${BASE_URL}/stockists/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
@@ -748,7 +761,7 @@ export const api = {
 
   deleteStockist: async (id) => {
     try {
-      const res = await fetch(`${BASE_URL}/stockists/${id}`, { method: 'DELETE' });
+      const res = await secureFetch(`${BASE_URL}/stockists/${id}`, { method: 'DELETE' });
       if (res.ok) return await res.json();
     } catch (e) {}
 
@@ -762,7 +775,7 @@ export const api = {
     syncDb();
     try {
       const query = new URLSearchParams(params).toString();
-      const res = await fetch(`${BASE_URL}/retailers${query ? `?${query}` : ''}`);
+      const res = await secureFetch(`${BASE_URL}/retailers${query ? `?${query}` : ''}`);
       if (res.ok) return await res.json();
     } catch (e) {}
 
@@ -792,7 +805,7 @@ export const api = {
 
   createRetailer: async (data) => {
     try {
-      const res = await fetch(`${BASE_URL}/retailers`, {
+      const res = await secureFetch(`${BASE_URL}/retailers`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
@@ -814,7 +827,7 @@ export const api = {
 
   updateRetailer: async (id, data) => {
     try {
-      const res = await fetch(`${BASE_URL}/retailers/${id}`, {
+      const res = await secureFetch(`${BASE_URL}/retailers/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
@@ -829,7 +842,7 @@ export const api = {
 
   deleteRetailer: async (id) => {
     try {
-      const res = await fetch(`${BASE_URL}/retailers/${id}`, { method: 'DELETE' });
+      const res = await secureFetch(`${BASE_URL}/retailers/${id}`, { method: 'DELETE' });
       if (res.ok) return await res.json();
     } catch (e) {}
 
@@ -842,7 +855,7 @@ export const api = {
   getProducts: async (params = {}) => {
     try {
       const query = new URLSearchParams(params).toString();
-      const res = await fetch(`${BASE_URL}/products${query ? `?${query}` : ''}`);
+      const res = await secureFetch(`${BASE_URL}/products${query ? `?${query}` : ''}`);
       if (res.ok) return await res.json();
     } catch (e) {}
 
@@ -867,7 +880,7 @@ export const api = {
 
   createProduct: async (data) => {
     try {
-      const res = await fetch(`${BASE_URL}/products`, {
+      const res = await secureFetch(`${BASE_URL}/products`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
@@ -890,7 +903,7 @@ export const api = {
 
   updateProduct: async (id, data) => {
     try {
-      const res = await fetch(`${BASE_URL}/products/${id}`, {
+      const res = await secureFetch(`${BASE_URL}/products/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
@@ -905,7 +918,7 @@ export const api = {
 
   deleteProduct: async (id) => {
     try {
-      const res = await fetch(`${BASE_URL}/products/${id}`, { method: 'DELETE' });
+      const res = await secureFetch(`${BASE_URL}/products/${id}`, { method: 'DELETE' });
       if (res.ok) return await res.json();
     } catch (e) {}
 
@@ -919,7 +932,7 @@ export const api = {
     syncDb();
     try {
       const query = new URLSearchParams(params).toString();
-      const res = await fetch(`${BASE_URL}/orders${query ? `?${query}` : ''}`);
+      const res = await secureFetch(`${BASE_URL}/orders${query ? `?${query}` : ''}`);
       if (res.ok) return await res.json();
     } catch (e) {}
 
@@ -948,7 +961,7 @@ export const api = {
 
   createOrder: async (data) => {
     try {
-      const res = await fetch(`${BASE_URL}/orders`, {
+      const res = await secureFetch(`${BASE_URL}/orders`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
@@ -1032,7 +1045,7 @@ export const api = {
 
   updateOrder: async (id, data) => {
     try {
-      const res = await fetch(`${BASE_URL}/orders/${id}`, {
+      const res = await secureFetch(`${BASE_URL}/orders/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
@@ -1117,7 +1130,7 @@ export const api = {
 
   markOrderDelivered: async (id) => {
     try {
-      const res = await fetch(`${BASE_URL}/orders/${id}/deliver`, { method: 'PUT' });
+      const res = await secureFetch(`${BASE_URL}/orders/${id}/deliver`, { method: 'PUT' });
       if (res.ok) return await res.json();
     } catch (e) {}
 
@@ -1130,7 +1143,7 @@ export const api = {
 
   deleteOrder: async (id) => {
     try {
-      const res = await fetch(`${BASE_URL}/orders/${id}`, { method: 'DELETE' });
+      const res = await secureFetch(`${BASE_URL}/orders/${id}`, { method: 'DELETE' });
       if (res.ok) return await res.json();
     } catch (e) {}
 
@@ -1142,7 +1155,7 @@ export const api = {
   // Dispatches
   processDispatch: async (orderId, data) => {
     try {
-      const res = await fetch(`${BASE_URL}/dispatches/orders/${orderId}/dispatch`, {
+      const res = await secureFetch(`${BASE_URL}/dispatches/orders/${orderId}/dispatch`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
@@ -1229,7 +1242,7 @@ export const api = {
     syncDb();
     try {
       const query = new URLSearchParams(params).toString();
-      const res = await fetch(`${BASE_URL}/payments${query ? `?${query}` : ''}`);
+      const res = await secureFetch(`${BASE_URL}/payments${query ? `?${query}` : ''}`);
       if (res.ok) return await res.json();
     } catch (e) {}
 
@@ -1242,7 +1255,7 @@ export const api = {
 
   recordPayment: async (data) => {
     try {
-      const res = await fetch(`${BASE_URL}/payments`, {
+      const res = await secureFetch(`${BASE_URL}/payments`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
@@ -1288,7 +1301,7 @@ export const api = {
 
   deletePayment: async (id) => {
     try {
-      const res = await fetch(`${BASE_URL}/payments/${id}`, { method: 'DELETE' });
+      const res = await secureFetch(`${BASE_URL}/payments/${id}`, { method: 'DELETE' });
       if (res.ok) return await res.json();
     } catch (e) {}
 
@@ -1299,7 +1312,7 @@ export const api = {
 
   getLedgerSummary: async () => {
     try {
-      const res = await fetch(`${BASE_URL}/payments/ledger/summary`);
+      const res = await secureFetch(`${BASE_URL}/payments/ledger/summary`);
       if (res.ok) return await res.json();
     } catch (e) {}
 
@@ -1375,7 +1388,7 @@ export const api = {
   getDashboardSummary: async () => {
     syncDb();
     try {
-      const res = await fetch(`${BASE_URL}/analytics/dashboard`);
+      const res = await secureFetch(`${BASE_URL}/analytics/dashboard`);
       if (res.ok) return await res.json();
     } catch (e) {}
 
@@ -1500,7 +1513,7 @@ export const api = {
   getBiAnalytics: async (timeframe = 'monthly') => {
     syncDb();
     try {
-      const res = await fetch(`${BASE_URL}/analytics/bi?timeframe=${timeframe}`);
+      const res = await secureFetch(`${BASE_URL}/analytics/bi?timeframe=${timeframe}`);
       if (res.ok) return await res.json();
     } catch (e) {}
 
@@ -1573,7 +1586,7 @@ export const api = {
     syncDb();
     try {
       const query = new URLSearchParams(params).toString();
-      const res = await fetch(`${BASE_URL}/pjp${query ? `?${query}` : ''}`);
+      const res = await secureFetch(`${BASE_URL}/pjp${query ? `?${query}` : ''}`);
       if (res.ok) return await res.json();
     } catch (e) {}
 
@@ -1593,7 +1606,7 @@ export const api = {
 
   createPjpVisit: async (data) => {
     try {
-      const res = await fetch(`${BASE_URL}/pjp`, {
+      const res = await secureFetch(`${BASE_URL}/pjp`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
@@ -1615,7 +1628,7 @@ export const api = {
 
   updatePjpVisit: async (id, data) => {
     try {
-      const res = await fetch(`${BASE_URL}/pjp/${id}`, {
+      const res = await secureFetch(`${BASE_URL}/pjp/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
@@ -1630,7 +1643,7 @@ export const api = {
 
   deletePjpVisit: async (id) => {
     try {
-      const res = await fetch(`${BASE_URL}/pjp/${id}`, { method: 'DELETE' });
+      const res = await secureFetch(`${BASE_URL}/pjp/${id}`, { method: 'DELETE' });
       if (res.ok) return await res.json();
     } catch (e) {}
 

@@ -16,7 +16,7 @@ import { useAuth } from './context/AuthContext';
 import { LayoutDashboard, ShoppingCart, CalendarCheck2, CreditCard, Menu } from 'lucide-react';
 
 export default function App() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isCheckingSession } = useAuth();
   const navigate = useNavigate();
   const [openOrderModal, setOpenOrderModal] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -25,6 +25,15 @@ export default function App() {
     navigate('/orders');
     setOpenOrderModal(true);
   };
+
+  // While validating server session cookie
+  if (isCheckingSession) {
+    return (
+      <div className="min-h-screen bg-[#FAF6E8] flex items-center justify-center">
+        <div className="w-8 h-8 border-4 border-birlaRed-800 border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
 
   // If user is not authenticated, display full-screen Login Homepage
   if (!isAuthenticated) {

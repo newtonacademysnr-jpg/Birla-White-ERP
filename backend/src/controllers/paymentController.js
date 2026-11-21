@@ -188,13 +188,25 @@ exports.updatePayment = async (req, res) => {
 exports.deletePayment = async (req, res) => {
   try {
     const { id } = req.params;
-    const paymentId = parseInt(id);
+    const paymentId = parseInt(id, 10);
+    if (isNaN(paymentId)) {
+      return res.status(400).json({ error: 'Invalid payment ID format' });
+    }
 
     const payment = await prisma.payment.findUnique({
       where: { id: paymentId }
     });
 
-    if (payment && payment.orderId) {
+    if (!payment) {
+      return res.status(404).json({ error: 'Payment record not found' });
+    }
+
+    // Role check: Only ADMIN can delete payment ledger entries
+    if (req.user && req.user.role !== 'ADMIN') {
+      return res.status(403).json({ error: 'Forbidden: Administrator privileges required to delete ledger payments' });
+    }
+
+    if (payment.orderId) {
       // Revert order paid amount
       await prisma.order.update({
         where: { id: payment.orderId },

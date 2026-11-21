@@ -31,10 +31,7 @@ jobs:
           cache: 'npm'
           cache-dependency-path: frontend/package-lock.json
 
-      - name: Install dependencies & Build with GitHub Secrets
-        env:
-          VITE_ADMIN_USER: ${{ secrets.ADMIN_USERNAME || secrets.VITE_ADMIN_USER || secrets.ADMIN_USER || secrets.USERNAME || 'suraj' }}
-          VITE_ADMIN_PASS: ${{ secrets.ADMIN_PASSWORD || secrets.VITE_ADMIN_PASS || secrets.ADMIN_PASS || secrets.PASSWORD || secrets.ADMIN_SECRET || secrets.SECRET || 'birla@2026' }}
+      - name: Install dependencies & Build
         run: |
           cd frontend
           npm ci

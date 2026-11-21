@@ -389,7 +389,23 @@ exports.markAsDelivered = async (req, res) => {
 exports.deleteOrder = async (req, res) => {
   try {
     const { id } = req.params;
-    const orderId = parseInt(id);
+    const orderId = parseInt(id, 10);
+    if (isNaN(orderId)) {
+      return res.status(400).json({ error: 'Invalid order ID format' });
+    }
+
+    const existingOrder = await prisma.order.findUnique({
+      where: { id: orderId }
+    });
+
+    if (!existingOrder) {
+      return res.status(404).json({ error: 'Order not found' });
+    }
+
+    // Role check: Only ADMIN can delete orders permanently
+    if (req.user && req.user.role !== 'ADMIN') {
+      return res.status(403).json({ error: 'Forbidden: Administrator privileges required to delete orders' });
+    }
 
     // Delete associated items, dispatches, and payments or cascade
     await prisma.order.delete({

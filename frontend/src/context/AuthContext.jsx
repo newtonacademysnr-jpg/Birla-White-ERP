@@ -3,130 +3,127 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
-  // Check both sessionStorage and localStorage (for Remember Me)
-  const [isAuthenticated, setIsAuthenticated] = useState(() => {
-    try {
-      return (
-        sessionStorage.getItem('bw_erp_admin_auth') === 'true' ||
-        localStorage.getItem('bw_erp_admin_auth') === 'true'
-      );
-    } catch {
-      return false;
-    }
-  });
-
-  const [currentUser, setCurrentUser] = useState(() => {
-    try {
-      const stored =
-        sessionStorage.getItem('bw_erp_admin_user') ||
-        localStorage.getItem('bw_erp_admin_user');
-      return stored ? JSON.parse(stored) : null;
-    } catch {
-      return null;
-    }
-  });
-
-  // Determines whether the current session is an isolated Guest / Blank Data session
-  const [isGuestMode, setIsGuestMode] = useState(() => {
-    try {
-      return (
-        sessionStorage.getItem('bw_erp_is_guest') === 'true' ||
-        localStorage.getItem('bw_erp_is_guest') === 'true'
-      );
-    } catch {
-      return false;
-    }
-  });
-
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
+  const [isGuestMode, setIsGuestMode] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [pendingAction, setPendingAction] = useState(null);
   const [authPromptMessage, setAuthPromptMessage] = useState('');
+  const [isCheckingSession, setIsCheckingSession] = useState(true);
 
-  // Configuration loaded from Vite environment variables (supplied by GitHub Secrets in CI/CD)
-  const envAdminUser = (import.meta.env.VITE_ADMIN_USER || 'suraj').trim();
-  const envAdminPass = (import.meta.env.VITE_ADMIN_PASS || 'birla@2026').trim();
+  // Check existing session on application mount
+  useEffect(() => {
+    let mounted = true;
 
+    async function verifySession() {
+      try {
+        const res = await fetch('/api/auth/me', {
+          credentials: 'include',
+          headers: {
+            'X-Requested-With': 'BirlaWhiteERP'
+          }
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          if (mounted && data.authenticated && data.user) {
+            setIsAuthenticated(true);
+            setCurrentUser(data.user);
+            setIsGuestMode(false);
+            setIsCheckingSession(false);
+            return;
+          }
+        }
+      } catch (e) {
+        // API server offline or running in standalone static GitHub Pages mode
+      }
+
+      // Check if user has an active guest sandbox session
+      if (mounted) {
+        try {
+          const isGuest =
+            sessionStorage.getItem('bw_erp_is_guest') === 'true' ||
+            localStorage.getItem('bw_erp_is_guest') === 'true';
+          const storedUser =
+            sessionStorage.getItem('bw_erp_guest_user') ||
+            localStorage.getItem('bw_erp_guest_user');
+
+          if (isGuest && storedUser) {
+            setIsAuthenticated(true);
+            setCurrentUser(JSON.parse(storedUser));
+            setIsGuestMode(true);
+          }
+        } catch (e) {}
+        setIsCheckingSession(false);
+      }
+    }
+
+    verifySession();
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  /**
+   * Secure Sign-In Handler
+   * Connects to backend /api/auth/login with bcrypt validation and HttpOnly JWT cookies.
+   * If running offline/static demo, supports user-created sandbox passcode with blank isolated data.
+   */
   const login = async (username, password, rememberMe = true) => {
-    // Normalization for mobile & desktop keyboards (trim whitespace, lowercase)
     const cleanUser = String(username || '').trim().toLowerCase();
     const cleanPass = String(password || '').trim();
-    const cleanPassLower = cleanPass.toLowerCase();
 
-    const expectedUser = String(envAdminUser).trim().toLowerCase();
-    const expectedPass = String(envAdminPass).trim();
-    const expectedPassLower = expectedPass.toLowerCase();
+    if (!cleanPass) {
+      return { success: false, error: 'Password is required' };
+    }
 
-    // Custom locally saved passkey if someone created one in Help section
+    // 1. Attempt secure backend authentication
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Requested-With': 'BirlaWhiteERP'
+        },
+        credentials: 'include',
+        body: JSON.stringify({ username: cleanUser, password: cleanPass })
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success && data.user) {
+          setIsAuthenticated(true);
+          setCurrentUser(data.user);
+          setIsGuestMode(false);
+          setIsAuthModalOpen(false);
+
+          if (pendingAction && typeof pendingAction === 'function') {
+            const actionToRun = pendingAction;
+            setPendingAction(null);
+            setTimeout(() => actionToRun(), 100);
+          }
+          return { success: true, isGuest: false };
+        }
+      } else if (res.status === 401 || res.status === 400 || res.status === 403) {
+        const errData = await res.json().catch(() => ({}));
+        return {
+          success: false,
+          error: errData.error || errData.message || 'Invalid administrator credentials.'
+        };
+      }
+    } catch (e) {
+      // Backend is unreachable (e.g. static GitHub Pages demo environment)
+    }
+
+    // 2. Fallback for Static Host / Reviewer Sandbox Mode
+    // Reviewer can activate their own custom passcode in the Help drawer
     const localCustomPass = (localStorage.getItem('bw_erp_custom_pass') || '').trim();
-    const localCustomPassLower = localCustomPass.toLowerCase();
-
-    // Official Real Officer Passwords (full access to real production business data)
-    const officialAdminPasswords = [
-      expectedPass,
-      'birla@2026',
-      'birla2026',
-      'pz7550',
-      'PZ7550',
-      '8219796922',
-      'suraj',
-      'suraj@2026',
-      'suraj123',
-      'admin',
-      'admin123'
-    ].filter(Boolean);
-
-    const isOfficialPassValid =
-      cleanPass === expectedPass ||
-      cleanPassLower === expectedPassLower ||
-      officialAdminPasswords.some(
-        (p) => p === cleanPass || p.toLowerCase() === cleanPassLower
-      );
-
-    // Custom / Guest Passcode (set via Help section by external reviewer)
-    const isCustomPassValid =
-      localCustomPass &&
-      (cleanPass === localCustomPass || cleanPassLower === localCustomPassLower);
-
-    if (isOfficialPassValid) {
-      // 1. OFFICIAL ADMINISTRATOR / OFFICER (Suraj) -> Real Data Mode
-      const userInfo = {
-        username: cleanUser || 'suraj',
-        role: 'Sales Executive (SE) • Admin',
-        name: 'Suraj (PZ7550)',
-        email: 'suraj-v@adityabirla.com',
-        loginTime: new Date().toISOString(),
-        isGuest: false
-      };
-
-      setIsAuthenticated(true);
-      setCurrentUser(userInfo);
-      setIsGuestMode(false);
-
-      sessionStorage.setItem('bw_erp_admin_auth', 'true');
-      sessionStorage.setItem('bw_erp_admin_user', JSON.stringify(userInfo));
-      sessionStorage.setItem('bw_erp_is_guest', 'false');
-
-      if (rememberMe) {
-        localStorage.setItem('bw_erp_admin_auth', 'true');
-        localStorage.setItem('bw_erp_admin_user', JSON.stringify(userInfo));
-        localStorage.setItem('bw_erp_is_guest', 'false');
-      }
-
-      setIsAuthModalOpen(false);
-
-      if (pendingAction && typeof pendingAction === 'function') {
-        const actionToRun = pendingAction;
-        setPendingAction(null);
-        setTimeout(() => actionToRun(), 100);
-      }
-      return { success: true, isGuest: false };
-    } else if (isCustomPassValid) {
-      // 2. GUEST / DEMO SESSION (Set via Help) -> Blank Data Mode for privacy & security
+    if (localCustomPass && cleanPass === localCustomPass) {
       const guestInfo = {
         username: cleanUser || 'guest',
         role: 'Guest / Demo Sandbox',
-        name: cleanUser ? cleanUser.toUpperCase() : 'Guest User',
-        email: 'guest@internal-demo.erp',
+        name: cleanUser ? cleanUser.toUpperCase() : 'Guest Reviewer',
+        email: 'sandbox@internal-demo.erp',
         loginTime: new Date().toISOString(),
         isGuest: true
       };
@@ -135,14 +132,12 @@ export function AuthProvider({ children }) {
       setCurrentUser(guestInfo);
       setIsGuestMode(true);
 
-      sessionStorage.setItem('bw_erp_admin_auth', 'true');
-      sessionStorage.setItem('bw_erp_admin_user', JSON.stringify(guestInfo));
       sessionStorage.setItem('bw_erp_is_guest', 'true');
+      sessionStorage.setItem('bw_erp_guest_user', JSON.stringify(guestInfo));
 
       if (rememberMe) {
-        localStorage.setItem('bw_erp_admin_auth', 'true');
-        localStorage.setItem('bw_erp_admin_user', JSON.stringify(guestInfo));
         localStorage.setItem('bw_erp_is_guest', 'true');
+        localStorage.setItem('bw_erp_guest_user', JSON.stringify(guestInfo));
       }
 
       setIsAuthModalOpen(false);
@@ -153,27 +148,39 @@ export function AuthProvider({ children }) {
         setTimeout(() => actionToRun(), 100);
       }
       return { success: true, isGuest: true };
-    } else {
-      return {
-        success: false,
-        error: 'Invalid Administrator passcode. Please verify your credentials.'
-      };
     }
+
+    return {
+      success: false,
+      error: 'Invalid Administrator credentials. Please verify your username and password.'
+    };
   };
 
-  const logout = () => {
+  /**
+   * Secure Sign-Out Handler
+   */
+  const logout = async () => {
+    try {
+      await fetch('/api/auth/logout', {
+        method: 'POST',
+        headers: { 'X-Requested-With': 'BirlaWhiteERP' },
+        credentials: 'include'
+      });
+    } catch (e) {}
+
     setIsAuthenticated(false);
     setCurrentUser(null);
     setIsGuestMode(false);
-    sessionStorage.removeItem('bw_erp_admin_auth');
-    sessionStorage.removeItem('bw_erp_admin_user');
+
     sessionStorage.removeItem('bw_erp_is_guest');
-    localStorage.removeItem('bw_erp_admin_auth');
-    localStorage.removeItem('bw_erp_admin_user');
+    sessionStorage.removeItem('bw_erp_guest_user');
     localStorage.removeItem('bw_erp_is_guest');
+    localStorage.removeItem('bw_erp_guest_user');
   };
 
-  // Called when someone sets a custom password from the Help drawer
+  /**
+   * Save custom sandbox secret for reviewers on static host
+   */
   const saveCustomSecret = (secret) => {
     if (secret && secret.trim()) {
       const cleanSecret = secret.trim();
@@ -182,7 +189,7 @@ export function AuthProvider({ children }) {
       sessionStorage.setItem('bw_erp_is_guest', 'true');
       setIsGuestMode(true);
 
-      // Reset guest isolated storage so they begin with a 100% blank workspace
+      // Reset guest isolated storage so reviewers start with a blank workspace
       try {
         localStorage.removeItem('bw_guest_orders');
         localStorage.removeItem('bw_guest_payments');
@@ -219,6 +226,7 @@ export function AuthProvider({ children }) {
         isAuthenticated,
         currentUser,
         isGuestMode,
+        isCheckingSession,
         login,
         logout,
         saveCustomSecret,
@@ -233,7 +241,6 @@ export function AuthProvider({ children }) {
           setPendingAction(null);
         },
         authPromptMessage,
-        envAdminUser,
         hasCustomPass: !!localStorage.getItem('bw_erp_custom_pass')
       }}
     >
